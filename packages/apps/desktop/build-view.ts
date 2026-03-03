@@ -23,5 +23,5 @@ if (!result.success) {
   process.exit(1);
 }
 
-copyFileSync("../../libs/ui/build/styles.css", "build/main-ui/styles.css");
+copyFileSync("../../libs/core.ui/build/styles.css", "build/main-ui/styles.css");
 console.log("View built successfully");

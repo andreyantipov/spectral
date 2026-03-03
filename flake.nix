@@ -27,29 +27,12 @@
           subPackages = [ "cmd/tsgo" ];
         };
 
-        # yzx: thin wrapper that bootstraps yazelix on first run
-        yzx = pkgs.writeShellScriptBin "yzx" ''
-          YAZELIX_DIR="$HOME/.config/yazelix"
-          if [ ! -d "$YAZELIX_DIR" ]; then
-            echo "Cloning yazelix to $YAZELIX_DIR..."
-            ${pkgs.git}/bin/git clone https://github.com/luccahuguet/yazelix "$YAZELIX_DIR"
-            cp "$YAZELIX_DIR/yazelix_default.toml" "$YAZELIX_DIR/yazelix.toml"
-          fi
-          if ! command -v devenv &>/dev/null; then
-            echo "devenv required — install once with:"
-            echo "  nix profile install github:cachix/devenv/latest"
-            exit 1
-          fi
-          cd "$YAZELIX_DIR" || exit 1
-          exec devenv --impure shell -- ${pkgs.nushell}/bin/nu -c "use nushell/scripts/core/yazelix.nu *; yzx $*"
-        '';
-      in
+     in
       {
         devShells.default = pkgs.mkShell {
           packages = [
             pkgs.bun
             tsgo
-            yzx
           ];
         };
       }

@@ -1,6 +1,24 @@
 import Electrobun, { BrowserWindow, ApplicationMenu } from "electrobun/bun";
-import { APP_NAME, APP_VERSION } from "@ctrl/shared";
-import { mainRPC } from "./rpc";
+import { Effect, ManagedRuntime, Runtime } from "effect";
+import { APP_NAME, APP_VERSION } from "@ctrl/core.shared";
+import { ensureTabsTable } from "@ctrl/core.db";
+import { DesktopLive } from "./layers";
+import { createMainRPC } from "./rpc";
+import { TabManager } from "./tab-manager";
+import { mkdirSync } from "node:fs";
+import { join } from "node:path";
+import { homedir } from "node:os";
+
+// Ensure data directory exists
+mkdirSync(join(homedir(), ".ctrl.page"), { recursive: true });
+
+const runtime = ManagedRuntime.make(DesktopLive);
+
+// Initialize Effect runtime (database, services, etc.)
+const rt = await runtime.runtime();
+
+// Ensure tabs table exists
+await Runtime.runPromise(rt)(ensureTabsTable);
 
 ApplicationMenu.setApplicationMenu([
   {
@@ -43,6 +61,13 @@ ApplicationMenu.setApplicationMenu([
   },
 ]);
 
+// Create TabManager with Effect runtime
+const tabManager = new TabManager(rt);
+
+// Create RPC with tabManager
+const mainRPC = createMainRPC(rt, tabManager);
+
+// Create window
 const win = new BrowserWindow({
   title: APP_NAME,
   url: "views://main-ui/index.html",
@@ -51,5 +76,12 @@ const win = new BrowserWindow({
   transparent: false,
   rpc: mainRPC,
 });
+
+// Wire up tabManager with window context
+tabManager.setWindowId(win.id);
+tabManager.setRPC(win.webview.rpc);
+
+// Initialize tabs (loads from DB, creates content view)
+await tabManager.init();
 
 console.log(`${APP_NAME} v${APP_VERSION} started`);

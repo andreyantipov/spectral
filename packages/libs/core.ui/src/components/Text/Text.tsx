@@ -1,6 +1,6 @@
 import { type JSX, type ParentProps, splitProps } from "solid-js";
 import { Dynamic } from "solid-js/web";
-import { cva } from "../../styled-system/css";
+import { cva } from "../../../styled-system/css";
 
 const text = cva({
   base: {

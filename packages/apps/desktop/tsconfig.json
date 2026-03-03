@@ -9,7 +9,8 @@
   },
   "include": ["src"],
   "references": [
-    { "path": "../../libs/shared" },
-    { "path": "../../libs/ui" }
+    { "path": "../../libs/core.shared" },
+    { "path": "../../libs/core.ui" },
+    { "path": "../../libs/core.db" }
   ]
 }

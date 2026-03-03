@@ -5,8 +5,13 @@
   "type": "module",
   "dependencies": {
     "electrobun": "latest",
-    "@ctrl/shared": "workspace:*",
-    "@ctrl/ui": "workspace:*",
+    "@ctrl/core.shared": "workspace:*",
+    "@ctrl/core.ui": "workspace:*",
+    "@ctrl/core.db": "workspace:*",
+    "@libsql/client": "latest",
+    "effect": "latest",
+    "@effect/platform": "latest",
+    "@effect/platform-bun": "latest",
     "solid-js": "latest"
   },
   "devDependencies": {
@@ -14,7 +19,7 @@
     "@types/bun": "latest"
   },
   "scripts": {
-    "prebundle": "bun run build-view.ts",
+    "prebundle": "bun run build-view.ts && bun run prepare-native-deps.ts",
     "build": "bun install && bun run prebundle && electrobun build",
     "start": "bun run build && electrobun dev",
     "dev": "bun run build && electrobun dev",

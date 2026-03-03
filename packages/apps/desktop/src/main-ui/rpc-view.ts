@@ -1,6 +1,8 @@
-import type { MainRPCSchema } from "../bun/rpc";
+import type { MainRPCSchema } from "@ctrl/core.shared";
 
-export function defineRPC(Electroview: any) {
+export function defineRPC(Electroview: {
+  defineRPC: <T>(config: any) => any;
+}) {
   return Electroview.defineRPC<MainRPCSchema>({
     handlers: {
       requests: {},

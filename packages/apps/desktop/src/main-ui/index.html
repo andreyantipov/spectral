@@ -10,29 +10,22 @@
         body {
             background: #0a0a0a;
             color: #fafafa;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
+            height: 110px;
+            overflow: hidden;
         }
-        .titlebar {
+        .titlebar-spacer {
             -webkit-app-region: drag;
-            height: 40px;
+            height: 38px;
             flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            padding-left: 80px;
-            font-size: 13px;
-            color: #888;
-            user-select: none;
         }
         #root {
-            flex: 1;
-            overflow: auto;
+            height: 72px;
+            overflow: hidden;
         }
     </style>
 </head>
 <body>
-    <div class="titlebar">ctrl.page</div>
+    <div class="titlebar-spacer"></div>
     <div id="root"></div>
     <script src="index.js"></script>
 </body>
