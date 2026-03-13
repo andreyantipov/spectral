@@ -43,7 +43,8 @@
 			"!**/.grit",
 			"!**/*.config.ts",
 			"!**/*.config.js",
-			"!**/drizzle"
+			"!**/drizzle",
+			"!packages/infra/ci/sdk"
 		]
 	},
 	"overrides": [

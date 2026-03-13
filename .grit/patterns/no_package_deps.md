@@ -14,10 +14,12 @@ language json
 or {
   `"dependencies": { $deps }` where {
     $filename <: includes "packages/",
+    $filename <: not includes "packages/infra/ci",
     $deps <: not includes "workspace"
   },
   `"devDependencies": { $deps }` where {
-    $filename <: includes "packages/"
+    $filename <: includes "packages/",
+    $filename <: not includes "packages/infra/ci"
   }
 }
 ```
