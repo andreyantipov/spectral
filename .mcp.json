@@ -1,11 +1,11 @@
 {
-  "mcpServers": {
-    "ollama": {
-      "command": "npx",
-      "args": ["-y", "ollama-mcp"],
-      "env": {
-        "OLLAMA_HOST": "http://lab.lan:11434"
-      }
-    }
-  }
+	"mcpServers": {
+		"ollama": {
+			"command": "npx",
+			"args": ["-y", "ollama-mcp"],
+			"env": {
+				"OLLAMA_HOST": "http://lab.lan:11434"
+			}
+		}
+	}
 }
