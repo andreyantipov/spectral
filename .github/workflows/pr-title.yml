@@ -1,0 +1,69 @@
+name: PR Title
+
+on:
+  pull_request:
+    types: [labeled, unlabeled, opened, edited, synchronize]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.event.pull_request.title, 'chore(release):') }}
+    permissions:
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PR_URL: ${{ github.event.pull_request.html_url }}
+    steps:
+      - name: Remove duplicate change labels
+        if: github.event.action == 'labeled' && startsWith(github.event.label.name, 'change:')
+        run: |
+          LABELS=$(gh pr view "$PR_URL" --json labels --jq '.labels[].name | select(startswith("change:"))')
+          JUST_ADDED="${{ github.event.label.name }}"
+          for LABEL in $LABELS; do
+            if [ "$LABEL" != "$JUST_ADDED" ]; then
+              gh pr edit "$PR_URL" --remove-label "$LABEL"
+              echo "Removed duplicate label: $LABEL"
+            fi
+          done
+
+      - name: Validate and update PR title
+        run: |
+          PR_DATA=$(gh pr view "$PR_URL" --json labels,title)
+          LABELS=$(echo "$PR_DATA" | jq -r '.labels[].name')
+          TITLE=$(echo "$PR_DATA" | jq -r '.title')
+
+          HAS_CHANGE=$(echo "$LABELS" | grep -q "^change:" && echo "yes" || echo "no")
+
+          if [ "$HAS_CHANGE" = "no" ]; then
+            echo "::error::Missing required label. Add one of: change:fix, change:feat, change:breaking, or change:chore"
+            exit 1
+          fi
+
+          PREFIX="fix"
+          if echo "$LABELS" | grep -q "change:breaking"; then
+            PREFIX="feat!"
+          elif echo "$LABELS" | grep -q "change:feat"; then
+            PREFIX="feat"
+          elif echo "$LABELS" | grep -q "change:fix"; then
+            PREFIX="fix"
+          elif echo "$LABELS" | grep -q "change:chore"; then
+            PREFIX="chore"
+          fi
+
+          CLEAN_TITLE=$(echo "$TITLE" | sed -E 's/^(feat!?|fix|chore|docs|refactor|test|ci)(\([^)]+\))?:\s*//')
+          NEW_TITLE="$PREFIX: $CLEAN_TITLE"
+
+          if [ "$NEW_TITLE" != "$TITLE" ]; then
+            gh pr edit "$PR_URL" --title "$NEW_TITLE"
+            echo "Updated title to: $NEW_TITLE"
+          else
+            echo "Title already correct: $TITLE"
+          fi
+
+          FINAL_TITLE=$(gh pr view "$PR_URL" --json title --jq '.title')
+          if ! echo "$FINAL_TITLE" | grep -qE "^(feat!?|fix|chore|docs|refactor|test|ci)(\([^)]+\))?:\s*.+"; then
+            echo "::error::Invalid PR title format. Must be: type: description"
+            exit 1
+          fi
+
+          echo "PR title valid: $FINAL_TITLE"
