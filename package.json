@@ -44,5 +44,6 @@
 		"turbo": "latest",
 		"vite": "^6.0.0",
 		"vite-plugin-solid": "latest"
-	}
+	},
+	"version": "1.0.0"
 }
