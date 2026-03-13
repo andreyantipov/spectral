@@ -4,4 +4,6 @@ dist
 build
 bun.lock
 styled-system
+.grit/.gritmodules
 /devenv.lock
+.DS_Store
