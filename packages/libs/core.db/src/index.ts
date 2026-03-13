@@ -1,6 +1,6 @@
-export * from "./schema";
-export { createDatabase, type DatabaseConfig, type Database } from "./client";
-export { DatabaseService, DatabaseServiceLive } from "./service";
+export { createDatabase, type Database, type DatabaseConfig } from "./client";
 export { DatabaseError } from "./errors";
-export { TabService, TabServiceLive, type Tab } from "./tab-service";
 export { ensureTabsTable } from "./migrate";
+export * from "./schema";
+export { DatabaseService, DatabaseServiceLive } from "./service";
+export { type Tab, TabService, TabServiceLive } from "./tab-service";

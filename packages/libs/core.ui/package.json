@@ -1,27 +1,27 @@
 {
-  "name": "@ctrl/core.ui",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts",
-    "./styles.css": "./build/styles.css"
-  },
-  "dependencies": {
-    "solid-js": "latest"
-  },
-  "devDependencies": {
-    "@pandacss/dev": "latest",
-    "storybook": "^10.0.0",
-    "storybook-solidjs": "1.0.0-beta.6",
-    "storybook-solidjs-vite": "^10.0.0",
-    "vite": "^6.0.0"
-  },
-  "scripts": {
-    "prepare": "panda codegen",
-    "build": "panda codegen && panda cssgen --outfile build/styles.css && tsgo --build",
-    "check": "tsgo --noEmit",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
-  }
+	"name": "@ctrl/core.ui",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./styles.css": "./build/styles.css"
+	},
+	"dependencies": {
+		"solid-js": "latest"
+	},
+	"devDependencies": {
+		"@pandacss/dev": "latest",
+		"storybook": "^10.0.0",
+		"storybook-solidjs": "1.0.0-beta.6",
+		"storybook-solidjs-vite": "^10.0.0",
+		"vite": "^6.0.0"
+	},
+	"scripts": {
+		"prepare": "panda codegen",
+		"build": "panda codegen && panda cssgen --outfile build/styles.css && tsgo --build",
+		"check": "tsgo --noEmit",
+		"storybook": "storybook dev -p 6006",
+		"build-storybook": "storybook build"
+	}
 }

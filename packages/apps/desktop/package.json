@@ -1,29 +1,30 @@
 {
-  "name": "@ctrl/desktop",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "dependencies": {
-    "electrobun": "latest",
-    "@ctrl/core.shared": "workspace:*",
-    "@ctrl/core.ui": "workspace:*",
-    "@ctrl/core.db": "workspace:*",
-    "@ctrl/feature.sidebar-tabs": "workspace:*",
-    "@libsql/client": "latest",
-    "effect": "latest",
-    "@effect/platform": "latest",
-    "@effect/platform-bun": "latest",
-    "solid-js": "latest"
-  },
-  "devDependencies": {
-    "@dschz/bun-plugin-solid": "^1.0.4",
-    "@types/bun": "latest"
-  },
-  "scripts": {
-    "prebundle": "bun run build-view.ts && bun run prepare-native-deps.ts",
-    "build": "bun install && bun run prebundle && electrobun build",
-    "start": "bun run build && electrobun dev",
-    "dev": "bun run build && electrobun dev",
-    "check": "tsgo --noEmit 2>&1 | (! grep -v 'node_modules/' | grep 'error TS')"
-  }
+	"name": "@ctrl/desktop",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"dependencies": {
+		"electrobun": "latest",
+		"@ctrl/core.shared": "workspace:*",
+		"@ctrl/core.ui": "workspace:*",
+		"@ctrl/core.db": "workspace:*",
+		"@ctrl/feature.sidebar-tabs": "workspace:*",
+		"@libsql/client": "latest",
+		"effect": "latest",
+		"@effect/platform": "latest",
+		"@effect/platform-bun": "latest",
+		"solid-js": "latest"
+	},
+	"devDependencies": {
+		"@dschz/bun-plugin-solid": "^1.0.4",
+		"@types/bun": "latest"
+	},
+	"scripts": {
+		"prebundle": "bun run build-view.ts && bun run prepare-native-deps.ts",
+		"build": "bun install && bun run prebundle && electrobun build",
+		"start": "bun run build && electrobun dev",
+		"dev": "bun run prebundle && electrobun dev --watch",
+		"dev:watch-ui": "bun run dev-view.ts",
+		"check": "tsgo --noEmit 2>&1 | (! grep -v 'node_modules/' | grep 'error TS')"
+	}
 }

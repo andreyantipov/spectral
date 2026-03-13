@@ -21,6 +21,7 @@ export default {
       "build/main-ui/styles.css": "views/main-ui/styles.css",
       "build/bun-deps/node_modules": "bun/node_modules",
     },
+    watch: ["build/main-ui"],
     mac: {
       defaultRenderer: "native",
     },

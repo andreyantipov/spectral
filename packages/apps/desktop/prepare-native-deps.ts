@@ -1,5 +1,5 @@
-import { mkdirSync, rmSync, writeFileSync } from "fs";
-import { execSync } from "child_process";
+import { execSync } from "node:child_process";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 
 const outDir = "build/bun-deps";
 
@@ -9,11 +9,11 @@ mkdirSync(outDir, { recursive: true });
 
 // Create a minimal package.json and install @libsql/client with all its deps
 writeFileSync(
-  `${outDir}/package.json`,
-  JSON.stringify({
-    private: true,
-    dependencies: { "@libsql/client": "latest" },
-  }),
+	`${outDir}/package.json`,
+	JSON.stringify({
+		private: true,
+		dependencies: { "@libsql/client": "latest" },
+	}),
 );
 
 execSync("bun install --production", { cwd: outDir, stdio: "inherit" });

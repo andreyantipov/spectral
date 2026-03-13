@@ -1,23 +1,23 @@
 {
-  "name": "@ctrl/core.db",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts"
-  },
-  "dependencies": {
-    "@libsql/client": "latest",
-    "drizzle-orm": "latest",
-    "effect": "latest"
-  },
-  "devDependencies": {
-    "drizzle-kit": "latest"
-  },
-  "scripts": {
-    "build": "tsgo --build",
-    "check": "tsgo --noEmit",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
-  }
+	"name": "@ctrl/core.db",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"dependencies": {
+		"@libsql/client": "latest",
+		"drizzle-orm": "latest",
+		"effect": "latest"
+	},
+	"devDependencies": {
+		"drizzle-kit": "latest"
+	},
+	"scripts": {
+		"build": "tsgo --build",
+		"check": "tsgo --noEmit",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "drizzle-kit migrate"
+	}
 }

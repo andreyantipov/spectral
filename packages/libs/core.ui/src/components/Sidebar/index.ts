@@ -1,1 +1,1 @@
-export { Sidebar, type SidebarTab, type SidebarItem, type SidebarProps } from "./Sidebar";
+export { Sidebar, type SidebarItem, type SidebarProps, type SidebarTab } from "./Sidebar";

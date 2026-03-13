@@ -1,13 +1,13 @@
-import { Effect } from "effect";
 import { sql } from "drizzle-orm";
+import { Effect } from "effect";
+import type { DatabaseError } from "./errors";
 import { DatabaseService } from "./service";
-import { DatabaseError } from "./errors";
 
-export const ensureTabsTable: Effect.Effect<void, DatabaseError, DatabaseService> =
-  Effect.gen(function* () {
-    const { query } = yield* DatabaseService;
-    yield* query((db) =>
-      db.run(sql`
+export const ensureTabsTable: Effect.Effect<void, DatabaseError, DatabaseService> = Effect.gen(
+	function* () {
+		const { query } = yield* DatabaseService;
+		yield* query((db) =>
+			db.run(sql`
         CREATE TABLE IF NOT EXISTS tabs (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           url TEXT NOT NULL,
@@ -18,5 +18,6 @@ export const ensureTabsTable: Effect.Effect<void, DatabaseError, DatabaseService
           updated_at TEXT NOT NULL DEFAULT (current_timestamp)
         )
       `),
-    );
-  });
+		);
+	},
+);

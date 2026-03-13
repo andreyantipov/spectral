@@ -1,17 +1,17 @@
 {
-  "name": "@ctrl/feature.sidebar-tabs",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "exports": {
-    ".": "./src/index.ts"
-  },
-  "dependencies": {
-    "@ctrl/core.shared": "workspace:*",
-    "@ctrl/core.ui": "workspace:*",
-    "solid-js": "latest"
-  },
-  "scripts": {
-    "check": "tsgo --noEmit"
-  }
+	"name": "@ctrl/feature.sidebar-tabs",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"dependencies": {
+		"@ctrl/core.shared": "workspace:*",
+		"@ctrl/core.ui": "workspace:*",
+		"solid-js": "latest"
+	},
+	"scripts": {
+		"check": "tsgo --noEmit"
+	}
 }

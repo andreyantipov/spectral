@@ -1,183 +1,186 @@
-import { type JSX, For, Show, createSignal, createEffect, onCleanup } from "solid-js";
+import { createEffect, createSignal, For, type JSX, Show } from "solid-js";
 import { sidebar } from "./Sidebar.style";
 
 export type SidebarTab = {
-  id: string;
-  icon: JSX.Element;
-  label: string;
-  badge?: number;
+	id: string;
+	icon: JSX.Element;
+	label: string;
+	badge?: number;
 };
 
 export type SidebarItem = {
-  id: string;
-  icon?: JSX.Element;
-  label: string;
-  indent?: number;
+	id: string;
+	icon?: JSX.Element;
+	label: string;
+	indent?: number;
 };
 
 export type SidebarProps = {
-  tabs: SidebarTab[];
-  activeTabId?: string | null;
-  items?: SidebarItem[];
-  activeItemId?: string | null;
-  position?: "left" | "right";
-  float?: boolean;
-  defaultWidth?: number;
-  minWidth?: number;
-  maxWidth?: number;
-  collapsed?: boolean;
-  onTabClick?: (id: string) => void;
-  onItemClick?: (id: string) => void;
-  onItemClose?: (id: string) => void;
-  onNewTab?: () => void;
-  onWidthChange?: (width: number) => void;
-  onCollapseChange?: (collapsed: boolean) => void;
-  children?: JSX.Element;
+	tabs: SidebarTab[];
+	activeTabId?: string | null;
+	items?: SidebarItem[];
+	activeItemId?: string | null;
+	position?: "left" | "right";
+	float?: boolean;
+	defaultWidth?: number;
+	minWidth?: number;
+	maxWidth?: number;
+	collapsed?: boolean;
+	onTabClick?: (id: string) => void;
+	onItemClick?: (id: string) => void;
+	onItemClose?: (id: string) => void;
+	onNewTab?: () => void;
+	onWidthChange?: (width: number) => void;
+	onCollapseChange?: (collapsed: boolean) => void;
+	children?: JSX.Element;
 };
 
 export function Sidebar(props: SidebarProps) {
-  const minW = () => props.minWidth ?? 180;
-  const maxW = () => props.maxWidth ?? 400;
-  const [width, setWidth] = createSignal(props.defaultWidth ?? 240);
-  const [dragging, setDragging] = createSignal(false);
-  const collapsed = () => props.collapsed ?? false;
-  const float = () => props.float ?? false;
-  const position = () => props.position ?? "left";
+	const minW = () => props.minWidth ?? 180;
+	const maxW = () => props.maxWidth ?? 400;
+	const [width, setWidth] = createSignal(props.defaultWidth ?? 240);
+	const [dragging, setDragging] = createSignal(false);
+	const collapsed = () => props.collapsed ?? false;
+	const float = () => props.float ?? false;
+	const position = () => props.position ?? "left";
 
-  const styles = () => sidebar({ position: position(), float: float() });
-  const activeTabStyles = () => sidebar({ position: position(), float: float(), activeTab: true });
-  const activeItemStyles = () => sidebar({ position: position(), float: float(), activeItem: true });
+	const styles = () => sidebar({ position: position(), float: float() });
+	const activeTabStyles = () => sidebar({ position: position(), float: float(), activeTab: true });
+	const activeItemStyles = () =>
+		sidebar({ position: position(), float: float(), activeItem: true });
 
-  function onPointerDown(e: PointerEvent) {
-    e.preventDefault();
-    setDragging(true);
-    const startX = e.clientX;
-    const startW = width();
+	function onPointerDown(e: PointerEvent) {
+		e.preventDefault();
+		setDragging(true);
+		const startX = e.clientX;
+		const startW = width();
 
-    function onPointerMove(e: PointerEvent) {
-      const delta = position() === "left" ? e.clientX - startX : startX - e.clientX;
-      const next = Math.max(minW(), Math.min(maxW(), startW + delta));
-      setWidth(next);
-      props.onWidthChange?.(next);
-    }
+		function onPointerMove(e: PointerEvent) {
+			const delta = position() === "left" ? e.clientX - startX : startX - e.clientX;
+			const next = Math.max(minW(), Math.min(maxW(), startW + delta));
+			setWidth(next);
+			props.onWidthChange?.(next);
+		}
 
-    function onPointerUp() {
-      setDragging(false);
-      document.removeEventListener("pointermove", onPointerMove);
-      document.removeEventListener("pointerup", onPointerUp);
-    }
+		function onPointerUp() {
+			setDragging(false);
+			document.removeEventListener("pointermove", onPointerMove);
+			document.removeEventListener("pointerup", onPointerUp);
+		}
 
-    document.addEventListener("pointermove", onPointerMove);
-    document.addEventListener("pointerup", onPointerUp);
-  }
+		document.addEventListener("pointermove", onPointerMove);
+		document.addEventListener("pointerup", onPointerUp);
+	}
 
-  createEffect(() => {
-    if (props.defaultWidth !== undefined) {
-      setWidth(props.defaultWidth);
-    }
-  });
+	createEffect(() => {
+		if (props.defaultWidth !== undefined) {
+			setWidth(props.defaultWidth);
+		}
+	});
 
-  return (
-    <div
-      class={styles().root}
-      style={{
-        width: collapsed() ? undefined : `${width()}px`,
-      }}
-    >
-      {/* Icon rail */}
-      <div class={styles().rail}>
-        <div class={styles().railTabs}>
-          <For each={props.tabs}>
-            {(tab) => {
-              const s = () =>
-                tab.id === props.activeTabId ? activeTabStyles() : styles();
-              return (
-                <div
-                  class={s().railTab}
-                  onClick={() => {
-                    if (tab.id === props.activeTabId && !collapsed()) {
-                      props.onCollapseChange?.(true);
-                    } else {
-                      props.onCollapseChange?.(false);
-                      props.onTabClick?.(tab.id);
-                    }
-                  }}
-                  title={tab.label}
-                >
-                  <span class={s().railTabIcon}>{tab.icon}</span>
-                  <Show when={tab.badge}>
-                    <span class={s().railTabBadge}>{tab.badge}</span>
-                  </Show>
-                </div>
-              );
-            }}
-          </For>
-        </div>
-      </div>
+	return (
+		<div
+			class={styles().root}
+			style={{
+				width: collapsed() ? undefined : `${width()}px`,
+			}}
+		>
+			{/* Icon rail */}
+			<div class={styles().rail}>
+				<div class={styles().railTabs}>
+					<For each={props.tabs}>
+						{(tab) => {
+							const s = () => (tab.id === props.activeTabId ? activeTabStyles() : styles());
+							return (
+								<button
+									type="button"
+									class={s().railTab}
+									onClick={() => {
+										if (tab.id === props.activeTabId && !collapsed()) {
+											props.onCollapseChange?.(true);
+										} else {
+											props.onCollapseChange?.(false);
+											props.onTabClick?.(tab.id);
+										}
+									}}
+									title={tab.label}
+								>
+									<span class={s().railTabIcon}>{tab.icon}</span>
+									<Show when={tab.badge}>
+										<span class={s().railTabBadge}>{tab.badge}</span>
+									</Show>
+								</button>
+							);
+						}}
+					</For>
+				</div>
+			</div>
 
-      {/* Expandable panel */}
-      <Show when={!collapsed()}>
-        <div class={styles().panel}>
-          <div class={styles().panelHeader}>
-            <span class={styles().panelTitle}>
-              {props.tabs.find((t) => t.id === props.activeTabId)?.label ?? ""}
-            </span>
-            <Show when={props.onNewTab}>
-              <span
-                class={styles().panelAction}
-                onClick={() => props.onNewTab?.()}
-                title="New tab"
-              >
-                +
-              </span>
-            </Show>
-          </div>
+			{/* Expandable panel */}
+			<Show when={!collapsed()}>
+				<div class={styles().panel}>
+					<div class={styles().panelHeader}>
+						<span class={styles().panelTitle}>
+							{props.tabs.find((t) => t.id === props.activeTabId)?.label ?? ""}
+						</span>
+						<Show when={props.onNewTab}>
+							<button
+								type="button"
+								class={styles().panelAction}
+								onClick={() => props.onNewTab?.()}
+								title="New tab"
+							>
+								+
+							</button>
+						</Show>
+					</div>
 
-          <div class={styles().panelContent}>
-            <Show when={props.items}>
-              <For each={props.items}>
-                {(item) => {
-                  const s = () =>
-                    item.id === props.activeItemId ? activeItemStyles() : styles();
-                  return (
-                    <div
-                      class={s().panelItem}
-                      style={{
-                        "padding-left": `${8 + (item.indent ?? 0) * 12}px`,
-                      }}
-                      onClick={() => props.onItemClick?.(item.id)}
-                    >
-                      <Show when={item.icon}>
-                        <span class={s().panelItemIcon}>{item.icon}</span>
-                      </Show>
-                      <span class={s().panelItemLabel}>{item.label}</span>
-                      <Show when={props.onItemClose}>
-                        <span
-                          class={`${s().panelItemClose} panelItemClose`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            props.onItemClose?.(item.id);
-                          }}
-                        >
-                          &times;
-                        </span>
-                      </Show>
-                    </div>
-                  );
-                }}
-              </For>
-            </Show>
-            {props.children}
-          </div>
-        </div>
+					<div class={styles().panelContent}>
+						<Show when={props.items}>
+							<For each={props.items}>
+								{(item) => {
+									const s = () => (item.id === props.activeItemId ? activeItemStyles() : styles());
+									return (
+										<button
+											type="button"
+											class={s().panelItem}
+											style={{
+												"padding-left": `${8 + (item.indent ?? 0) * 12}px`,
+											}}
+											onClick={() => props.onItemClick?.(item.id)}
+										>
+											<Show when={item.icon}>
+												<span class={s().panelItemIcon}>{item.icon}</span>
+											</Show>
+											<span class={s().panelItemLabel}>{item.label}</span>
+											<Show when={props.onItemClose}>
+												<button
+													type="button"
+													class={`${s().panelItemClose} panelItemClose`}
+													onClick={(e) => {
+														e.stopPropagation();
+														props.onItemClose?.(item.id);
+													}}
+												>
+													&times;
+												</button>
+											</Show>
+										</button>
+									);
+								}}
+							</For>
+						</Show>
+						{props.children}
+					</div>
+				</div>
 
-        {/* Resize handle */}
-        <div
-          class={styles().resizeHandle}
-          data-dragging={dragging() || undefined}
-          onPointerDown={onPointerDown}
-        />
-      </Show>
-    </div>
-  );
+				{/* Resize handle */}
+				<div
+					class={styles().resizeHandle}
+					data-dragging={dragging() || undefined}
+					onPointerDown={onPointerDown}
+				/>
+			</Show>
+		</div>
+	);
 }

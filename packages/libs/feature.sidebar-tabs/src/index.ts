@@ -1,7 +1,7 @@
 export {
-  SidebarTabsWidget,
-  createSidebarTabs,
-  type SidebarTabsRPC,
-  type SidebarTabsController,
-  type SidebarTabsWidgetProps,
+	createSidebarTabs,
+	type SidebarTabsController,
+	type SidebarTabsRPC,
+	SidebarTabsWidget,
+	type SidebarTabsWidgetProps,
 } from "./SidebarTabs";

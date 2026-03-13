@@ -1,10 +1,10 @@
-export { Button } from "./components/Button";
-export { Text } from "./components/Text";
-export { Input } from "./components/Input";
 export { AddressBar } from "./components/AddressBar";
+export { Button } from "./components/Button";
+export { Input } from "./components/Input";
 export {
-  Sidebar,
-  type SidebarTab,
-  type SidebarItem,
-  type SidebarProps,
+	Sidebar,
+	type SidebarItem,
+	type SidebarProps,
+	type SidebarTab,
 } from "./components/Sidebar";
+export { Text } from "./components/Text";

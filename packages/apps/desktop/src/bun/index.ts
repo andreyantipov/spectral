@@ -1,13 +1,13 @@
-import Electrobun, { BrowserWindow, ApplicationMenu } from "electrobun/bun";
-import { Effect, ManagedRuntime, Runtime } from "effect";
-import { APP_NAME, APP_VERSION } from "@ctrl/core.shared";
+import { mkdirSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { ensureTabsTable } from "@ctrl/core.db";
+import { APP_NAME, APP_VERSION } from "@ctrl/core.shared";
+import { ManagedRuntime, Runtime } from "effect";
+import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
 import { DesktopLive } from "./layers";
 import { createMainRPC } from "./rpc";
 import { TabManager } from "./tab-manager";
-import { mkdirSync } from "node:fs";
-import { join } from "node:path";
-import { homedir } from "node:os";
 
 // Ensure data directory exists
 mkdirSync(join(homedir(), ".ctrl.page"), { recursive: true });
@@ -21,44 +21,37 @@ const rt = await runtime.runtime();
 await Runtime.runPromise(rt)(ensureTabsTable);
 
 ApplicationMenu.setApplicationMenu([
-  {
-    submenu: [
-      { label: `About ${APP_NAME}`, role: "about" },
-      { type: "separator" },
-      { label: "Quit", role: "quit", accelerator: "Cmd+Q" },
-    ],
-  },
-  {
-    label: "File",
-    submenu: [
-      { label: "Close Window", role: "close", accelerator: "Cmd+W" },
-    ],
-  },
-  {
-    label: "Edit",
-    submenu: [
-      { role: "undo" },
-      { role: "redo" },
-      { type: "separator" },
-      { role: "cut" },
-      { role: "copy" },
-      { role: "paste" },
-      { role: "selectAll" },
-    ],
-  },
-  {
-    label: "View",
-    submenu: [
-      { label: "Toggle Full Screen", role: "toggleFullScreen", accelerator: "Cmd+Ctrl+F" },
-    ],
-  },
-  {
-    label: "Window",
-    submenu: [
-      { role: "minimize" },
-      { role: "zoom" },
-    ],
-  },
+	{
+		submenu: [
+			{ label: `About ${APP_NAME}`, role: "about" },
+			{ type: "separator" },
+			{ label: "Quit", role: "quit", accelerator: "Cmd+Q" },
+		],
+	},
+	{
+		label: "File",
+		submenu: [{ label: "Close Window", role: "close", accelerator: "Cmd+W" }],
+	},
+	{
+		label: "Edit",
+		submenu: [
+			{ role: "undo" },
+			{ role: "redo" },
+			{ type: "separator" },
+			{ role: "cut" },
+			{ role: "copy" },
+			{ role: "paste" },
+			{ role: "selectAll" },
+		],
+	},
+	{
+		label: "View",
+		submenu: [{ label: "Toggle Full Screen", role: "toggleFullScreen", accelerator: "Cmd+Ctrl+F" }],
+	},
+	{
+		label: "Window",
+		submenu: [{ role: "minimize" }, { role: "zoom" }],
+	},
 ]);
 
 // Create TabManager with Effect runtime
@@ -69,12 +62,12 @@ const mainRPC = createMainRPC(rt, tabManager);
 
 // Create window
 const win = new BrowserWindow({
-  title: APP_NAME,
-  url: "views://main-ui/index.html",
-  frame: { x: 0, y: 0, width: 1200, height: 800 },
-  titleBarStyle: "hiddenInset",
-  transparent: false,
-  rpc: mainRPC,
+	title: APP_NAME,
+	url: "views://main-ui/index.html",
+	frame: { x: 0, y: 0, width: 1200, height: 800 },
+	titleBarStyle: "hiddenInset",
+	transparent: false,
+	rpc: mainRPC,
 });
 
 // Wire up tabManager with window context

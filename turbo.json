@@ -1,31 +1,36 @@
 {
-  "$schema": "https://turborepo.dev/schema.json",
-  "ui": "tui",
-  "tasks": {
-    "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**", "build/**", "styled-system/**"]
-    },
-    "dev": {
-      "dependsOn": ["^build"],
-      "persistent": true,
-      "cache": false
-    },
-    "check": {
-      "dependsOn": ["^build"]
-    },
-    "lint": {},
-    "test": {
-      "dependsOn": ["^build"]
-    },
-    "storybook": {
-      "dependsOn": ["^build"],
-      "persistent": true,
-      "cache": false
-    },
-    "build-storybook": {
-      "dependsOn": ["^build"],
-      "outputs": ["storybook-static/**"]
-    }
-  }
+	"$schema": "https://turborepo.dev/schema.json",
+	"ui": "tui",
+	"tasks": {
+		"build": {
+			"dependsOn": ["^build"],
+			"outputs": ["dist/**", "build/**", "styled-system/**"]
+		},
+		"dev": {
+			"dependsOn": ["^build"],
+			"persistent": true,
+			"cache": false
+		},
+		"dev:watch-ui": {
+			"dependsOn": ["^build"],
+			"persistent": true,
+			"cache": false
+		},
+		"check": {
+			"dependsOn": ["^build"]
+		},
+		"lint": {},
+		"test": {
+			"dependsOn": ["^build"]
+		},
+		"storybook": {
+			"dependsOn": ["^build"],
+			"persistent": true,
+			"cache": false
+		},
+		"build-storybook": {
+			"dependsOn": ["^build"],
+			"outputs": ["storybook-static/**"]
+		}
+	}
 }
