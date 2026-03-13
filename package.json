@@ -23,7 +23,7 @@
 		"@libsql/client": "latest",
 		"drizzle-orm": "latest",
 		"effect": "latest",
-		"electrobun": "latest",
+		"electrobun": "1.15.1",
 		"solid-js": "latest"
 	},
 	"devDependencies": {
@@ -31,8 +31,6 @@
 		"@dschz/bun-plugin-solid": "^1.0.4",
 		"@getgrit/cli": "^0.1.0-alpha.1743007075",
 		"@pandacss/dev": "latest",
-		"@storybook/addon-essentials": "latest",
-		"@storybook/addon-links": "latest",
 		"@types/bun": "latest",
 		"@typescript/native-preview": "latest",
 		"drizzle-kit": "latest",
