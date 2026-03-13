@@ -45,3 +45,17 @@ jobs:
           verb: call
           module: packages/infra/ci
           args: build --source=.
+
+  build-desktop:
+    name: Build Desktop (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: bun install
+      - name: Build desktop app
+        working-directory: packages/apps/desktop
+        run: bun run prebundle && bunx electrobun build
+      - name: Verify .app exists
+        run: ls -la packages/apps/desktop/build/ctrl.page.app || ls -la packages/apps/desktop/dist/

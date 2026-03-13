@@ -43,6 +43,9 @@ jobs:
     name: Release
     needs: [lint, typecheck]
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      released: ${{ steps.version.outputs.released }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -59,6 +62,58 @@ jobs:
         run: bun install --ignore-scripts
 
       - name: Run semantic-release
-        run: npx semantic-release
+        id: version
+        run: |
+          npx semantic-release
+          VERSION=$(node -p "require('./package.json').version")
+          TAG_EXISTS=$(git tag -l "v$VERSION")
+          if [ -n "$TAG_EXISTS" ]; then
+            echo "released=true" >> "$GITHUB_OUTPUT"
+            echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          else
+            echo "released=false" >> "$GITHUB_OUTPUT"
+            echo "version=" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-desktop:
+    name: Build Desktop (macOS)
+    needs: [release]
+    if: needs.release.outputs.released == 'true'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.release.outputs.version }}
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build desktop app
+        working-directory: packages/apps/desktop
+        run: bun run prebundle && bunx electrobun build
+
+      - name: Package app
+        run: |
+          cd packages/apps/desktop
+          APP_DIR=$(find . -name "*.app" -type d | head -1)
+          if [ -n "$APP_DIR" ]; then
+            zip -r ctrl-page-${{ needs.release.outputs.version }}-macos.zip "$APP_DIR"
+          else
+            echo "No .app found, listing build output:"
+            find . -name "build" -o -name "dist" | head -5
+            ls -la build/ dist/ 2>/dev/null || true
+            exit 1
+          fi
+
+      - name: Upload to release
+        run: |
+          cd packages/apps/desktop
+          gh release upload v${{ needs.release.outputs.version }} \
+            ctrl-page-${{ needs.release.outputs.version }}-macos.zip \
+            --repo ${{ github.repository }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

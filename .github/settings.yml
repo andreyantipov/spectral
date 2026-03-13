@@ -28,6 +28,7 @@ branches:
           - "Lint"
           - "Typecheck"
           - "Build"
+          - "Build Desktop (macOS)"
       required_pull_request_reviews: null
       enforce_admins: false
       restrictions: null
