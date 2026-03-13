@@ -4,6 +4,8 @@ export async function baseContainer(source: Directory): Promise<Container> {
 	return dag
 		.container()
 		.from("oven/bun:latest")
+		.withExec(["apt-get", "update"])
+		.withExec(["apt-get", "install", "-y", "git", "ca-certificates"])
 		.withDirectory("/app", source, {
 			exclude: ["**/node_modules", "packages/infra/ci/sdk"],
 		})
