@@ -14,9 +14,9 @@ export async function lint(source: Directory): Promise<string> {
 
 export async function typecheck(source: Directory): Promise<string> {
 	const container = await baseContainer(source);
-	// turbo check depends on ^build, but build needs panda codegen first
-	// Run build explicitly to generate styled-system/ and dist/ outputs
-	await run(container, ["bunx", "turbo", "build", "--filter=!@ctrl/desktop"]).sync();
-	await run(container, ["bun", "run", "check"]).sync();
+	// Build first to generate styled-system/ and dist/ outputs,
+	// then check in the same container layer so outputs are available
+	const built = run(container, ["bunx", "turbo", "build", "--filter=!@ctrl/desktop"]);
+	await run(built, ["bun", "run", "check"]).sync();
 	return "Typecheck passed";
 }
