@@ -10,7 +10,10 @@ export async function release(source: Directory, githubToken: Secret): Promise<s
 
 	await run(
 		container
+			.withEnvVariable("CI", "true")
+			.withEnvVariable("GITHUB_ACTIONS", "true")
 			.withSecretVariable("GITHUB_TOKEN", githubToken)
+			.withSecretVariable("GH_TOKEN", githubToken)
 			.withExec(["git", "config", "--global", "user.name", "github-actions[bot]"])
 			.withExec([
 				"git",
@@ -18,6 +21,13 @@ export async function release(source: Directory, githubToken: Secret): Promise<s
 				"--global",
 				"user.email",
 				"github-actions[bot]@users.noreply.github.com",
+			])
+			.withExec([
+				"git",
+				"remote",
+				"set-url",
+				"origin",
+				"https://github.com/andreyantipov/ctrl.page.git",
 			]),
 		["bunx", "semantic-release"],
 	).sync();
