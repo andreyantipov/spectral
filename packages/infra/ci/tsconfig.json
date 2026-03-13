@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"experimentalDecorators": true,
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"outDir": "dist",
+		"paths": {
+			"@dagger.io/dagger": ["./sdk/index.ts"],
+			"@dagger.io/dagger/telemetry": ["./sdk/telemetry.ts"]
+		}
+	},
+	"include": ["src/**/*"]
+}
