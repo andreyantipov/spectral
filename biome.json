@@ -15,7 +15,10 @@
 			},
 			"suspicious": {
 				"noExplicitAny": "error",
-				"noConsole": { "level": "warn", "options": { "allow": ["log"] } }
+				"noConsole": {
+					"level": "warn",
+					"options": { "allow": ["warn", "error", "info", "debug"] }
+				}
 			},
 			"correctness": {
 				"noUnusedVariables": "error",
@@ -49,7 +52,7 @@
 			"linter": {
 				"rules": {
 					"suspicious": {
-						"noConsole": { "level": "off", "options": { "allow": ["log"] } }
+						"noConsole": "off"
 					}
 				}
 			}
