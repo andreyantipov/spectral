@@ -8,7 +8,7 @@ export async function baseContainer(source: Directory): Promise<Container> {
 			exclude: ["**/node_modules", "packages/infra/ci/sdk"],
 		})
 		.withWorkdir("/app")
-		.withExec(["bun", "install", "--ignore-scripts"]);
+		.withExec(["bun", "install"]);
 }
 
 export function run(container: Container, args: string[]): Container {
