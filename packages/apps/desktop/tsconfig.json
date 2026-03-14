@@ -11,7 +11,6 @@
 	"references": [
 		{ "path": "../../libs/core.shared" },
 		{ "path": "../../libs/core.ui" },
-		{ "path": "../../libs/core.db" },
 		{ "path": "../../libs/domain.adapter.db" },
 		{ "path": "../../libs/domain.adapter.otel" },
 		{ "path": "../../libs/domain.adapter.rpc" },
