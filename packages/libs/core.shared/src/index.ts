@@ -1,10 +1,10 @@
 export const APP_NAME = "ctrl.page";
 export const APP_VERSION = "0.0.1";
 
-export { DEFAULT_TAB_TITLE, DEFAULT_TAB_URL } from "./lib/constants";
+export { DEFAULT_SESSION_MODE, DEFAULT_TAB_TITLE, DEFAULT_TAB_URL } from "./lib/constants";
 export { spanName } from "./lib/span-name";
 export { withTracing } from "./lib/with-tracing";
 export * from "./model/errors";
 export * from "./model/ports";
-export * from "./model/types";
+export * from "./model/schemas";
 export * from "./rpc-schemas";

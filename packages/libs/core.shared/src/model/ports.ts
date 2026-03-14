@@ -1,9 +1,9 @@
 import { Context, type Effect } from "effect";
 import type { DatabaseError } from "./errors";
-import type { Tab } from "./types";
+import type { Page, Session } from "./schemas";
 
 export const DATABASE_SERVICE_ID = "DatabaseService" as const;
-export const TAB_REPOSITORY_ID = "TabRepository" as const;
+export const SESSION_REPOSITORY_ID = "SessionRepository" as const;
 
 export class DatabaseService extends Context.Tag(DATABASE_SERVICE_ID)<
 	DatabaseService,
@@ -13,14 +13,30 @@ export class DatabaseService extends Context.Tag(DATABASE_SERVICE_ID)<
 	}
 >() {}
 
-export class TabRepository extends Context.Tag(TAB_REPOSITORY_ID)<
-	TabRepository,
+export class SessionRepository extends Context.Tag(SESSION_REPOSITORY_ID)<
+	SessionRepository,
 	{
-		readonly getAll: () => Effect.Effect<Tab[], DatabaseError>;
-		readonly create: (url: string) => Effect.Effect<Tab, DatabaseError>;
+		// Session CRUD
+		readonly getAll: () => Effect.Effect<Session[], DatabaseError>;
+		readonly getById: (id: string) => Effect.Effect<Session | undefined, DatabaseError>;
+		readonly create: (mode: "visual") => Effect.Effect<Session, DatabaseError>;
 		readonly remove: (id: string) => Effect.Effect<void, DatabaseError>;
-		readonly update: (id: string, data: Partial<Tab>) => Effect.Effect<void, DatabaseError>;
-		readonly getActive: () => Effect.Effect<Tab | undefined, DatabaseError>;
 		readonly setActive: (id: string) => Effect.Effect<void, DatabaseError>;
+		readonly updateCurrentIndex: (id: string, index: number) => Effect.Effect<void, DatabaseError>;
+		// Page CRUD
+		readonly addPage: (
+			sessionId: string,
+			url: string,
+			atIndex: number,
+		) => Effect.Effect<Page, DatabaseError>;
+		readonly removePagesAfterIndex: (
+			sessionId: string,
+			index: number,
+		) => Effect.Effect<void, DatabaseError>;
+		readonly updatePageTitle: (
+			sessionId: string,
+			pageIndex: number,
+			title: string,
+		) => Effect.Effect<void, DatabaseError>;
 	}
 >() {}
