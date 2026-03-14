@@ -13,4 +13,4 @@ export {
 	type SidebarItem,
 	type SidebarProps,
 	type SidebarTab,
-} from "./components/Sidebar/Sidebar";
+} from "./components/organisms/Sidebar";

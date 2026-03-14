@@ -1,5 +1,5 @@
 import { createEffect, createSignal, For, type JSX, Show } from "solid-js";
-import { sidebar } from "./Sidebar.style";
+import { sidebar } from "./sidebar.style";
 
 export type SidebarTab = {
 	id: string;
@@ -44,10 +44,9 @@ export function Sidebar(props: SidebarProps) {
 	const float = () => props.float ?? false;
 	const position = () => props.position ?? "left";
 
-	const styles = () => sidebar({ position: position(), float: float() });
-	const activeTabStyles = () => sidebar({ position: position(), float: float(), activeTab: true });
-	const activeItemStyles = () =>
-		sidebar({ position: position(), float: float(), activeItem: true });
+	const $ = () => sidebar({ position: position(), float: float() });
+	const $activeTab = () => sidebar({ position: position(), float: float(), activeTab: true });
+	const $activeItem = () => sidebar({ position: position(), float: float(), activeItem: true });
 
 	function onPointerDown(e: PointerEvent) {
 		e.preventDefault();
@@ -80,17 +79,17 @@ export function Sidebar(props: SidebarProps) {
 
 	return (
 		<div
-			class={styles().root}
+			class={$().root}
 			style={{
 				width: collapsed() ? undefined : `${width()}px`,
 			}}
 		>
 			{/* Icon rail */}
-			<div class={styles().rail}>
-				<div class={styles().railTabs}>
+			<div class={$().rail}>
+				<div class={$().railTabs}>
 					<For each={props.tabs}>
 						{(tab) => {
-							const s = () => (tab.id === props.activeTabId ? activeTabStyles() : styles());
+							const s = () => (tab.id === props.activeTabId ? $activeTab() : $());
 							return (
 								<button
 									type="button"
@@ -118,15 +117,15 @@ export function Sidebar(props: SidebarProps) {
 
 			{/* Expandable panel */}
 			<Show when={!collapsed()}>
-				<div class={styles().panel}>
-					<div class={styles().panelHeader}>
-						<span class={styles().panelTitle}>
+				<div class={$().panel}>
+					<div class={$().panelHeader}>
+						<span class={$().panelTitle}>
 							{props.tabs.find((t) => t.id === props.activeTabId)?.label ?? ""}
 						</span>
 						<Show when={props.onNewTab}>
 							<button
 								type="button"
-								class={styles().panelAction}
+								class={$().panelAction}
 								onClick={() => props.onNewTab?.()}
 								title="New tab"
 							>
@@ -135,11 +134,11 @@ export function Sidebar(props: SidebarProps) {
 						</Show>
 					</div>
 
-					<div class={styles().panelContent}>
+					<div class={$().panelContent}>
 						<Show when={props.items}>
 							<For each={props.items}>
 								{(item) => {
-									const s = () => (item.id === props.activeItemId ? activeItemStyles() : styles());
+									const s = () => (item.id === props.activeItemId ? $activeItem() : $());
 									return (
 										<button
 											type="button"
@@ -176,7 +175,7 @@ export function Sidebar(props: SidebarProps) {
 
 				{/* Resize handle */}
 				<div
-					class={styles().resizeHandle}
+					class={$().resizeHandle}
 					data-dragging={dragging() || undefined}
 					onPointerDown={onPointerDown}
 				/>

@@ -22,7 +22,7 @@ const defaultItems = [
 ];
 
 const meta: Meta<typeof Sidebar> = {
-	title: "Components/Sidebar",
+	title: "Organisms/Sidebar",
 	component: Sidebar,
 	argTypes: {
 		position: { control: "select", options: ["left", "right"] },
