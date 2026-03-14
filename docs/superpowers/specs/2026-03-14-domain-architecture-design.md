@@ -106,7 +106,7 @@ packages/libs/
 ├── core.shared/                    Ports, types, errors
 ├── core.ui/                        Component toolkit + bridge utilities
 │
-├── domain.adapter.turso/           DB: Drizzle + @effect/sql-drizzle + LibSQL
+├── domain.adapter.db/           DB: Drizzle + @effect/sql-drizzle + LibSQL
 ├── domain.adapter.otel/            Telemetry: @effect/opentelemetry
 ├── domain.adapter.rpc/             Transport: @effect/rpc server + client
 ├── domain.feature.tab/             Atomic: tab business logic
@@ -166,7 +166,7 @@ src/
 └── index.ts
 ```
 
-**domain.adapter.turso:**
+**domain.adapter.db:**
 ```
 src/
 ├── model/
@@ -284,7 +284,7 @@ export class TabRepository extends Context.Tag("TabRepository")<TabRepository, {
 Adapters implement ports. They are the ONLY place where third-party infrastructure libraries appear:
 
 ```typescript
-// domain.adapter.turso/src/api/tab.repository.ts
+// domain.adapter.db/src/api/tab.repository.ts
 
 import { TabRepository } from "@ctrl/core.shared"
 import { tabsTable } from "../model/tabs.schema"
@@ -309,7 +309,7 @@ export const TabRepositoryLive = Layer.effect(TabRepository,
 
 ### 4.3 Drizzle + @effect/sql-drizzle
 
-Drizzle lives entirely inside `domain.adapter.turso`. Nothing outside the adapter knows it exists.
+Drizzle lives entirely inside `domain.adapter.db`. Nothing outside the adapter knows it exists.
 
 - **Schema definitions** — Drizzle `sqliteTable()` in `model/`
 - **Query execution** — `@effect/sql-drizzle` for Effect-native Drizzle
@@ -328,7 +328,7 @@ export interface Tab {
   updatedAt: string
 }
 
-// domain.adapter.turso/src/model/tabs.schema.ts — Drizzle schema (must match domain types)
+// domain.adapter.db/src/model/tabs.schema.ts — Drizzle schema (must match domain types)
 export const tabsTable = sqliteTable("tabs", {
   id: text("id").primaryKey(),
   url: text("url").notNull(),
@@ -381,7 +381,7 @@ domain.feature.tab          atomic logic + reactivity
         │  yield* TabRepository.create(url)    ← persist
         │  yield* PubSub.publish(newState)     ← notify
         ▼
-domain.adapter.turso        Drizzle executes query
+domain.adapter.db        Drizzle executes query
 ```
 
 ### 5.3 Reactivity Flow (state update reaching UI)
@@ -568,7 +568,7 @@ Three factories + one hook eliminate ~70% of boilerplate:
 ### 6.1 makeRepository — CRUD from Drizzle schema
 
 ```typescript
-// domain.adapter.turso/src/lib/make-repository.ts
+// domain.adapter.db/src/lib/make-repository.ts
 
 export const makeRepository = <T extends SQLiteTable>(table: T) => (db: DrizzleClient) => ({
   getAll: () => db.select().from(table).pipe(Effect.withSpan(`${table._.name}.getAll`)),
@@ -1040,7 +1040,7 @@ With Claude Max (Opus 4.6, 1M context), steps 1–6 can be completed in a single
 |---------|------------------|
 | `core.shared` | `effect`, `@effect/schema` |
 | `core.ui` | `effect`, `solid-js`, `@pandacss/dev`, `@zag-js/solid` |
-| `domain.adapter.turso` | `@effect/sql-drizzle`, `@effect/sql-libsql`, `drizzle-orm` |
+| `domain.adapter.db` | `@effect/sql-drizzle`, `drizzle-orm`, `@effect/sql-libsql` (swap driver for PgLite/Postgres) |
 | `domain.adapter.otel` | `@effect/opentelemetry`, `@opentelemetry/sdk-trace-node` |
 | `domain.adapter.rpc` | `@effect/rpc`, `@effect/rpc-http` |
 | `domain.feature.*` | `effect` (+ `core.shared` ports) |
@@ -1080,7 +1080,7 @@ This architecture must be documented and enforced:
 
 | Current package | Becomes |
 |-----------------|---------|
-| `core.db` | `domain.adapter.turso` (schema, repository, migrations) |
+| `core.db` | `domain.adapter.db` (Drizzle schemas, repositories, migrations, DB client) |
 | `core.shared` | `core.shared` (add ports, keep types) |
 | `core.ui` | `core.ui` (add `useStream`, `useService`, templates) |
 | `feature.sidebar-tabs` | Split into: `domain.feature.tab` + `domain.service.browsing` + `ui.feature.sidebar` + `ui.page.main` |
@@ -1089,5 +1089,5 @@ This architecture must be documented and enforced:
 
 ### Packages to Remove After Migration
 
-- `core.db` — replaced by `domain.adapter.turso`
+- `core.db` — replaced by `domain.adapter.db`
 - `feature.sidebar-tabs` — replaced by domain + ui packages
