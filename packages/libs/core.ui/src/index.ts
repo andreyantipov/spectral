@@ -5,6 +5,8 @@ export type { InputProps } from "./components/atoms/Input";
 export { Input } from "./components/atoms/Input";
 export type { TextProps } from "./components/atoms/Text";
 export { Text } from "./components/atoms/Text";
+export type { TabBarProps, TabData } from "./components/molecules/TabBar";
+export { TabBar } from "./components/molecules/TabBar";
 export {
 	Sidebar,
 	type SidebarItem,

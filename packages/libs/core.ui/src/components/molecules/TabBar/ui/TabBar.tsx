@@ -1,5 +1,5 @@
 import { For, Show } from "solid-js";
-import { tabBar } from "./TabBar.style";
+import { tabBar } from "./tab-bar.style";
 
 export type TabData = {
 	id: number;
@@ -8,7 +8,7 @@ export type TabData = {
 	isActive: number;
 };
 
-type TabBarProps = {
+export type TabBarProps = {
 	tabs: TabData[];
 	activeTabId: number | null;
 	onTabClick: (id: number) => void;
@@ -26,14 +26,14 @@ function hostnameFromUrl(url: string): string {
 }
 
 export function TabBar(props: TabBarProps) {
-	const styles = tabBar();
-	const activeStyles = tabBar({ active: true });
+	const $ = tabBar();
+	const $active = tabBar({ active: true });
 
 	return (
-		<div class={styles.root}>
+		<div class={$.root}>
 			<For each={props.tabs}>
 				{(t) => {
-					const s = () => (t.id === props.activeTabId ? activeStyles : styles);
+					const s = () => (t.id === props.activeTabId ? $active : $);
 					return (
 						<button type="button" class={s().tab} onClick={() => props.onTabClick(t.id)}>
 							<span class={s().tabTitle}>
@@ -55,7 +55,7 @@ export function TabBar(props: TabBarProps) {
 					);
 				}}
 			</For>
-			<button type="button" class={styles.newTabButton} onClick={() => props.onNewTab()}>
+			<button type="button" class={$.newTabButton} onClick={() => props.onNewTab()}>
 				+
 			</button>
 		</div>
