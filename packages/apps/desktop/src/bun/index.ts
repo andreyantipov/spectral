@@ -1,8 +1,8 @@
 import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { ensureTabsTable } from "@ctrl/core.db";
 import { APP_NAME, APP_VERSION } from "@ctrl/core.shared";
+import { ensureSchema } from "@ctrl/domain.adapter.db";
 import { ManagedRuntime, Runtime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
 import { DesktopLive } from "./layers";
@@ -17,8 +17,8 @@ const runtime = ManagedRuntime.make(DesktopLive);
 // Initialize Effect runtime (database, services, etc.)
 const rt = await runtime.runtime();
 
-// Ensure tabs table exists
-await Runtime.runPromise(rt)(ensureTabsTable);
+// Ensure database schema exists
+await Runtime.runPromise(rt)(ensureSchema);
 
 ApplicationMenu.setApplicationMenu([
 	{

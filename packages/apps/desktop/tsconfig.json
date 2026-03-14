@@ -12,6 +12,12 @@
 		{ "path": "../../libs/core.shared" },
 		{ "path": "../../libs/core.ui" },
 		{ "path": "../../libs/core.db" },
-		{ "path": "../../libs/feature.sidebar-tabs" }
+		{ "path": "../../libs/domain.adapter.db" },
+		{ "path": "../../libs/domain.adapter.otel" },
+		{ "path": "../../libs/domain.feature.tab" },
+		{ "path": "../../libs/domain.service.browsing" },
+		{ "path": "../../libs/feature.sidebar-tabs" },
+		{ "path": "../../libs/ui.feature.sidebar" },
+		{ "path": "../../libs/ui.pages" }
 	]
 }

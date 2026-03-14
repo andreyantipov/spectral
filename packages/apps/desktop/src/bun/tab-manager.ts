@@ -1,8 +1,10 @@
-import { TabService } from "@ctrl/core.db";
-import type { SidebarState } from "@ctrl/core.shared";
+import { DEFAULT_TAB_URL, type SidebarState, TabRepository } from "@ctrl/core.shared";
 import { Effect, Runtime } from "effect";
 import { BrowserView, type BrowserWindow } from "electrobun/bun";
 import type { AppLayer } from "./layers";
+
+type ElectrobunRPC = { send: { sidebarStateChanged: (state: SidebarState) => void } };
+type ElectrobunNavigationEvent = { url?: string; data?: { url?: string } };
 
 const CHROME_HEIGHT = 44; // 8px drag spacer + 36px address bar
 const RAIL_WIDTH = 48; // Sidebar rail width when collapsed
@@ -11,8 +13,7 @@ const DEFAULT_SIDEBAR_WIDTH = 240; // Sidebar component default width (includes 
 export class TabManager {
 	private runtime: Runtime.Runtime<AppLayer>;
 	private contentView: BrowserView | null = null;
-	// biome-ignore lint/suspicious/noExplicitAny: Electrobun RPC type is not exported
-	private rpc: any = null;
+	private rpc: ElectrobunRPC | null = null;
 	private win: BrowserWindow | null = null;
 	private windowId: number = 0;
 	private activeSection: string = "tabs";
@@ -28,15 +29,14 @@ export class TabManager {
 		this.windowId = win.id;
 	}
 
-	// biome-ignore lint/suspicious/noExplicitAny: Electrobun RPC type is not exported
-	setRPC(rpc: any) {
-		this.rpc = rpc;
+	setRPC(rpc: unknown) {
+		this.rpc = rpc as ElectrobunRPC;
 	}
 
 	async init() {
 		let tabs = await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				return yield* tabService.getAll();
 			}),
 		);
@@ -45,14 +45,14 @@ export class TabManager {
 		if (tabs.length === 0) {
 			await this.run(
 				Effect.gen(function* () {
-					const tabService = yield* TabService;
-					const tab = yield* tabService.create("about:blank", "New Tab");
+					const tabService = yield* TabRepository;
+					const tab = yield* tabService.create(DEFAULT_TAB_URL);
 					yield* tabService.setActive(tab.id);
 				}),
 			);
 			tabs = await this.run(
 				Effect.gen(function* () {
-					const tabService = yield* TabService;
+					const tabService = yield* TabRepository;
 					return yield* tabService.getAll();
 				}),
 			);
@@ -67,7 +67,7 @@ export class TabManager {
 	async createTab(url: string): Promise<SidebarState> {
 		await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				const tab = yield* tabService.create(url);
 				yield* tabService.setActive(tab.id);
 			}),
@@ -79,27 +79,27 @@ export class TabManager {
 		return state;
 	}
 
-	async closeTab(id: number): Promise<SidebarState> {
+	async closeTab(id: string): Promise<SidebarState> {
 		const tabs = await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				return yield* tabService.getAll();
 			}),
 		);
 
 		const closingTab = tabs.find((t) => t.id === id);
-		const wasActive = closingTab?.isActive === 1;
+		const wasActive = closingTab?.isActive === true;
 
 		await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				yield* tabService.remove(id);
 			}),
 		);
 
 		const remaining = await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				return yield* tabService.getAll();
 			}),
 		);
@@ -107,8 +107,8 @@ export class TabManager {
 		if (remaining.length === 0) {
 			await this.run(
 				Effect.gen(function* () {
-					const tabService = yield* TabService;
-					const tab = yield* tabService.create("about:blank", "New Tab");
+					const tabService = yield* TabRepository;
+					const tab = yield* tabService.create(DEFAULT_TAB_URL);
 					yield* tabService.setActive(tab.id);
 				}),
 			);
@@ -116,7 +116,7 @@ export class TabManager {
 			const nextTab = remaining[0];
 			await this.run(
 				Effect.gen(function* () {
-					const tabService = yield* TabService;
+					const tabService = yield* TabRepository;
 					yield* tabService.setActive(nextTab.id);
 				}),
 			);
@@ -128,10 +128,10 @@ export class TabManager {
 		return state;
 	}
 
-	async switchTab(id: number): Promise<SidebarState> {
+	async switchTab(id: string): Promise<SidebarState> {
 		const tab = await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				yield* tabService.setActive(id);
 				return yield* tabService.getActive();
 			}),
@@ -149,7 +149,7 @@ export class TabManager {
 	async navigateTab(url: string): Promise<SidebarState> {
 		await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				const active = yield* tabService.getActive();
 				if (active) {
 					yield* tabService.update(active.id, { url });
@@ -188,7 +188,7 @@ export class TabManager {
 	async getSidebarState(): Promise<SidebarState> {
 		const tabState = await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				const tabs = yield* tabService.getAll();
 				const active = yield* tabService.getActive();
 				return {
@@ -237,17 +237,17 @@ export class TabManager {
 		const frame = this.getContentFrame();
 
 		this.contentView = new BrowserView({
-			url: url === "about:blank" ? null : url,
-			html: url === "about:blank" ? "<html><body></body></html>" : null,
+			url: url === DEFAULT_TAB_URL ? null : url,
+			html: url === DEFAULT_TAB_URL ? "<html><body></body></html>" : null,
 			frame,
 			windowId: this.windowId,
 			sandbox: true,
 			autoResize: true,
 		});
 
-		// biome-ignore lint/suspicious/noExplicitAny: Electrobun event type is not exported
-		this.contentView.on("did-navigate", (event: any) => {
-			this.handleNavigation(event.url ?? event.data?.url);
+		this.contentView.on("did-navigate", (event: unknown) => {
+			const e = event as ElectrobunNavigationEvent;
+			this.handleNavigation(e.url ?? e.data?.url);
 		});
 	}
 
@@ -259,14 +259,14 @@ export class TabManager {
 		if (this.resizeTimer) clearTimeout(this.resizeTimer);
 		this.resizeTimer = setTimeout(() => {
 			if (!this.contentView) return;
-			const currentUrl = this.contentView.url ?? "about:blank";
+			const currentUrl = this.contentView.url ?? DEFAULT_TAB_URL;
 			this.createContentView(currentUrl);
 		}, 150);
 	}
 
 	private navigateContentView(url: string) {
 		if (!this.contentView) return;
-		if (url === "about:blank") {
+		if (url === DEFAULT_TAB_URL) {
 			this.contentView.loadHTML("<html><body></body></html>");
 		} else {
 			this.contentView.loadURL(url);
@@ -277,7 +277,7 @@ export class TabManager {
 		if (!url) return;
 		await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				const active = yield* tabService.getActive();
 				if (active) {
 					yield* tabService.update(active.id, { url });

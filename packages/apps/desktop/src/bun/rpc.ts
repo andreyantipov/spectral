@@ -30,12 +30,12 @@ export function createMainRPC(runtime: Runtime.Runtime<AppLayer>, tabManager: Ta
 				},
 
 				closeTab: (raw: unknown) => {
-					const params = raw as { id: number };
+					const params = raw as { id: string };
 					return tabManager.closeTab(params.id);
 				},
 
 				switchTab: (raw: unknown) => {
-					const params = raw as { id: number };
+					const params = raw as { id: string };
 					return tabManager.switchTab(params.id);
 				},
 

@@ -7,7 +7,12 @@
 		"@ctrl/core.shared": "workspace:*",
 		"@ctrl/core.ui": "workspace:*",
 		"@ctrl/core.db": "workspace:*",
+		"@ctrl/domain.adapter.db": "workspace:*",
+		"@ctrl/domain.adapter.otel": "workspace:*",
+		"@ctrl/domain.feature.tab": "workspace:*",
+		"@ctrl/domain.service.browsing": "workspace:*",
 		"@ctrl/feature.sidebar-tabs": "workspace:*",
+		"@ctrl/ui.pages": "workspace:*",
 		"electrobun": "1.15.1"
 	},
 	"scripts": {
