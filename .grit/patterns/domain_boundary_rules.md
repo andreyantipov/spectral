@@ -18,6 +18,8 @@ Enforces hexagonal architecture layer boundaries:
 language js
 
 `import $_ from $path` where {
+  // Test files are exempt from boundary rules — they need cross-layer access for mocks and test utilities
+  $filename <: not includes ".test.",
   or {
     // ui.* cannot import domain.feature.* or domain.adapter.*
     and {

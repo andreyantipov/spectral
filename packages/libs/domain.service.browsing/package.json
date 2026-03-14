@@ -13,6 +13,7 @@
 	},
 	"dependencies": {
 		"@ctrl/core.shared": "workspace:*",
+		"@ctrl/domain.adapter.otel": "workspace:*",
 		"@ctrl/domain.feature.tab": "workspace:*"
 	}
 }
