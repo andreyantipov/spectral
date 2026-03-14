@@ -4,8 +4,7 @@ import { lint, typecheck } from "./workflows/lint";
 import { release } from "./workflows/release";
 
 @object()
-// biome-ignore lint/correctness/noUnusedVariables: Exported via Dagger @object() decorator
-class Ci {
+export class Ci {
 	@func()
 	async lint(source: Directory): Promise<string> {
 		return lint(source);

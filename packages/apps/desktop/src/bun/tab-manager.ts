@@ -3,6 +3,9 @@ import { Effect, Runtime } from "effect";
 import { BrowserView, type BrowserWindow } from "electrobun/bun";
 import type { AppLayer } from "./layers";
 
+type ElectrobunRPC = { send: { sidebarStateChanged: (state: SidebarState) => void } };
+type ElectrobunNavigationEvent = { url?: string; data?: { url?: string } };
+
 const CHROME_HEIGHT = 44; // 8px drag spacer + 36px address bar
 const RAIL_WIDTH = 48; // Sidebar rail width when collapsed
 const DEFAULT_SIDEBAR_WIDTH = 240; // Sidebar component default width (includes rail)
@@ -10,8 +13,7 @@ const DEFAULT_SIDEBAR_WIDTH = 240; // Sidebar component default width (includes 
 export class TabManager {
 	private runtime: Runtime.Runtime<AppLayer>;
 	private contentView: BrowserView | null = null;
-	// biome-ignore lint/suspicious/noExplicitAny: Electrobun RPC type is not exported
-	private rpc: any = null;
+	private rpc: ElectrobunRPC | null = null;
 	private win: BrowserWindow | null = null;
 	private windowId: number = 0;
 	private activeSection: string = "tabs";
@@ -27,9 +29,8 @@ export class TabManager {
 		this.windowId = win.id;
 	}
 
-	// biome-ignore lint/suspicious/noExplicitAny: Electrobun RPC type is not exported
-	setRPC(rpc: any) {
-		this.rpc = rpc;
+	setRPC(rpc: unknown) {
+		this.rpc = rpc as ElectrobunRPC;
 	}
 
 	async init() {
@@ -244,9 +245,9 @@ export class TabManager {
 			autoResize: true,
 		});
 
-		// biome-ignore lint/suspicious/noExplicitAny: Electrobun event type is not exported
-		this.contentView.on("did-navigate", (event: any) => {
-			this.handleNavigation(event.url ?? event.data?.url);
+		this.contentView.on("did-navigate", (event: unknown) => {
+			const e = event as ElectrobunNavigationEvent;
+			this.handleNavigation(e.url ?? e.data?.url);
 		});
 	}
 

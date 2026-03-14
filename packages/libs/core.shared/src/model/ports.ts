@@ -8,10 +8,8 @@ export const TAB_REPOSITORY_ID = "TabRepository" as const;
 export class DatabaseService extends Context.Tag(DATABASE_SERVICE_ID)<
 	DatabaseService,
 	{
-		// biome-ignore lint/suspicious/noExplicitAny: db handle is opaque at port level
-		readonly query: <A>(f: (db: any) => Promise<A>) => Effect.Effect<A, DatabaseError>;
-		// biome-ignore lint/suspicious/noExplicitAny: db handle is opaque at port level
-		readonly transaction: <A>(f: (db: any) => Promise<A>) => Effect.Effect<A, DatabaseError>;
+		readonly query: <A>(f: (db: unknown) => Promise<A>) => Effect.Effect<A, DatabaseError>;
+		readonly transaction: <A>(f: (db: unknown) => Promise<A>) => Effect.Effect<A, DatabaseError>;
 	}
 >() {}
 

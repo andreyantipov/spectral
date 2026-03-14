@@ -1,18 +1,11 @@
 import { spanName } from "@ctrl/core.shared";
-import { TestSpanExporter } from "@ctrl/domain.adapter.otel";
+import { assertContainsSpan, TestSpanExporter } from "@ctrl/domain.adapter.otel";
 import { TAB_FEATURE } from "@ctrl/domain.feature.tab";
 import { BROWSING_SERVICE, BrowsingService } from "@ctrl/domain.service.browsing";
 import type { ReadableSpan } from "@opentelemetry/sdk-trace-base";
 import { Chunk, Duration, Effect, Fiber, ManagedRuntime, Stream } from "effect";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { PipelineTestLayer, resetMockTabs } from "./test-layers";
-
-declare module "vitest" {
-	// biome-ignore lint/suspicious/noExplicitAny: vitest custom matcher augmentation
-	interface Assertion<T = any> {
-		toContainSpan(name: string): void;
-	}
-}
 
 const runtime = ManagedRuntime.make(PipelineTestLayer);
 
@@ -53,8 +46,8 @@ describe("Full pipeline", () => {
 				const expectedTabSpan = spanName(TAB_FEATURE, "create");
 
 				// Assert spans contain expected names
-				expect(spans).toContainSpan(expectedBrowsingSpan);
-				expect(spans).toContainSpan(expectedTabSpan);
+				assertContainsSpan(spans, expectedBrowsingSpan);
+				assertContainsSpan(spans, expectedTabSpan);
 
 				// Verify parent-child chain
 				const browsingSpan = spans.find((s: ReadableSpan) => s.name === expectedBrowsingSpan);

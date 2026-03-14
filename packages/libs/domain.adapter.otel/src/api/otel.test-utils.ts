@@ -2,7 +2,6 @@ import { NodeSdk } from "@effect/opentelemetry";
 import type { ReadableSpan } from "@opentelemetry/sdk-trace-base";
 import { InMemorySpanExporter, SimpleSpanProcessor } from "@opentelemetry/sdk-trace-base";
 import { Context, Layer } from "effect";
-import { expect } from "vitest";
 
 export const TEST_SPAN_EXPORTER_ID = "TestSpanExporter" as const;
 
@@ -30,15 +29,10 @@ const makeTestSpanExporterLayer = (): Layer.Layer<TestSpanExporter> => {
 
 export const TestSpanExporterLive: Layer.Layer<TestSpanExporter> = makeTestSpanExporterLayer();
 
-expect.extend({
-	toContainSpan(received: readonly ReadableSpan[], expectedName: string) {
-		const found = received.some((span) => span.name === expectedName);
-		return {
-			pass: found,
-			message: () =>
-				found
-					? `Expected spans NOT to contain "${expectedName}"`
-					: `Expected spans to contain "${expectedName}" but found: [${received.map((s) => s.name).join(", ")}]`,
-		};
-	},
-});
+export const assertContainsSpan = (spans: readonly ReadableSpan[], expectedName: string) => {
+	const found = spans.some((span) => span.name === expectedName);
+	if (!found) {
+		const names = spans.map((s) => s.name).join(", ");
+		throw new Error(`Expected spans to contain "${expectedName}" but found: [${names}]`);
+	}
+};

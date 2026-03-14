@@ -2,11 +2,16 @@ import type { Context, Stream } from "effect";
 import { useService } from "./use-service";
 import { useStream } from "./use-stream";
 
-// biome-ignore lint/suspicious/noExplicitAny: stream type params are erased at the bridge boundary
-export function useDomainService<I, A extends { changes: Stream.Stream<any, any, any> }>(
-	tag: Context.Tag<I, A>,
-) {
+type StreamValue<S> = S extends Stream.Stream<infer A, unknown, never> ? A : never;
+
+type DomainServiceShape = { changes: Stream.Stream<unknown, unknown, never> };
+
+export function useDomainService<I, A extends DomainServiceShape>(tag: Context.Tag<I, A>) {
 	const service = useService(tag);
-	const data = useStream(service.changes, undefined);
+	type V = StreamValue<A["changes"]>;
+	const data = useStream<V | undefined>(
+		service.changes as Stream.Stream<V | undefined, unknown, never>,
+		undefined,
+	);
 	return { data, actions: service };
 }

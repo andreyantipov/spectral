@@ -1,18 +1,15 @@
 import { spanName, type Tab, TabRepository } from "@ctrl/core.shared";
-import { TestSpanExporter, TestSpanExporterLive } from "@ctrl/domain.adapter.otel";
+import {
+	assertContainsSpan,
+	TestSpanExporter,
+	TestSpanExporterLive,
+} from "@ctrl/domain.adapter.otel";
 import { TAB_FEATURE, TabFeatureLive } from "@ctrl/domain.feature.tab";
 import type { ReadableSpan } from "@opentelemetry/sdk-trace-base";
 import { Chunk, Duration, Effect, Fiber, Layer, ManagedRuntime, Stream } from "effect";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { BROWSING_SERVICE } from "../lib/constants";
 import { BrowsingService, BrowsingServiceLive } from "./browsing.service";
-
-declare module "vitest" {
-	// biome-ignore lint/suspicious/noExplicitAny: vitest custom matcher augmentation
-	interface Assertion<T = any> {
-		toContainSpan(name: string): void;
-	}
-}
 
 let nextId = 0;
 let tabs: Tab[] = [];
@@ -80,8 +77,8 @@ describe("BrowsingService traces", () => {
 				const expectedBrowsingSpan = spanName(BROWSING_SERVICE, "createTab");
 				const expectedTabSpan = spanName(TAB_FEATURE, "create");
 
-				expect(spans).toContainSpan(expectedBrowsingSpan);
-				expect(spans).toContainSpan(expectedTabSpan);
+				assertContainsSpan(spans, expectedBrowsingSpan);
+				assertContainsSpan(spans, expectedTabSpan);
 
 				// Verify parent-child chain: TabFeature.create should be a child of BrowsingService.createTab
 				const browsingSpan = spans.find((s: ReadableSpan) => s.name === expectedBrowsingSpan);
@@ -111,8 +108,8 @@ describe("BrowsingService traces", () => {
 
 				const spans = exporter.getFinishedSpans();
 
-				expect(spans).toContainSpan(spanName(BROWSING_SERVICE, "getTabs"));
-				expect(spans).toContainSpan(spanName(TAB_FEATURE, "getAll"));
+				assertContainsSpan(spans, spanName(BROWSING_SERVICE, "getTabs"));
+				assertContainsSpan(spans, spanName(TAB_FEATURE, "getAll"));
 			}),
 		);
 	});
@@ -132,8 +129,8 @@ describe("BrowsingService traces", () => {
 
 				const spans = exporter.getFinishedSpans();
 
-				expect(spans).toContainSpan(spanName(BROWSING_SERVICE, "removeTab"));
-				expect(spans).toContainSpan(spanName(TAB_FEATURE, "remove"));
+				assertContainsSpan(spans, spanName(BROWSING_SERVICE, "removeTab"));
+				assertContainsSpan(spans, spanName(TAB_FEATURE, "remove"));
 			}),
 		);
 	});
