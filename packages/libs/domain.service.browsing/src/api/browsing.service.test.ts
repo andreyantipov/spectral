@@ -1,54 +1,68 @@
-import { spanName, type Tab, TabRepository } from "@ctrl/core.shared";
+import {
+	type Session,
+	SessionRepository,
+	spanName,
+	type Page,
+} from "@ctrl/core.shared";
 import {
 	assertContainsSpan,
 	TestSpanExporter,
 	TestSpanExporterLive,
 } from "@ctrl/domain.adapter.otel";
-import { TAB_FEATURE, TabFeatureLive } from "@ctrl/domain.feature.session";
+import { SESSION_FEATURE, SessionFeatureLive } from "@ctrl/domain.feature.session";
 import type { ReadableSpan } from "@opentelemetry/sdk-trace-base";
 import { Chunk, Duration, Effect, Fiber, Layer, ManagedRuntime, Stream } from "effect";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { BROWSING_SERVICE } from "../lib/constants";
-import { BrowsingService, BrowsingServiceLive } from "./browsing.service";
+import { BrowsingHandlersLive } from "./browsing.handlers";
+import { BrowsingRpcs } from "./browsing.rpc";
 
 let nextId = 0;
-let tabs: Tab[] = [];
+let sessions: Session[] = [];
 
-const makeTab = (url: string): Tab => {
+const makeSession = (mode: "visual"): Session => {
 	const id = String(++nextId);
 	return {
 		id,
-		url,
-		title: null,
-		position: 0,
+		pages: [],
+		currentIndex: -1,
+		mode,
 		isActive: false,
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	};
 };
 
-const MockTabRepository = Layer.succeed(TabRepository, {
-	getAll: () => Effect.succeed(tabs),
-	create: (url: string) =>
+const MockSessionRepository = Layer.succeed(SessionRepository, {
+	getAll: () => Effect.succeed(sessions),
+	getById: (id: string) => Effect.succeed(sessions.find((s) => s.id === id)),
+	create: (mode: "visual") =>
 		Effect.sync(() => {
-			const tab = makeTab(url);
-			tabs = [...tabs, tab];
-			return tab;
+			const session = makeSession(mode);
+			sessions = [...sessions, session];
+			return session;
 		}),
 	remove: (id: string) =>
 		Effect.sync(() => {
-			tabs = tabs.filter((t) => t.id !== id);
+			sessions = sessions.filter((s) => s.id !== id);
 		}),
-	update: (_id: string, _data: Partial<Tab>) => Effect.void,
-	getActive: () => Effect.succeed(undefined),
 	setActive: (_id: string) => Effect.void,
+	updateCurrentIndex: (_id: string, _index: number) => Effect.void,
+	addPage: (_sessionId: string, url: string, _atIndex: number) =>
+		Effect.succeed({
+			url,
+			title: null,
+			loadedAt: new Date().toISOString(),
+		} satisfies Page),
+	removePagesAfterIndex: (_sessionId: string, _index: number) => Effect.void,
+	updatePageTitle: (_sessionId: string, _pageIndex: number, _title: string) => Effect.void,
 });
 
-const TestLayer = BrowsingServiceLive.pipe(
-	Layer.provide(TabFeatureLive),
-	Layer.provide(MockTabRepository),
+const TestLayer = BrowsingHandlersLive.pipe(
+	Layer.provide(SessionFeatureLive),
+	Layer.provide(MockSessionRepository),
 	Layer.provideMerge(TestSpanExporterLive),
-) as Layer.Layer<BrowsingService | TestSpanExporter>;
+);
 
 const runtime = ManagedRuntime.make(TestLayer);
 
@@ -56,94 +70,118 @@ afterAll(() => runtime.dispose());
 
 describe("BrowsingService traces", () => {
 	beforeEach(() => {
-		tabs = [];
+		sessions = [];
 		nextId = 0;
 	});
 
-	it("createTab traces full flow through tab feature", async () => {
+	it("createSession traces full flow through session feature", async () => {
 		await runtime.runPromise(
 			Effect.gen(function* () {
-				const browsing = yield* BrowsingService;
 				const exporter = yield* TestSpanExporter;
 				exporter.reset();
 
-				yield* browsing.createTab("https://example.com");
+				const createSession = yield* BrowsingRpcs.accessHandler("createSession");
+				yield* createSession({ mode: "visual" }, { headers: {} as any }) as Effect.Effect<
+					Session,
+					any
+				>;
 
-				// Allow spans to flush
 				yield* Effect.sleep(Duration.millis(10));
 
 				const spans = exporter.getFinishedSpans();
 
-				const expectedBrowsingSpan = spanName(BROWSING_SERVICE, "createTab");
-				const expectedTabSpan = spanName(TAB_FEATURE, "create");
+				const expectedBrowsingSpan = spanName(BROWSING_SERVICE, "createSession");
+				const expectedSessionSpan = spanName(SESSION_FEATURE, "create");
 
 				assertContainsSpan(spans, expectedBrowsingSpan);
-				assertContainsSpan(spans, expectedTabSpan);
+				assertContainsSpan(spans, expectedSessionSpan);
 
-				// Verify parent-child chain: TabFeature.create should be a child of BrowsingService.createTab
-				const browsingSpan = spans.find((s: ReadableSpan) => s.name === expectedBrowsingSpan);
-				const tabSpan = spans.find((s: ReadableSpan) => s.name === expectedTabSpan);
+				const browsingSpan = spans.find(
+					(s: ReadableSpan) => s.name === expectedBrowsingSpan,
+				);
+				const sessionSpan = spans.find(
+					(s: ReadableSpan) => s.name === expectedSessionSpan,
+				);
 
 				expect(browsingSpan).toBeDefined();
-				expect(tabSpan).toBeDefined();
-				expect(tabSpan?.parentSpanContext?.spanId).toBe(browsingSpan?.spanContext().spanId);
+				expect(sessionSpan).toBeDefined();
+				expect(sessionSpan?.parentSpanContext?.spanId).toBe(
+					browsingSpan?.spanContext().spanId,
+				);
 
-				// Assert zero errors on all spans
 				for (const span of spans) {
-					expect(span.status.code).not.toBe(2); // SpanStatusCode.ERROR = 2
+					expect(span.status.code).not.toBe(2);
 				}
 			}),
 		);
 	});
 
-	it("getTabs traces through tab feature", async () => {
+	it("getSessions traces through session feature", async () => {
 		await runtime.runPromise(
 			Effect.gen(function* () {
-				const browsing = yield* BrowsingService;
 				const exporter = yield* TestSpanExporter;
 				exporter.reset();
 
-				yield* browsing.getTabs();
+				const getSessions = yield* BrowsingRpcs.accessHandler("getSessions");
+				yield* getSessions(undefined as any, { headers: {} as any }) as Effect.Effect<
+					Session[],
+					any
+				>;
 				yield* Effect.sleep(Duration.millis(10));
 
 				const spans = exporter.getFinishedSpans();
 
-				assertContainsSpan(spans, spanName(BROWSING_SERVICE, "getTabs"));
-				assertContainsSpan(spans, spanName(TAB_FEATURE, "getAll"));
+				assertContainsSpan(spans, spanName(BROWSING_SERVICE, "getSessions"));
+				assertContainsSpan(spans, spanName(SESSION_FEATURE, "getAll"));
 			}),
 		);
 	});
 
-	it("removeTab traces through tab feature", async () => {
+	it("removeSession traces through session feature", async () => {
 		await runtime.runPromise(
 			Effect.gen(function* () {
-				const browsing = yield* BrowsingService;
 				const exporter = yield* TestSpanExporter;
 				exporter.reset();
 
-				yield* browsing.createTab("https://example.com");
+				const createSession = yield* BrowsingRpcs.accessHandler("createSession");
+				yield* createSession({ mode: "visual" }, { headers: {} as any }) as Effect.Effect<
+					Session,
+					any
+				>;
 				exporter.reset();
 
-				yield* browsing.removeTab("1");
+				const removeSession = yield* BrowsingRpcs.accessHandler("removeSession");
+				yield* removeSession({ id: "1" }, { headers: {} as any }) as Effect.Effect<
+					void,
+					any
+				>;
 				yield* Effect.sleep(Duration.millis(10));
 
 				const spans = exporter.getFinishedSpans();
 
-				assertContainsSpan(spans, spanName(BROWSING_SERVICE, "removeTab"));
-				assertContainsSpan(spans, spanName(TAB_FEATURE, "remove"));
+				assertContainsSpan(spans, spanName(BROWSING_SERVICE, "removeSession"));
+				assertContainsSpan(spans, spanName(SESSION_FEATURE, "remove"));
 			}),
 		);
 	});
 
-	it("changes stream maps tab changes to BrowsingState", async () => {
+	it("sessionChanges stream maps session changes to BrowsingState", async () => {
 		const result = await runtime.runPromise(
 			Effect.gen(function* () {
-				const browsing = yield* BrowsingService;
+				const sessionChanges = yield* BrowsingRpcs.accessHandler("sessionChanges");
+				const stream = sessionChanges(undefined as any, {
+					headers: {} as any,
+				}) as Stream.Stream<{ readonly sessions: readonly Session[] }, any>;
 
-				const fiber = yield* browsing.changes.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
+				const fiber = yield* stream.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
 
 				yield* Effect.sleep(Duration.millis(10));
-				yield* browsing.createTab("https://example.com");
+
+				const createSession = yield* BrowsingRpcs.accessHandler("createSession");
+				yield* createSession({ mode: "visual" }, { headers: {} as any }) as Effect.Effect<
+					Session,
+					any
+				>;
 
 				const collected = yield* Fiber.join(fiber);
 				return Chunk.toArray(collected);
@@ -151,7 +189,6 @@ describe("BrowsingService traces", () => {
 		);
 
 		expect(result).toHaveLength(1);
-		expect(result[0].tabs).toHaveLength(1);
-		expect(result[0].tabs[0].url).toBe("https://example.com");
+		expect(result[0].sessions).toHaveLength(1);
 	});
 });
