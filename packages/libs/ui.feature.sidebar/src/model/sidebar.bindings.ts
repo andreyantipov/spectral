@@ -1,5 +1,4 @@
-import type { Session } from "@ctrl/core.shared";
-import { canGoBack, canGoForward, currentPage } from "@ctrl/domain.feature.session";
+import { canGoBack, canGoForward, currentPage, type Session } from "@ctrl/core.shared";
 
 export type SidebarItem = {
 	readonly id: string;

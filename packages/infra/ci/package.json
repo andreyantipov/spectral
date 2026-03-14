@@ -4,7 +4,7 @@
 	"type": "module",
 	"private": true,
 	"dependencies": {
-		"effect": "latest"
+		"effect": "^3.19.18"
 	},
 	"scripts": {
 		"develop": "dagger develop",
