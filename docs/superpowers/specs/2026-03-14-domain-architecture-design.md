@@ -890,10 +890,29 @@ describe("TabFeature", () => {
 
 ### 8.5 Level 2 — Trace Assertions
 
-Every `domain.service.*` has trace assertions that verify boundary crossing:
+Every `domain.service.*` has trace assertions that verify boundary crossing.
+
+Span name helper derives names from the same `serviceName.methodName` convention as `withTracing` — single source of truth:
+
+```typescript
+// core.shared/src/lib/span-name.ts — used by withTracing AND tests
+export const spanName = (service: string, method: string) => `${service}.${method}` as const
+
+// Reusable service name constants — each package exports its own
+// domain.feature.tab/src/lib/constants.ts
+export const TAB_FEATURE = "TabFeature" as const
+
+// domain.service.browsing/src/lib/constants.ts
+export const BROWSING_SERVICE = "BrowsingService" as const
+```
 
 ```typescript
 // domain.service.browsing/src/api/browsing.service.test.ts
+
+import { spanName } from "@ctrl/core.shared"
+import { BROWSING_SERVICE } from "../lib/constants"
+import { TAB_FEATURE } from "@ctrl/domain.feature.tab"
+import { HISTORY_FEATURE } from "@ctrl/domain.feature.history"
 
 const TestLayer = BrowsingServiceLive.pipe(
   Layer.provide(TabFeatureLive),
@@ -911,15 +930,13 @@ describe("BrowsingService traces", () => {
       yield* browsing.createTab("https://example.com")
 
       const spans = exporter.getFinishedSpans()
-      expect(spans).toContainSpan("BrowsingService.createTab")
-      expect(spans).toContainSpan("TabFeature.create")
-      expect(spans).toContainSpan("TabRepository.create")
-      expect(spans).toContainSpan("HistoryFeature.record")
-      expect(spans).toContainSpan("TabFeature.notify")
+      expect(spans).toContainSpan(spanName(BROWSING_SERVICE, "createTab"))
+      expect(spans).toContainSpan(spanName(TAB_FEATURE, "create"))
+      expect(spans).toContainSpan(spanName(HISTORY_FEATURE, "record"))
 
       // verify parent-child chain is unbroken
       const root = spans.find(s => !s.parentSpanId)
-      expect(root?.name).toBe("BrowsingService.createTab")
+      expect(root?.name).toBe(spanName(BROWSING_SERVICE, "createTab"))
 
       // verify zero errors
       expect(spans.every(s => s.status.code === SpanStatusCode.OK)).toBe(true)
@@ -979,22 +996,20 @@ describe("Full pipeline", () => {
       const state = yield* Fiber.join(collected)
       expect(Chunk.toArray(state)[0].tabs).toHaveLength(1)
 
-      // verify complete trace chain
+      // verify complete trace chain — using shared span name constants
       const spans = exporter.getFinishedSpans()
       expect(spans.map(s => s.name)).toEqual(
         expect.arrayContaining([
-          "BrowsingService.createTab",
-          "TabFeature.create",
-          "TabRepository.create",
-          "TabFeature.notify",
-          "PubSub.publish",
-          "HistoryFeature.record",
+          spanName(BROWSING_SERVICE, "createTab"),
+          spanName(TAB_FEATURE, "create"),
+          spanName(TAB_REPOSITORY, "create"),
+          spanName(HISTORY_FEATURE, "record"),
         ])
       )
 
       // verify unbroken parent-child chain
       const root = spans.find(s => !s.parentSpanId)
-      expect(root?.name).toBe("BrowsingService.createTab")
+      expect(root?.name).toBe(spanName(BROWSING_SERVICE, "createTab"))
       const orphans = spans.filter(s =>
         s !== root && !spans.some(p => p.spanId === s.parentSpanId)
       )
