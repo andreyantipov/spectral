@@ -11,7 +11,8 @@
 | `domain.service.*` | `domain.feature.*` + `core.shared` |
 | `ui.feature.*` | `domain.service.*` + `core.ui` + `core.shared` |
 | `ui.page.*` | `ui.feature.*` + `core.ui` |
-| `packages/apps/*` | `ui.page.*` only |
+| `packages/apps/*` (UI entry) | `ui.page.*` + `core.ui` only |
+| `packages/apps/*` (composition root) | ALL domain + core packages (this is the ONLY place that wires Layers) |
 
 ## Peer Isolation Rule
 

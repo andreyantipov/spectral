@@ -8,7 +8,7 @@
 
 ## 1. Problem Statement
 
-The current codebase lacks a principled architecture for delivering features. Business logic, transport, reactivity, and presentation are not clearly separated. There are no unit tests, no telemetry, and no enforceable dependency rules. As the project grows, this makes it increasingly difficult to add features safely, test them in isolation, or refactor without cascading changes.
+The current codebase lacks a principled architecture for delivering features. Business logic, transport, reactivity, and presentation are not clearly separated. There were no unit tests, no telemetry, and no enforceable dependency rules. As the project grows, this makes it increasingly difficult to add features safely, test them in isolation, or refactor without cascading changes.
 
 This spec establishes the foundational architecture for ctrl.page — a hexagonal design with clean package boundaries, headless-testable services, transport-agnostic reactivity, and development telemetry. The goal is to create a structure where every new feature follows a clear, repeatable path from database to UI, with each layer independently testable and replaceable.
 
