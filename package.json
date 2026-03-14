@@ -46,5 +46,5 @@
 		"vite": "^6.0.0",
 		"vite-plugin-solid": "latest"
 	},
-	"version": "0.2.2"
+	"version": "0.3.0"
 }
