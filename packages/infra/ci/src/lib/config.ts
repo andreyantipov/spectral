@@ -4,7 +4,7 @@ export class CiConfig extends Schema.Class<CiConfig>("CiConfig")({
 	image: Schema.optionalWith(Schema.String, {
 		default: () => "oven/bun:latest",
 	}),
-	nodeVersion: Schema.optionalWith(Schema.Number, { default: () => 22 }),
+	nodeMajorVersion: Schema.optionalWith(Schema.Int, { default: () => 22 }),
 	gitBotName: Schema.optionalWith(Schema.String, {
 		default: () => "github-actions[bot]",
 	}),

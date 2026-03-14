@@ -9,11 +9,11 @@ export function createBase(config: CiConfig): Container {
 		.withExec(["apt-get", "install", "-y", "git", "ca-certificates", "curl"]);
 }
 
-export function withNodeJs(container: Container, version: number): Container {
+export function withNodeJs(container: Container, majorVersion: number): Container {
 	return container.withExec([
 		"sh",
 		"-c",
-		`curl -fsSL https://deb.nodesource.com/setup_${version}.x | bash - && apt-get install -y nodejs`,
+		`curl -fsSL https://deb.nodesource.com/setup_${majorVersion}.x | bash - && apt-get install -y nodejs`,
 	]);
 }
 
