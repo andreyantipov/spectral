@@ -102,21 +102,19 @@ jobs:
       - name: Package app
         run: |
           cd packages/apps/desktop
-          APP_DIR=$(find . -name "*.app" -type d | head -1)
-          if [ -n "$APP_DIR" ]; then
-            zip -r ctrl-page-${{ needs.release.outputs.version }}-macos.zip "$APP_DIR"
-          else
-            echo "No .app found, listing build output:"
-            find . -name "build" -o -name "dist" | head -5
-            ls -la build/ dist/ 2>/dev/null || true
+          APP_DIR=$(find build -name "*.app" -type d | head -1)
+          if [ -z "$APP_DIR" ]; then
+            echo "No .app found"
+            find build -type d | head -20
             exit 1
           fi
+          zip -r ctrl-page-${{ needs.release.outputs.version }}-macos-arm64.zip "$APP_DIR"
 
       - name: Upload to release
         run: |
           cd packages/apps/desktop
           gh release upload v${{ needs.release.outputs.version }} \
-            ctrl-page-${{ needs.release.outputs.version }}-macos.zip \
+            ctrl-page-${{ needs.release.outputs.version }}-macos-arm64.zip \
             --repo ${{ github.repository }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

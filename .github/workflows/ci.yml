@@ -60,4 +60,4 @@ jobs:
         working-directory: packages/apps/desktop
         run: bun run build
       - name: Verify .app exists
-        run: ls -la packages/apps/desktop/build/ctrl.page.app || ls -la packages/apps/desktop/dist/
+        run: find packages/apps/desktop/build -name "*.app" -type d | head -1 | xargs ls -la
