@@ -12,6 +12,7 @@ In `packages/libs/`, use the `withTracing()` wrapper instead of calling `Effect.
 language js
 
 `Effect.withSpan($args)` where {
-  $filename <: includes "packages/libs/"
+  $filename <: includes "packages/libs/",
+  $filename <: not includes "with-tracing.ts"
 }
 ```
