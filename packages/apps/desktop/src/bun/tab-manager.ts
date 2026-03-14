@@ -1,5 +1,4 @@
-import { TabService } from "@ctrl/core.db";
-import type { SidebarState } from "@ctrl/core.shared";
+import { type SidebarState, TabRepository } from "@ctrl/core.shared";
 import { Effect, Runtime } from "effect";
 import { BrowserView, type BrowserWindow } from "electrobun/bun";
 import type { AppLayer } from "./layers";
@@ -36,7 +35,7 @@ export class TabManager {
 	async init() {
 		let tabs = await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				return yield* tabService.getAll();
 			}),
 		);
@@ -45,14 +44,14 @@ export class TabManager {
 		if (tabs.length === 0) {
 			await this.run(
 				Effect.gen(function* () {
-					const tabService = yield* TabService;
-					const tab = yield* tabService.create("about:blank", "New Tab");
+					const tabService = yield* TabRepository;
+					const tab = yield* tabService.create("about:blank");
 					yield* tabService.setActive(tab.id);
 				}),
 			);
 			tabs = await this.run(
 				Effect.gen(function* () {
-					const tabService = yield* TabService;
+					const tabService = yield* TabRepository;
 					return yield* tabService.getAll();
 				}),
 			);
@@ -67,7 +66,7 @@ export class TabManager {
 	async createTab(url: string): Promise<SidebarState> {
 		await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				const tab = yield* tabService.create(url);
 				yield* tabService.setActive(tab.id);
 			}),
@@ -79,27 +78,27 @@ export class TabManager {
 		return state;
 	}
 
-	async closeTab(id: number): Promise<SidebarState> {
+	async closeTab(id: string): Promise<SidebarState> {
 		const tabs = await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				return yield* tabService.getAll();
 			}),
 		);
 
 		const closingTab = tabs.find((t) => t.id === id);
-		const wasActive = closingTab?.isActive === 1;
+		const wasActive = closingTab?.isActive === true;
 
 		await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				yield* tabService.remove(id);
 			}),
 		);
 
 		const remaining = await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				return yield* tabService.getAll();
 			}),
 		);
@@ -107,8 +106,8 @@ export class TabManager {
 		if (remaining.length === 0) {
 			await this.run(
 				Effect.gen(function* () {
-					const tabService = yield* TabService;
-					const tab = yield* tabService.create("about:blank", "New Tab");
+					const tabService = yield* TabRepository;
+					const tab = yield* tabService.create("about:blank");
 					yield* tabService.setActive(tab.id);
 				}),
 			);
@@ -116,7 +115,7 @@ export class TabManager {
 			const nextTab = remaining[0];
 			await this.run(
 				Effect.gen(function* () {
-					const tabService = yield* TabService;
+					const tabService = yield* TabRepository;
 					yield* tabService.setActive(nextTab.id);
 				}),
 			);
@@ -128,10 +127,10 @@ export class TabManager {
 		return state;
 	}
 
-	async switchTab(id: number): Promise<SidebarState> {
+	async switchTab(id: string): Promise<SidebarState> {
 		const tab = await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				yield* tabService.setActive(id);
 				return yield* tabService.getActive();
 			}),
@@ -149,7 +148,7 @@ export class TabManager {
 	async navigateTab(url: string): Promise<SidebarState> {
 		await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				const active = yield* tabService.getActive();
 				if (active) {
 					yield* tabService.update(active.id, { url });
@@ -188,7 +187,7 @@ export class TabManager {
 	async getSidebarState(): Promise<SidebarState> {
 		const tabState = await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				const tabs = yield* tabService.getAll();
 				const active = yield* tabService.getActive();
 				return {
@@ -277,7 +276,7 @@ export class TabManager {
 		if (!url) return;
 		await this.run(
 			Effect.gen(function* () {
-				const tabService = yield* TabService;
+				const tabService = yield* TabRepository;
 				const active = yield* tabService.getActive();
 				if (active) {
 					yield* tabService.update(active.id, { url });

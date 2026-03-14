@@ -5,8 +5,8 @@ import { type Accessor, createSignal } from "solid-js";
 export type SidebarTabsRPC = {
 	request: {
 		getTabs: (params: Record<string, never>) => Promise<SidebarState>;
-		switchTab: (params: { id: number }) => Promise<SidebarState>;
-		closeTab: (params: { id: number }) => Promise<SidebarState>;
+		switchTab: (params: { id: string }) => Promise<SidebarState>;
+		closeTab: (params: { id: string }) => Promise<SidebarState>;
 		createTab: (params: { url: string }) => Promise<SidebarState>;
 		navigateTab: (params: { url: string }) => Promise<SidebarState>;
 		setSidebarSection: (params: { id: string }) => Promise<SidebarState>;
@@ -38,7 +38,7 @@ export function createSidebarTabs() {
 	const [activeSection, setActiveSection] = createSignal("tabs");
 	const [collapsed, setCollapsed] = createSignal(false);
 	const [tabs, setTabs] = createSignal<SidebarState["tabs"]>([]);
-	const [activeTabId, setActiveTabId] = createSignal<number | null>(null);
+	const [activeTabId, setActiveTabId] = createSignal<string | null>(null);
 	let rpcRef: SidebarTabsRPC | null = null;
 
 	function applyState(state: SidebarState) {
@@ -65,19 +65,19 @@ export function createSidebarTabs() {
 
 	const panelItems: Accessor<SidebarItem[]> = () =>
 		tabs().map((t) => ({
-			id: String(t.id),
-			label: t.title !== "New Tab" ? t.title : hostnameFromUrl(t.url),
+			id: t.id,
+			label: t.title ?? hostnameFromUrl(t.url),
 		}));
 
 	const railTabs: Accessor<SidebarTab[]> = () =>
 		RAIL_TABS.map((rt) => (rt.id === "tabs" ? { ...rt, badge: tabs().length || undefined } : rt));
 
 	function switchTab(id: string) {
-		rpcRef?.request.switchTab({ id: Number(id) });
+		rpcRef?.request.switchTab({ id });
 	}
 
 	function closeTab(id: string) {
-		rpcRef?.request.closeTab({ id: Number(id) });
+		rpcRef?.request.closeTab({ id });
 	}
 
 	function createTab() {

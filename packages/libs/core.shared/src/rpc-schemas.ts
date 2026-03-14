@@ -15,19 +15,19 @@ export const NavigateMessage = Schema.Struct({
 });
 export type NavigateMessage = typeof NavigateMessage.Type;
 
-// Tab types
+// Tab types (aligned with domain Tab type: string id, boolean isActive, nullable title)
 export const TabInfo = Schema.Struct({
-	id: Schema.Number,
+	id: Schema.String,
 	url: Schema.String,
-	title: Schema.String,
+	title: Schema.NullOr(Schema.String),
 	position: Schema.Number,
-	isActive: Schema.Number,
+	isActive: Schema.Boolean,
 });
 export type TabInfo = typeof TabInfo.Type;
 
 export const TabState = Schema.Struct({
 	tabs: Schema.Array(TabInfo),
-	activeTabId: Schema.NullOr(Schema.Number),
+	activeTabId: Schema.NullOr(Schema.String),
 });
 export type TabState = typeof TabState.Type;
 
@@ -36,7 +36,7 @@ export const SidebarState = Schema.Struct({
 	activeSection: Schema.String,
 	collapsed: Schema.Boolean,
 	tabs: Schema.Array(TabInfo),
-	activeTabId: Schema.NullOr(Schema.Number),
+	activeTabId: Schema.NullOr(Schema.String),
 });
 export type SidebarState = typeof SidebarState.Type;
 
@@ -66,12 +66,12 @@ export const CreateTabParams = Schema.Struct({
 export type CreateTabParams = typeof CreateTabParams.Type;
 
 export const CloseTabParams = Schema.Struct({
-	id: Schema.Number,
+	id: Schema.String,
 });
 export type CloseTabParams = typeof CloseTabParams.Type;
 
 export const SwitchTabParams = Schema.Struct({
-	id: Schema.Number,
+	id: Schema.String,
 });
 export type SwitchTabParams = typeof SwitchTabParams.Type;
 

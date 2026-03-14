@@ -24,6 +24,7 @@
 		"@effect/rpc": "latest",
 		"@effect/rpc-http": "latest",
 		"@effect/schema": "latest",
+		"@effect/sql": "latest",
 		"@effect/sql-drizzle": "latest",
 		"@effect/sql-libsql": "latest",
 		"@libsql/client": "latest",
