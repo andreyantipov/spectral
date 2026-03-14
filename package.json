@@ -21,6 +21,7 @@
 		"@effect/platform": "latest",
 		"@effect/platform-bun": "latest",
 		"@libsql/client": "latest",
+		"@zag-js/solid": "^1.36.0",
 		"drizzle-orm": "latest",
 		"effect": "latest",
 		"electrobun": "1.15.1",

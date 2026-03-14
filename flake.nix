@@ -33,6 +33,11 @@
           packages = [
             pkgs.bun
             tsgo
+            pkgs.zellij
+            pkgs.helix
+            pkgs.git
+            pkgs.gh
+            pkgs.lazygit
           ];
         };
       }
