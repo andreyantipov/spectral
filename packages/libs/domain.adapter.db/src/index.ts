@@ -1,3 +1,4 @@
+export { ensureSchema } from "./api/ensure-schema";
 export { TabRepositoryLive } from "./api/tab.repository";
 export { makeDbClient } from "./lib/client";
 export { makeRepository } from "./lib/make-repository";

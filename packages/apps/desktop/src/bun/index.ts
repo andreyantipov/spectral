@@ -2,8 +2,8 @@ import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { APP_NAME, APP_VERSION } from "@ctrl/core.shared";
-import { LibsqlClient } from "@effect/sql-libsql";
-import { Effect, ManagedRuntime, Runtime } from "effect";
+import { ensureSchema } from "@ctrl/domain.adapter.db";
+import { ManagedRuntime, Runtime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
 import { DesktopLive } from "./layers";
 import { createMainRPC } from "./rpc";
@@ -17,23 +17,8 @@ const runtime = ManagedRuntime.make(DesktopLive);
 // Initialize Effect runtime (database, services, etc.)
 const rt = await runtime.runtime();
 
-// Ensure tabs table exists (using LibsqlClient from new hex architecture)
-await Runtime.runPromise(rt)(
-	Effect.gen(function* () {
-		const sql = yield* LibsqlClient.LibsqlClient;
-		yield* sql`
-			CREATE TABLE IF NOT EXISTS tabs (
-				id TEXT PRIMARY KEY,
-				url TEXT NOT NULL,
-				title TEXT,
-				position INTEGER NOT NULL DEFAULT 0,
-				isActive INTEGER NOT NULL DEFAULT 0,
-				createdAt TEXT NOT NULL,
-				updatedAt TEXT NOT NULL
-			)
-		`;
-	}),
-);
+// Ensure database schema exists
+await Runtime.runPromise(rt)(ensureSchema);
 
 ApplicationMenu.setApplicationMenu([
 	{

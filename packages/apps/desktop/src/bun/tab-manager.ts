@@ -1,4 +1,4 @@
-import { type SidebarState, TabRepository } from "@ctrl/core.shared";
+import { DEFAULT_TAB_URL, type SidebarState, TabRepository } from "@ctrl/core.shared";
 import { Effect, Runtime } from "effect";
 import { BrowserView, type BrowserWindow } from "electrobun/bun";
 import type { AppLayer } from "./layers";
@@ -45,7 +45,7 @@ export class TabManager {
 			await this.run(
 				Effect.gen(function* () {
 					const tabService = yield* TabRepository;
-					const tab = yield* tabService.create("about:blank");
+					const tab = yield* tabService.create(DEFAULT_TAB_URL);
 					yield* tabService.setActive(tab.id);
 				}),
 			);
@@ -107,7 +107,7 @@ export class TabManager {
 			await this.run(
 				Effect.gen(function* () {
 					const tabService = yield* TabRepository;
-					const tab = yield* tabService.create("about:blank");
+					const tab = yield* tabService.create(DEFAULT_TAB_URL);
 					yield* tabService.setActive(tab.id);
 				}),
 			);
@@ -236,8 +236,8 @@ export class TabManager {
 		const frame = this.getContentFrame();
 
 		this.contentView = new BrowserView({
-			url: url === "about:blank" ? null : url,
-			html: url === "about:blank" ? "<html><body></body></html>" : null,
+			url: url === DEFAULT_TAB_URL ? null : url,
+			html: url === DEFAULT_TAB_URL ? "<html><body></body></html>" : null,
 			frame,
 			windowId: this.windowId,
 			sandbox: true,
@@ -258,14 +258,14 @@ export class TabManager {
 		if (this.resizeTimer) clearTimeout(this.resizeTimer);
 		this.resizeTimer = setTimeout(() => {
 			if (!this.contentView) return;
-			const currentUrl = this.contentView.url ?? "about:blank";
+			const currentUrl = this.contentView.url ?? DEFAULT_TAB_URL;
 			this.createContentView(currentUrl);
 		}, 150);
 	}
 
 	private navigateContentView(url: string) {
 		if (!this.contentView) return;
-		if (url === "about:blank") {
+		if (url === DEFAULT_TAB_URL) {
 			this.contentView.loadHTML("<html><body></body></html>");
 		} else {
 			this.contentView.loadURL(url);

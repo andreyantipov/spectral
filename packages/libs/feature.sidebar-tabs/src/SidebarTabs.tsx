@@ -1,4 +1,4 @@
-import type { SidebarState } from "@ctrl/core.shared";
+import { DEFAULT_TAB_TITLE, DEFAULT_TAB_URL, type SidebarState } from "@ctrl/core.shared";
 import { Sidebar, type SidebarItem, type SidebarTab } from "@ctrl/core.ui";
 import { type Accessor, createSignal } from "solid-js";
 
@@ -28,7 +28,7 @@ function hostnameFromUrl(url: string): string {
 		const u = new URL(url);
 		return u.hostname || url;
 	} catch {
-		return url || "New Tab";
+		return url || DEFAULT_TAB_TITLE;
 	}
 }
 
@@ -81,7 +81,7 @@ export function createSidebarTabs() {
 	}
 
 	function createTab() {
-		rpcRef?.request.createTab({ url: "about:blank" });
+		rpcRef?.request.createTab({ url: DEFAULT_TAB_URL });
 	}
 
 	function setSection(id: string) {

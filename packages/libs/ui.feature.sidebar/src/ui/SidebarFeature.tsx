@@ -1,3 +1,4 @@
+import { DEFAULT_TAB_URL } from "@ctrl/core.shared";
 import { type SidebarItem as CoreSidebarItem, Sidebar, useRuntime } from "@ctrl/core.ui";
 import { useBrowsingService } from "../api/use-sidebar";
 import { mapTabsToSidebarItems } from "../model/sidebar.bindings";
@@ -16,7 +17,7 @@ export function SidebarFeature() {
 		mapTabsToSidebarItems(data()?.tabs).find((item) => item.active)?.id ?? null;
 
 	const handleNewTab = () => {
-		runtime.runPromise(actions.createTab("about:blank"));
+		runtime.runPromise(actions.createTab(DEFAULT_TAB_URL));
 	};
 
 	const handleItemClose = (id: string) => {

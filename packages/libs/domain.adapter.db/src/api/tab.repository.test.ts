@@ -3,6 +3,7 @@ import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { LibsqlClient } from "@effect/sql-libsql";
 import { Effect, Layer } from "effect";
 import { describe, expect, it } from "vitest";
+import { ensureSchema } from "./ensure-schema";
 import { TabRepositoryLive } from "./tab.repository";
 
 /**
@@ -14,22 +15,7 @@ const makeTestLayer = () => {
 	const DrizzleLive = drizzleLayer.pipe(Layer.provide(DbLive));
 
 	// Create the tabs table before running tests
-	const SetupLive = Layer.effectDiscard(
-		Effect.gen(function* () {
-			const sql = yield* LibsqlClient.LibsqlClient;
-			yield* sql`
-				CREATE TABLE IF NOT EXISTS tabs (
-					id TEXT PRIMARY KEY,
-					url TEXT NOT NULL,
-					title TEXT,
-					position INTEGER NOT NULL DEFAULT 0,
-					isActive INTEGER NOT NULL DEFAULT 0,
-					createdAt TEXT NOT NULL,
-					updatedAt TEXT NOT NULL
-				)
-			`;
-		}),
-	).pipe(Layer.provide(DbLive));
+	const SetupLive = Layer.effectDiscard(ensureSchema).pipe(Layer.provide(DbLive));
 
 	return TabRepositoryLive.pipe(
 		Layer.provide(DrizzleLive),
