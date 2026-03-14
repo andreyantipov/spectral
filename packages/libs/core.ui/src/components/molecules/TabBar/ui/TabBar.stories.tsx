@@ -10,6 +10,11 @@ const sampleTabs = [
 const meta = {
 	title: "Molecules/TabBar",
 	component: TabBar,
+	args: {
+		onTabClick: () => {},
+		onTabClose: () => {},
+		onNewTab: () => {},
+	},
 } satisfies Meta<typeof TabBar>;
 
 export default meta;

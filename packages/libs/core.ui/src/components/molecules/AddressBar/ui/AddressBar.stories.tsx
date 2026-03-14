@@ -4,6 +4,11 @@ import { AddressBar } from "./AddressBar";
 const meta = {
 	title: "Molecules/AddressBar",
 	component: AddressBar,
+	args: {
+		onNavigate: () => {},
+		onBack: () => {},
+		onForward: () => {},
+	},
 } satisfies Meta<typeof AddressBar>;
 
 export default meta;

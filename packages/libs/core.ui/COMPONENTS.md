@@ -112,10 +112,10 @@ Component `.tsx` files must not contain `sva()`, `cva()`, or `css()` calls. Impo
 
 ### Import path
 
-Style files import from the generated styled-system using the package subpath import:
+Style files import from the generated `styled-system` using a relative path:
 
 ```ts
-import { sva } from "#styled-system/css";
+import { sva } from "../../../../../styled-system/css";
 ```
 
 ## 6. Zag.js Pattern for Interactive Components
