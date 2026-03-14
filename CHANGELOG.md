@@ -1,3 +1,10 @@
+## [0.3.1](https://github.com/andreyantipov/ctrl.page/compare/v0.3.0...v0.3.1) (2026-03-14)
+
+
+### Bug Fixes
+
+* **ci:** rename nodeVersion to nodeMajorVersion with Int schema ([ef3e385](https://github.com/andreyantipov/ctrl.page/commit/ef3e3850f0e68555ac9d7c3d8887caee944a5eee))
+
 # [0.3.0](https://github.com/andreyantipov/ctrl.page/compare/v0.2.2...v0.3.0) (2026-03-14)
 
 
