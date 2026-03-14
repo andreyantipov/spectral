@@ -143,7 +143,7 @@ Every package uses Feature-Sliced Design segments internally. Four universal seg
 ```
                           model/    api/    lib/    ui/
                           ──────    ────    ────    ────
-core.shared                 ✓
+core.shared                 ✓                ✓
 core.ui                     ✓                ✓       ✓
 domain.adapter.*            ✓        ✓       ✓
 domain.feature.*            ✓        ✓       ✓
