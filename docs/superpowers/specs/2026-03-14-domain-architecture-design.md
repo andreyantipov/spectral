@@ -160,7 +160,7 @@ src/
 ├── model/
 │   ├── ports.ts                    Context.Tags: DatabaseService, TabRepository, etc.
 │   │                               (Ports live in model/ because they are type-level contracts)
-│   ├── types.ts                    Domain types — manually defined interfaces (Tab, Bookmark, etc.)
+│   ├── types.ts                    Domain types — manually defined as `type` (Tab, Bookmark, etc.)
 │   │                               These are the canonical shapes. Adapters map DB rows to these types.
 │   └── errors.ts                   Shared error types
 └── index.ts
@@ -259,12 +259,16 @@ Ports are `Context.Tag` definitions — the contracts that adapters implement an
 ```typescript
 // core.shared/src/model/ports.ts
 
-export class DatabaseService extends Context.Tag("DatabaseService")<DatabaseService, {
+// Service identifiers as constants — reusable in tests and tracing
+export const DATABASE_SERVICE_ID = "DatabaseService" as const
+export const TAB_REPOSITORY_ID = "TabRepository" as const
+
+export class DatabaseService extends Context.Tag(DATABASE_SERVICE_ID)<DatabaseService, {
   readonly query: <A>(f: (db: DB) => Promise<A>) => Effect<A, DatabaseError>
   readonly transaction: <A>(f: (db: DB) => Promise<A>) => Effect<A, DatabaseError>
 }>() {}
 
-export class TabRepository extends Context.Tag("TabRepository")<TabRepository, {
+export class TabRepository extends Context.Tag(TAB_REPOSITORY_ID)<TabRepository, {
   readonly getAll: () => Effect<Tab[], DatabaseError>
   readonly create: (url: string) => Effect<Tab, DatabaseError>
   readonly remove: (id: string) => Effect<void, DatabaseError>
@@ -424,7 +428,7 @@ const TabFeatureLive = Layer.effect(TabFeature,
         Effect.flatMap((tabs) => PubSub.publish(pubsub, tabs))
       )
 
-    return withTracing("TabFeature", {
+    return withTracing(TAB_FEATURE, {
       getAll: () => repo.getAll(),
 
       create: (url: string) =>
@@ -451,7 +455,7 @@ const BrowsingServiceLive = Layer.effect(BrowsingService,
     const tabs = yield* TabFeature
     const history = yield* HistoryFeature
 
-    return withTracing("BrowsingService", {
+    return withTracing(BROWSING_SERVICE, {
       createTab: (url: string) =>
         Effect.gen(function*() {
           yield* tabs.create(url)
@@ -605,11 +609,11 @@ export const makeRepository = <T extends SQLiteTable>(table: T) => (db: DrizzleC
 
 Tracing is applied automatically via `withTracing` using the Drizzle table name. No manual span strings.
 
-**Usage:** spread factory + add custom queries only:
+**Usage:** spread factory + add custom queries. Custom queries are also traced via the same `withTracing` wrapper:
 
 ```typescript
 const base = makeRepository(tabsTable)
-export const tabRepository = (db) => ({
+export const tabRepository = (db) => withTracing(tabsTable._.name, {
   ...base(db),
   getActive: () => db.select().from(tabsTable).where(eq(tabsTable.isActive, true)),
 })
@@ -643,7 +647,7 @@ const makeFeatureService = <T, I, S>(
 )
 ```
 
-### 6.3 useDomainService — UI binding from service
+### 6.4 useDomainService — UI binding from service
 
 ```typescript
 // core.ui/src/lib/use-domain-service.ts
@@ -672,7 +676,7 @@ export function SidebarFeature() {
 }
 ```
 
-### 6.4 What Remains Manual
+### 6.5 What Remains Manual
 
 | What | Manual? | How much |
 |------|---------|----------|
@@ -682,7 +686,7 @@ export function SidebarFeature() {
 | Complex service orchestration | **yes** | Only `domain.service.*` with real composition |
 | UI layout/composition | **yes** | `ui.page.*` arranging features |
 | Component design | **yes** | `core.ui` atoms/molecules/organisms/templates |
-| TypeScript types | **no** | Inferred from Drizzle schema |
+| TypeScript types | **yes** | Manually defined in `core.shared`, validated against Drizzle via `satisfies` |
 | CRUD repository | **no** | `makeRepository` factory |
 | Migrations | **no** | `drizzle-kit generate` |
 | PubSub + Stream reactivity | **no** | `makeFeatureService` factory |
@@ -835,9 +839,15 @@ Telemetry span names are handled automatically by `withTracing` — never hardco
 `domain.adapter.otel` provides the telemetry Layer:
 
 ```typescript
-// Production Layer
-const OtelLive = NodeSdk.layer(() => ({
-  resource: { serviceName: "ctrl.page.main" },
+// domain.adapter.otel/src/lib/constants.ts
+export const OTEL_SERVICE_NAMES = {
+  main: "ctrl.page.main",
+  webview: "ctrl.page.webview",
+} as const
+
+// Production Layer — service name from constants
+const OtelLive = (serviceName: string) => NodeSdk.layer(() => ({
+  resource: { serviceName },
   spanProcessor: new BatchSpanProcessor(new OTLPTraceExporter())
 }))
 
@@ -847,7 +857,7 @@ const TestOtelLive = TestSpanExporter.layer
 
 Both Bun and webview processes get the OTEL Layer — same `domain.adapter.otel` package, different runtime configurations in each composition root.
 
-Every Effect operation uses `Effect.withSpan(name)` for automatic tracing.
+Every service method is traced automatically via `withTracing` — no manual `Effect.withSpan` calls.
 
 ### 8.3 Four Testing Levels
 
