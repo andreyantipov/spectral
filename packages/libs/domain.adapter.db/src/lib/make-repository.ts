@@ -5,13 +5,15 @@ import type { AnySQLiteColumn, SQLiteTableWithColumns, TableConfig } from "drizz
 
 type TableWithId = { id: AnySQLiteColumn };
 
-type Chainable = { where: (condition: SQL) => unknown };
+type SelectResult<T extends SQLiteTableWithColumns<TableConfig>> = T["$inferSelect"];
 
-type DrizzleDb<T> = {
-	select: () => { from: (t: T) => Chainable };
-	insert: (t: T) => { values: (v: Record<string, unknown>) => unknown };
-	update: (t: T) => { set: (v: Record<string, unknown>) => Chainable };
-	delete: (t: T) => Chainable;
+type Queryable<R> = R & { where: (condition: SQL) => R };
+
+type DrizzleDb<T extends SQLiteTableWithColumns<TableConfig>> = {
+	select: () => { from: (t: T) => Queryable<SelectResult<T>[]> };
+	insert: (t: T) => { values: (v: Record<string, unknown>) => SelectResult<T> };
+	update: (t: T) => { set: (v: Record<string, unknown>) => Queryable<SelectResult<T>[]> };
+	delete: (t: T) => Queryable<SelectResult<T>[]>;
 };
 
 const DRIZZLE_NAME_SYMBOL = Symbol.for("drizzle:Name");
@@ -25,13 +27,14 @@ export const makeRepository =
 	<T extends SQLiteTableWithColumns<TableConfig> & TableWithId>(table: T) =>
 	(db: DrizzleDb<T>) =>
 		withTracing(getTableName(table), {
-			getAll: () => db.select().from(table),
-			getById: (id: string) => db.select().from(table).where(eq(table.id, id)),
-			create: (values: typeof table.$inferInsert) => db.insert(table).values(values),
-			update: (id: string, values: Partial<typeof table.$inferInsert>) =>
+			getAll: (): SelectResult<T>[] => db.select().from(table),
+			getById: (id: string): SelectResult<T>[] => db.select().from(table).where(eq(table.id, id)),
+			create: (values: typeof table.$inferInsert): SelectResult<T> =>
+				db.insert(table).values(values),
+			update: (id: string, values: Partial<typeof table.$inferInsert>): SelectResult<T>[] =>
 				db
 					.update(table)
 					.set(values as Record<string, unknown>)
 					.where(eq(table.id, id)),
-			remove: (id: string) => db.delete(table).where(eq(table.id, id)),
+			remove: (id: string): SelectResult<T>[] => db.delete(table).where(eq(table.id, id)),
 		});

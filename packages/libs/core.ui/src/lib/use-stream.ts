@@ -6,6 +6,11 @@ export function useStream<A>(stream: Stream.Stream<A, unknown, never>, initial: 
 	const [value, setValue] = createSignal(initial);
 	const runtime = useRuntime();
 	const owner = getOwner();
+	if (!owner) {
+		throw new Error(
+			"useStream must be called within a SolidJS reactive context (component or createRoot)",
+		);
+	}
 
 	onMount(() => {
 		const fiber = runtime.runFork(

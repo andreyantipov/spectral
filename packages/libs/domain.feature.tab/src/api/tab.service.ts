@@ -22,8 +22,9 @@ export const TabFeatureLive = Layer.effect(
 
 		return withTracing(TAB_FEATURE, {
 			getAll: () => repo.getAll(),
-			create: (url: string) => repo.create(url).pipe(Effect.tap(() => notify())),
-			remove: (id: string) => repo.remove(id).pipe(Effect.tap(() => notify())),
+			create: (url: string) =>
+				repo.create(url).pipe(Effect.tap(() => notify().pipe(Effect.ignore))),
+			remove: (id: string) => repo.remove(id).pipe(Effect.tap(() => notify().pipe(Effect.ignore))),
 			changes: Stream.fromPubSub(pubsub),
 		});
 	}),

@@ -1,10 +1,7 @@
-import type { Electroview } from "electrobun/view";
+type ElectroviewModule = typeof import("electrobun/view");
+type ElectroviewClass = ElectroviewModule["Electroview"];
 
-// Electroview is imported as a type; typeof Electroview gives the class (constructor) type.
-// This lets callers pass the Electroview class itself as a value.
-type ElectroviewStatic = typeof Electroview;
-
-export function defineRPC(ev: ElectroviewStatic) {
+export function defineRPC(ev: ElectroviewClass) {
 	return ev.defineRPC({
 		handlers: {
 			requests: {},
