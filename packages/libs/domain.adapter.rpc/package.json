@@ -12,6 +12,8 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@ctrl/core.shared": "workspace:*"
+		"@ctrl/core.shared": "workspace:*",
+		"@effect/rpc": "^0.73.2",
+		"effect": "^3.19.18"
 	}
 }
