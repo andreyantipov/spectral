@@ -51,17 +51,32 @@ Within `domain.*.*` and `ui.*.*`, the second level encodes the hex tier. Second-
 
 | Package | Purpose |
 |---------|---------|
-| `core.shared` | Ports (Context.Tags), domain types, shared errors |
+| `core.shared` | Ports (Context.Tags), domain types, shared errors. Ports are placed in `model/` because they are type-level contracts, not implementations. |
 | `core.ui` | Component toolkit (atoms, molecules, organisms, templates) + `useStream`/`useService` utilities |
 
 ### 2.3 Two Public Surfaces
 
-Only two tiers are importable from outside their namespace:
+Only two tiers are importable from **outside** their namespace:
 
 - **`domain.service.*`** — the public API of all business logic (imported by `ui.feature.*`)
 - **`ui.page.*`** — the public API of all UI (imported by `packages/apps/*`)
 
 Everything else is internal. GritQL enforces this (see Section 7).
+
+**Intra-namespace imports** follow the tier dependency direction:
+- Within `domain`: `adapter → feature → service` (higher tiers import lower tiers)
+- Within `ui`: `feature → page` (page imports feature)
+
+**Inter-namespace imports** use public surfaces only:
+- `ui.*` imports `domain.service.*` only (never `domain.feature.*` or `domain.adapter.*`)
+- `packages/apps/*` imports `ui.page.*` only (never `ui.feature.*`)
+
+### 2.5 Core Package Dependencies
+
+`core.shared` and `core.ui` are both foundation, with one dependency between them:
+
+- `core.shared` depends on: nothing (pure types, Effect tags)
+- `core.ui` depends on: `core.shared` (uses domain types in bridge utilities), `effect`, `solid-js`
 
 ### 2.4 Composition Root
 
@@ -142,7 +157,9 @@ ui.page.*                                            ✓
 src/
 ├── model/
 │   ├── ports.ts                    Context.Tags: DatabaseService, TabRepository, etc.
-│   ├── types.ts                    Domain types (Tab, Bookmark, etc.)
+│   │                               (Ports live in model/ because they are type-level contracts)
+│   ├── types.ts                    Domain types — manually defined interfaces (Tab, Bookmark, etc.)
+│   │                               These are the canonical shapes. Adapters map DB rows to these types.
 │   └── errors.ts                   Shared error types
 └── index.ts
 ```
@@ -254,14 +271,10 @@ export class TabRepository extends Context.Tag("TabRepository")<TabRepository, {
   readonly setActive: (id: string) => Effect<void, DatabaseError>
 }>() {}
 
-export class TelemetryService extends Context.Tag("TelemetryService")<TelemetryService, {
-  readonly span: (name: string) => <A>(effect: Effect<A>) => Effect<A>
-}>() {}
-
-export class TransportService extends Context.Tag("TransportService")<TransportService, {
-  readonly serve: <R>(router: RpcRouter<R>) => Effect<void>
-  readonly client: <R>(schema: RpcSchema<R>) => Effect<RpcClient<R>>
-}>() {}
+// Note: TelemetryService and TransportService ports are NOT defined here.
+// Telemetry is provided via @effect/opentelemetry Layer (no port needed — spans are automatic).
+// Transport is handled by @effect/rpc (no port needed — client/server are auto-generated).
+// Only domain-specific ports belong in core.shared. Infrastructure is configured in adapters.
 ```
 
 ### 4.2 Adapters (in domain.adapter.*)
@@ -299,11 +312,21 @@ Drizzle lives entirely inside `domain.adapter.turso`. Nothing outside the adapte
 - **Schema definitions** — Drizzle `sqliteTable()` in `model/`
 - **Query execution** — `@effect/sql-drizzle` for Effect-native Drizzle
 - **Migrations** — `drizzle-kit generate` from schema changes
-- **Type inference** — domain types derived from schema: `typeof tabsTable.$inferSelect`
+- **Type mapping** — adapter maps Drizzle rows to domain types defined in `core.shared`
 
 ```typescript
-// domain.adapter.turso/src/model/tabs.schema.ts
+// core.shared/src/model/types.ts — CANONICAL domain types (manually defined)
+export interface Tab {
+  id: string
+  url: string
+  title: string | null
+  position: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
 
+// domain.adapter.turso/src/model/tabs.schema.ts — Drizzle schema (must match domain types)
 export const tabsTable = sqliteTable("tabs", {
   id: text("id").primaryKey(),
   url: text("url").notNull(),
@@ -314,10 +337,11 @@ export const tabsTable = sqliteTable("tabs", {
   updatedAt: text("updatedAt").notNull(),
 })
 
-// Types inferred — no manual interface needed
-export type Tab = typeof tabsTable.$inferSelect
-export type CreateTab = typeof tabsTable.$inferInsert
+// Use satisfies to verify schema matches domain type at compile time:
+type _Check = typeof tabsTable.$inferSelect satisfies Tab
 ```
+
+Domain types live in `core.shared` (no adapter dependency). The Drizzle schema is validated against domain types via `satisfies` — if they drift, the compiler catches it.
 
 ### 4.4 The Hex Flow
 
@@ -434,7 +458,8 @@ const BrowsingServiceLive = Layer.effect(BrowsingService,
           yield* history.record(url)
         }).pipe(Effect.withSpan("BrowsingService.createTab")),
 
-      changes: Stream.zip(tabs.changes, history.changes).pipe(
+      // combineLatest: emits when EITHER stream updates (not zip which waits for both)
+      changes: Stream.combineLatest(tabs.changes, history.changes).pipe(
         Stream.map(([tabs, history]) => ({ tabs, history }))
       ),
     }
@@ -444,7 +469,33 @@ const BrowsingServiceLive = Layer.effect(BrowsingService,
 
 ### 5.6 UI Bridge Utilities
 
-Two utilities in `core.ui` bridge Effect services to SolidJS:
+Three utilities in `core.ui` bridge Effect services to SolidJS:
+
+**`useRuntime` — provides the Effect ManagedRuntime via SolidJS context:**
+
+The app's composition root creates a `ManagedRuntime` from the Layer stack and provides it via SolidJS context. All bridge utilities consume it.
+
+```typescript
+// core.ui/src/lib/runtime-provider.ts
+
+const RuntimeContext = createContext<ManagedRuntime<AppLayer>>()
+
+export function RuntimeProvider(props: ParentProps<{ runtime: ManagedRuntime<AppLayer> }>) {
+  return (
+    <RuntimeContext.Provider value={props.runtime}>
+      {props.children}
+    </RuntimeContext.Provider>
+  )
+}
+
+export function useRuntime() {
+  const runtime = useContext(RuntimeContext)
+  if (!runtime) throw new Error("RuntimeProvider not found")
+  return runtime
+}
+```
+
+**`useStream` — converts Effect Stream to SolidJS signal:**
 
 ```typescript
 // core.ui/src/lib/use-stream.ts
@@ -452,22 +503,31 @@ Two utilities in `core.ui` bridge Effect services to SolidJS:
 export function useStream<A>(stream: Stream<A>, initial: A): Accessor<A> {
   const [value, setValue] = createSignal(initial)
   const runtime = useRuntime()
+  const owner = getOwner()  // capture SolidJS reactive owner
 
   onMount(() => {
     const fiber = runtime.runFork(
-      stream.pipe(Stream.runForEach((a) => Effect.sync(() => setValue(a))))
+      stream.pipe(Stream.runForEach((a) =>
+        Effect.sync(() => runWithOwner(owner, () => setValue(() => a)))
+      ))
     )
     onCleanup(() => runtime.runFork(Fiber.interrupt(fiber)))
   })
 
   return value
 }
+```
 
+Note: `runWithOwner` ensures signal updates happen within SolidJS's reactive ownership tree, preventing issues with high-frequency updates from Effect fibers.
+
+**`useService` — resolves a service from the Effect runtime:**
+
+```typescript
 // core.ui/src/lib/use-service.ts
 
-export function useService<T>(tag: Context.Tag<T>): T {
+export function useService<I, S>(tag: Context.Tag<I, S>): S {
   const runtime = useRuntime()
-  return runtime.runSync(tag)
+  return runtime.runSync(Effect.service(tag))
 }
 ```
 
@@ -536,10 +596,11 @@ export const tabRepository = (db) => ({
 ```typescript
 // shared factory pattern (can live in core.shared or be inline)
 
-const makeFeatureService = <T>(
-  repoTag: Context.Tag<Repository<T>>,
+const makeFeatureService = <T, I, S>(
+  serviceTag: Context.Tag<I, S>,
+  repoTag: Context.Tag<string, Repository<T>>,
   serviceName: string,
-) => Layer.effect(
+) => Layer.effect(serviceTag,
   Effect.gen(function*() {
     const repo = yield* repoTag
     const pubsub = yield* PubSub.unbounded<T[]>()
@@ -642,10 +703,20 @@ export function SidebarFeature() {
   $filename <: within `domain.feature.`
 } => error("domain.feature.* depends on ports, not adapters")
 
+// domain.service.* cannot import domain.adapter.* (uses features, not adapters directly)
+`import { $_ } from "@ctrl/domain.adapter.$_"` where {
+  $filename <: within `domain.service.`
+} => error("domain.service.* composes features, not adapters — use DI via Layer")
+
 // domain.adapter.* cannot import domain.feature.* or domain.service.*
 `import { $_ } from "@ctrl/domain.feature.$_"` where {
   $filename <: within `domain.adapter.`
 } => error("adapters implement ports, they don't import features")
+
+// domain.adapter.* cannot import other domain.adapter.* packages
+`import { $_ } from "@ctrl/domain.adapter.$_"` where {
+  $filename <: within `domain.adapter.`
+} => error("adapters are independent — they don't import each other")
 
 // core.* cannot import domain.* or ui.*
 `import { $_ } from "@ctrl/domain.$_"` where {
@@ -945,8 +1016,10 @@ With Claude Max (Opus 4.6, 1M context), steps 1–6 can be completed in a single
 
 **Test dependencies (devDependencies):**
 - `vitest` — test runner
-- `@effect/opentelemetry/testing` — TestSpanExporter
+- `@opentelemetry/sdk-trace-base` — `InMemorySpanExporter` for test trace capture
 - `@storybook/test` — interaction test utilities
+
+**Note:** `TestSpanExporter` referenced in test examples is a custom wrapper around `InMemorySpanExporter` from `@opentelemetry/sdk-trace-base`, provided by `domain.adapter.otel` as a test utility. The `toContainSpan` matcher is a custom Vitest matcher defined in the test setup. Both are implemented as part of the `domain.adapter.otel` package.
 
 ---
 
