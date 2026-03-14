@@ -735,7 +735,34 @@ export function SidebarFeature() {
 } => error("core.* is foundation — no ui imports")
 ```
 
-### 7.2 FSD Segment Rules
+### 7.2 No Peer Imports (same-tier isolation)
+
+Packages within the same tier cannot import each other. Each package is independent at its tier:
+
+```grit
+// domain.feature.* cannot import other domain.feature.* packages
+`import { $_ } from "@ctrl/domain.feature.$_"` where {
+  $filename <: within `domain.feature.`
+} => error("domain.feature.* packages are atomic — no cross-feature imports")
+
+// domain.service.* cannot import other domain.service.* packages (already in 7.1)
+
+// domain.adapter.* cannot import other domain.adapter.* packages (already in 7.1)
+
+// ui.feature.* cannot import other ui.feature.* packages
+`import { $_ } from "@ctrl/ui.feature.$_"` where {
+  $filename <: within `ui.feature.`
+} => error("ui.feature.* packages are atomic — no cross-feature imports")
+
+// ui.page.* cannot import other ui.page.* packages
+`import { $_ } from "@ctrl/ui.page.$_"` where {
+  $filename <: within `ui.page.`
+} => error("ui.page.* packages are independent — no cross-page imports")
+```
+
+**The rule:** no package imports a peer at the same tier. Composition happens one level up — features compose in services, UI features compose in pages, pages compose in the app.
+
+### 7.3 FSD Segment Rules
 
 ```grit
 // model/ never imports from api/
