@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "storybook-solidjs";
 import { Text } from "./Text";
 
 const meta = {
-	title: "Components/Text",
+	title: "Atoms/Text",
 	component: Text,
 	argTypes: {
 		variant: {
