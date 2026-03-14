@@ -6,9 +6,17 @@ export type SidebarItem = {
 	readonly active: boolean;
 };
 
+const safeHostname = (url: string): string => {
+	try {
+		return new URL(url).hostname;
+	} catch {
+		return url;
+	}
+};
+
 export const mapTabsToSidebarItems = (tabs: Tab[] | undefined): SidebarItem[] =>
 	tabs?.map((tab) => ({
 		id: tab.id,
-		label: tab.title ?? (tab.url.startsWith("http") ? new URL(tab.url).hostname : tab.url),
+		label: tab.title ?? safeHostname(tab.url),
 		active: tab.isActive,
 	})) ?? [];

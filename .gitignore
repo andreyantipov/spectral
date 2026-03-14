@@ -9,3 +9,4 @@ styled-system
 .DS_Store
 packages/infra/ci/sdk
 .worktrees
+*.tsbuildinfo

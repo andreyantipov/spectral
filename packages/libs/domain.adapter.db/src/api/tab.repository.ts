@@ -1,6 +1,6 @@
-import { DatabaseError, TabRepository, withTracing } from "@ctrl/core.shared";
+import { DatabaseError, type Tab, TabRepository, withTracing } from "@ctrl/core.shared";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { Effect, Layer } from "effect";
 import { tabsTable } from "../model/tabs.schema";
 
@@ -55,7 +55,7 @@ export const TabRepositoryLive = Layer.effect(
 						),
 					),
 
-			update: (id: string, data: Record<string, unknown>) =>
+			update: (id: string, data: Partial<Tab>) =>
 				db
 					.update(tabsTable)
 					.set({ ...data, updatedAt: now() })
@@ -80,20 +80,18 @@ export const TabRepositoryLive = Layer.effect(
 					),
 
 			setActive: (id: string) =>
-				Effect.gen(function* () {
-					// Deactivate all tabs
-					yield* db.update(tabsTable).set({ isActive: false, updatedAt: now() });
-					// Activate the specified tab
-					yield* db
-						.update(tabsTable)
-						.set({ isActive: true, updatedAt: now() })
-						.where(eq(tabsTable.id, id));
-				}).pipe(
-					Effect.asVoid,
-					Effect.catchAll((cause) =>
-						Effect.fail(new DatabaseError({ message: "Failed to set active tab", cause })),
+				db
+					.update(tabsTable)
+					.set({
+						isActive: sql`(${tabsTable.id} = ${id})`,
+						updatedAt: now(),
+					})
+					.pipe(
+						Effect.asVoid,
+						Effect.catchAll((cause) =>
+							Effect.fail(new DatabaseError({ message: "Failed to set active tab", cause })),
+						),
 					),
-				),
 		});
 	}),
 );

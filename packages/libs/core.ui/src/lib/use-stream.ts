@@ -10,11 +10,7 @@ export function useStream<A>(stream: Stream.Stream<A, unknown, never>, initial: 
 	onMount(() => {
 		const fiber = runtime.runFork(
 			stream.pipe(
-				Stream.runForEach((a) =>
-					Effect.sync(() =>
-						runWithOwner(owner, () => (setValue as (fn: () => A) => void)(() => a)),
-					),
-				),
+				Stream.runForEach((a) => Effect.sync(() => runWithOwner(owner, () => setValue(() => a)))),
 			),
 		);
 		onCleanup(() => runtime.runFork(Fiber.interrupt(fiber)));

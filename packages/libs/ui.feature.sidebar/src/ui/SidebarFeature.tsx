@@ -17,11 +17,11 @@ export function SidebarFeature() {
 		mapTabsToSidebarItems(data()?.tabs).find((item) => item.active)?.id ?? null;
 
 	const handleNewTab = () => {
-		runtime.runPromise(actions.createTab(DEFAULT_TAB_URL));
+		void runtime.runPromise(actions.createTab(DEFAULT_TAB_URL));
 	};
 
 	const handleItemClose = (id: string) => {
-		runtime.runPromise(actions.removeTab(id));
+		void runtime.runPromise(actions.removeTab(id));
 	};
 
 	return (

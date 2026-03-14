@@ -2,9 +2,7 @@ import { type DatabaseError, type Tab, TabRepository, withTracing } from "@ctrl/
 import { Context, Effect, Layer, PubSub, Stream } from "effect";
 import { TAB_FEATURE } from "../lib/constants";
 
-export const TAB_FEATURE_ID = "TabFeature" as const;
-
-export class TabFeature extends Context.Tag(TAB_FEATURE_ID)<
+export class TabFeature extends Context.Tag(TAB_FEATURE)<
 	TabFeature,
 	{
 		readonly getAll: () => Effect.Effect<Tab[], DatabaseError>;

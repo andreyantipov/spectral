@@ -4,9 +4,7 @@ import { Context, Effect, Layer, Stream } from "effect";
 import { BROWSING_SERVICE } from "../lib/constants";
 import type { BrowsingState } from "../model/browsing.events";
 
-export const BROWSING_SERVICE_ID = "BrowsingService" as const;
-
-export class BrowsingService extends Context.Tag(BROWSING_SERVICE_ID)<
+export class BrowsingService extends Context.Tag(BROWSING_SERVICE)<
 	BrowsingService,
 	{
 		readonly createTab: (url: string) => Effect.Effect<Tab, DatabaseError>;
