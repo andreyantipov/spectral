@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "storybook-solidjs";
 import { Button } from "./Button";
 
 const meta = {
-	title: "Components/Button",
+	title: "Atoms/Button",
 	component: Button,
 	argTypes: {
 		variant: {
