@@ -1,49 +1,57 @@
-import { type Tab, TabRepository } from "@ctrl/core.shared";
+import { type Page, type Session, SessionRepository } from "@ctrl/core.shared";
 import { type TestSpanExporter, TestSpanExporterLive } from "@ctrl/domain.adapter.otel";
-import { TabFeatureLive } from "@ctrl/domain.feature.session";
-import { type BrowsingService, BrowsingServiceLive } from "@ctrl/domain.service.browsing";
+import { SessionFeatureLive } from "@ctrl/domain.feature.session";
+import { BrowsingHandlersLive, BrowsingRpcs } from "@ctrl/domain.service.browsing";
 import { Effect, Layer } from "effect";
 
 let nextId = 0;
-let tabs: Tab[] = [];
+let sessions: Session[] = [];
 
-const makeTab = (url: string): Tab => {
+const makeSession = (mode: "visual"): Session => {
 	const id = String(++nextId);
 	return {
 		id,
-		url,
-		title: null,
-		position: 0,
+		pages: [],
+		currentIndex: -1,
+		mode,
 		isActive: false,
 		createdAt: new Date().toISOString(),
 		updatedAt: new Date().toISOString(),
 	};
 };
 
-export const MockTabRepositoryLive = Layer.succeed(TabRepository, {
-	getAll: () => Effect.succeed(tabs),
-	create: (url: string) =>
+export const MockSessionRepositoryLive = Layer.succeed(SessionRepository, {
+	getAll: () => Effect.succeed(sessions),
+	getById: (id: string) => Effect.succeed(sessions.find((s) => s.id === id)),
+	create: (mode: "visual") =>
 		Effect.sync(() => {
-			const tab = makeTab(url);
-			tabs = [...tabs, tab];
-			return tab;
+			const session = makeSession(mode);
+			sessions = [...sessions, session];
+			return session;
 		}),
 	remove: (id: string) =>
 		Effect.sync(() => {
-			tabs = tabs.filter((t) => t.id !== id);
+			sessions = sessions.filter((s) => s.id !== id);
 		}),
-	update: (_id: string, _data: Partial<Tab>) => Effect.void,
-	getActive: () => Effect.succeed(undefined),
 	setActive: (_id: string) => Effect.void,
+	updateCurrentIndex: (_id: string, _index: number) => Effect.void,
+	addPage: (_sessionId: string, url: string, _atIndex: number) =>
+		Effect.succeed({
+			url,
+			title: null,
+			loadedAt: new Date().toISOString(),
+		} satisfies Page),
+	removePagesAfterIndex: (_sessionId: string, _index: number) => Effect.void,
+	updatePageTitle: (_sessionId: string, _pageIndex: number, _title: string) => Effect.void,
 });
 
-export const resetMockTabs = () => {
-	tabs = [];
+export const resetMockSessions = () => {
+	sessions = [];
 	nextId = 0;
 };
 
-export const PipelineTestLayer = BrowsingServiceLive.pipe(
-	Layer.provide(TabFeatureLive),
-	Layer.provide(MockTabRepositoryLive),
+export const PipelineTestLayer = BrowsingHandlersLive.pipe(
+	Layer.provide(SessionFeatureLive),
+	Layer.provide(MockSessionRepositoryLive),
 	Layer.provideMerge(TestSpanExporterLive),
-) as Layer.Layer<BrowsingService | TestSpanExporter>;
+) as Layer.Layer<BrowsingRpcs | TestSpanExporter>;
