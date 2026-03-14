@@ -3,9 +3,6 @@
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
-	"imports": {
-		"#styled-system/*": "./styled-system/*"
-	},
 	"exports": {
 		".": "./src/index.ts",
 		"./styles.css": "./build/styles.css"

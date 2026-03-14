@@ -4,10 +4,7 @@
 		"jsx": "react-jsx",
 		"jsxImportSource": "solid-js",
 		"outDir": "dist",
-		"rootDir": "src",
-		"paths": {
-			"#styled-system/*": ["./styled-system/*"]
-		}
+		"rootDir": "src"
 	},
 	"include": ["src", "styled-system"]
 }
