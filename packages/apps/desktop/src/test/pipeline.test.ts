@@ -1,6 +1,6 @@
 import { spanName } from "@ctrl/core.shared";
 import { assertContainsSpan, TestSpanExporter } from "@ctrl/domain.adapter.otel";
-import { TAB_FEATURE } from "@ctrl/domain.feature.tab";
+import { TAB_FEATURE } from "@ctrl/domain.feature.session";
 import { BROWSING_SERVICE, BrowsingService } from "@ctrl/domain.service.browsing";
 import type { ReadableSpan } from "@opentelemetry/sdk-trace-base";
 import { Chunk, Duration, Effect, Fiber, ManagedRuntime, Stream } from "effect";

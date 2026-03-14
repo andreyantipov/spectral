@@ -1,5 +1,5 @@
 import { type DatabaseError, type Tab, withTracing } from "@ctrl/core.shared";
-import { TabFeature } from "@ctrl/domain.feature.tab";
+import { TabFeature } from "@ctrl/domain.feature.session";
 import { Context, Effect, Layer, Stream } from "effect";
 import { BROWSING_SERVICE } from "../lib/constants";
 import type { BrowsingState } from "../model/browsing.events";

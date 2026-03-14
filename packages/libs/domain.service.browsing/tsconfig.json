@@ -7,7 +7,7 @@
 	"include": ["src"],
 	"references": [
 		{ "path": "../core.shared" },
-		{ "path": "../domain.feature.tab" },
+		{ "path": "../domain.feature.session" },
 		{ "path": "../domain.adapter.otel" }
 	]
 }

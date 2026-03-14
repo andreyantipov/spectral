@@ -1,7 +1,7 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { makeDbClient, TabRepositoryLive } from "@ctrl/domain.adapter.db";
-import { TabFeatureLive } from "@ctrl/domain.feature.tab";
+import { TabFeatureLive } from "@ctrl/domain.feature.session";
 import { BrowsingServiceLive } from "@ctrl/domain.service.browsing";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { Layer } from "effect";

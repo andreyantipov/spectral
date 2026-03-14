@@ -14,7 +14,7 @@
 		{ "path": "../../libs/core.db" },
 		{ "path": "../../libs/domain.adapter.db" },
 		{ "path": "../../libs/domain.adapter.otel" },
-		{ "path": "../../libs/domain.feature.tab" },
+		{ "path": "../../libs/domain.feature.session" },
 		{ "path": "../../libs/domain.service.browsing" },
 		{ "path": "../../libs/feature.sidebar-tabs" },
 		{ "path": "../../libs/ui.feature.sidebar" },

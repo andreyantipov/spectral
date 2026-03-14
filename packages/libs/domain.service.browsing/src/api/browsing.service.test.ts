@@ -4,7 +4,7 @@ import {
 	TestSpanExporter,
 	TestSpanExporterLive,
 } from "@ctrl/domain.adapter.otel";
-import { TAB_FEATURE, TabFeatureLive } from "@ctrl/domain.feature.tab";
+import { TAB_FEATURE, TabFeatureLive } from "@ctrl/domain.feature.session";
 import type { ReadableSpan } from "@opentelemetry/sdk-trace-base";
 import { Chunk, Duration, Effect, Fiber, Layer, ManagedRuntime, Stream } from "effect";
 import { afterAll, beforeEach, describe, expect, it } from "vitest";

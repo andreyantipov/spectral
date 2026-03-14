@@ -1,6 +1,6 @@
 import { type Tab, TabRepository } from "@ctrl/core.shared";
 import { type TestSpanExporter, TestSpanExporterLive } from "@ctrl/domain.adapter.otel";
-import { TabFeatureLive } from "@ctrl/domain.feature.tab";
+import { TabFeatureLive } from "@ctrl/domain.feature.session";
 import { type BrowsingService, BrowsingServiceLive } from "@ctrl/domain.service.browsing";
 import { Effect, Layer } from "effect";
 
