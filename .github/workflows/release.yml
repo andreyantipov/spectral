@@ -92,6 +92,9 @@ jobs:
       - name: Install dependencies
         run: bun install --ignore-scripts
 
+      - name: Build libs
+        run: bunx turbo build --filter=!@ctrl/desktop
+
       - name: Build desktop app
         working-directory: packages/apps/desktop
         run: bun run build
