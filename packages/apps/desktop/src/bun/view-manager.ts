@@ -60,6 +60,26 @@ export class ViewManager {
 		}
 	}
 
+	/** Temporarily hide content view by recreating at offscreen position. */
+	setContentViewVisible(visible: boolean) {
+		if (!this.contentView) return;
+		if (visible) {
+			const currentUrl = this.contentView.url ?? DEFAULT_TAB_URL;
+			this.createContentView(currentUrl);
+		} else {
+			// Recreate offscreen to hide — preserves URL for restoration
+			const url = this.contentView.url ?? DEFAULT_TAB_URL;
+			this.contentView.remove();
+			this.contentView = new BrowserView({
+				url: url === DEFAULT_TAB_URL ? null : url,
+				html: url === DEFAULT_TAB_URL ? "<html><body></body></html>" : null,
+				frame: { x: -9999, y: -9999, width: 1, height: 1 },
+				windowId: this.windowId,
+				sandbox: true,
+			});
+		}
+	}
+
 	/** Update sidebar collapsed state and reposition the content view. */
 	setSidebarCollapsed(collapsed: boolean) {
 		this.collapsed = collapsed;

@@ -1,4 +1,4 @@
-import { createEffect, createSignal, For, type JSX, onCleanup, onMount, Show } from "solid-js";
+import { createEffect, createSignal, For, type JSX, onCleanup, Show } from "solid-js";
 import { commandCenter } from "./commandCenter.style";
 
 export type CommandCenterItem = {
@@ -27,7 +27,7 @@ export function CommandCenter(props: CommandCenterProps) {
 	const [query, setQuery] = createSignal("");
 	const [activeIndex, setActiveIndex] = createSignal(0);
 
-	// Pre-fill query when opened with initialQuery (e.g. current URL)
+	// Pre-fill query when opened
 	createEffect(() => {
 		if (props.open) {
 			setQuery(props.initialQuery ?? "");
@@ -58,7 +58,10 @@ export function CommandCenter(props: CommandCenterProps) {
 		return grouped;
 	};
 
-	function onKeyDown(e: KeyboardEvent) {
+	// Keyboard handler — only active when open, registered/removed via createEffect
+	function handleKeyDown(e: KeyboardEvent) {
+		if (!props.open) return;
+
 		const items = filteredItems();
 		if (e.key === "ArrowDown") {
 			e.preventDefault();
@@ -80,12 +83,17 @@ export function CommandCenter(props: CommandCenterProps) {
 		}
 	}
 
-	onMount(() => {
-		document.addEventListener("keydown", onKeyDown);
+	// Register/unregister based on open state
+	createEffect(() => {
+		if (props.open) {
+			document.addEventListener("keydown", handleKeyDown);
+		} else {
+			document.removeEventListener("keydown", handleKeyDown);
+		}
 	});
 
 	onCleanup(() => {
-		document.removeEventListener("keydown", onKeyDown);
+		document.removeEventListener("keydown", handleKeyDown);
 	});
 
 	let flatIndex = 0;
