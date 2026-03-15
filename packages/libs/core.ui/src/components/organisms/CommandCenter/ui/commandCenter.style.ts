@@ -24,12 +24,11 @@ export const commandCenter = sva({
 	],
 	base: {
 		overlay: {
-			position: "fixed",
+			position: "absolute",
 			inset: 0,
 			display: "flex",
-			alignItems: "flex-start",
+			alignItems: "center",
 			justifyContent: "center",
-			pt: "15vh",
 			zIndex: 999999,
 			pointerEvents: "none",
 		},
@@ -39,9 +38,9 @@ export const commandCenter = sva({
 			width: "640px",
 			maxHeight: "min(480px, 60vh)",
 			bg: "bg.secondary",
-			borderRadius: "16px",
+			borderRadius: 0,
 			overflow: "hidden",
-			boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.08), 0 16px 70px rgba(0, 0, 0, 0.6)",
+			boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.1)",
 			pointerEvents: "auto",
 		},
 		searchBar: {
