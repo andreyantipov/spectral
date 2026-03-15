@@ -100,8 +100,19 @@ export function CommandCenter(props: CommandCenterProps) {
 
 	return (
 		<Show when={props.open}>
-			<div class={$().overlay} data-command-center-overlay="">
-				<div class={$().palette} role="dialog">
+			{/* biome-ignore lint/a11y/noStaticElementInteractions: overlay backdrop dismisses on click */}
+			<div
+				class={$().overlay}
+				role="presentation"
+				onClick={() => props.onClose?.()}
+				onKeyDown={(e) => e.key === "Escape" && props.onClose?.()}
+			>
+				<div
+					class={$().palette}
+					role="dialog"
+					onClick={(e) => e.stopPropagation()}
+					onKeyDown={(e) => e.stopPropagation()}
+				>
 					<div class={$().searchBar}>
 						<span class={$().searchIcon}>&#8981;</span>
 						<input

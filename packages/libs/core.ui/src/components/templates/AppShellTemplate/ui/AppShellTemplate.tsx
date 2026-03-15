@@ -124,15 +124,13 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 		webviewRef.on("host-message", handleHostMessage);
 	}
 
-	// Force all webviews to re-sync mask rects when CommandCenter opens/closes.
-	// The OverlaySyncController only sends masks when the webview position changes —
-	// force sync so the native CAShapeLayer cuts a hole for the palette element.
-	// This is the same pattern used by Electrobun's Colab app.
+	// Hide the native webview surface while the CommandCenter overlay is open.
+	// The WKWebView composites above the DOM — toggleHidden removes it so the
+	// DOM overlay (backdrop + palette) renders visibly. Page returns on close.
 	createEffect(() => {
-		const _open = ccOpen();
-		document.querySelectorAll("electrobun-webview").forEach((el) => {
-			(el as WebviewTagElement).syncDimensions?.(true);
-		});
+		if (webviewRef) {
+			webviewRef.toggleHidden(ccOpen());
+		}
 	});
 
 	createEffect(() => {
@@ -154,7 +152,6 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 							ref={setupWebview}
 							src={props.currentUrl}
 							preload={SHORTCUT_PRELOAD}
-							masks="[data-command-center-overlay]"
 							style="width: 100%; height: 100%; display: block;"
 						/>
 					</Show>
