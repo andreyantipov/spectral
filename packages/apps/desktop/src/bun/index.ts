@@ -11,6 +11,8 @@ import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
 import { type AppLayer, DesktopLive } from "./layers";
 import { createMainRPC } from "./rpc";
 
+console.info(`[bun] ${APP_NAME} starting...`);
+
 // Ensure data directory exists
 mkdirSync(join(homedir(), ".ctrl.page"), { recursive: true });
 
@@ -21,6 +23,25 @@ const rt = await runtime.runtime();
 
 // Ensure database schema exists
 await Runtime.runPromise(rt)(ensureSchema);
+
+// Register menu event handler BEFORE setting the menu
+// Log everything to debug event delivery
+ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
+	console.info("[bun] menu-clicked raw event:", JSON.stringify(event, null, 2));
+	const asAny = event as Record<string, unknown>;
+	const action =
+		(asAny?.data as Record<string, unknown>)?.action ??
+		asAny?.action ??
+		(typeof asAny?.detail === "string" ? asAny.detail : undefined);
+	console.info("[bun] extracted action:", action);
+
+	if (action === "toggle-command-center") {
+		console.info("[bun] executing toggle in webview");
+		win.webview.executeJavascript(
+			'window.dispatchEvent(new CustomEvent("ctrl:toggle-command-center"))',
+		);
+	}
+});
 
 ApplicationMenu.setApplicationMenu([
 	{
@@ -73,28 +94,7 @@ const win = new BrowserWindow({
 	rpc: mainRPC,
 });
 
-// Handle global menu actions (Cmd+K → toggle command center)
-// Electrobun delivers menu click events with deserialized action data.
-ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
-	// Try multiple ways to extract the action — Electrobun event structure may vary
-	const asAny = event as Record<string, unknown>;
-	const action =
-		(asAny?.data as Record<string, unknown>)?.action ??
-		asAny?.action ??
-		(typeof asAny?.detail === "string" ? asAny.detail : undefined);
-
-	if (action === "toggle-command-center") {
-		win.webview.executeJavascript(
-			'window.dispatchEvent(new CustomEvent("ctrl:toggle-command-center"))',
-		);
-	}
-});
-
 // Start the Effect RPC server over the Electrobun IPC tunnel.
-// The server listens on the webview's RPC handle and routes requests
-// to BrowsingHandlersLive (already in the runtime context).
-// The Electrobun RPC handle is structurally compatible with ElectrobunRpcHandle
-// but the Electrobun types are opaque, so we cast.
 const rpcHandle = win.webview.rpc as unknown as ElectrobunRpcHandle;
 
 const SerializationLive = RpcSerialization.layerJson;
@@ -112,8 +112,7 @@ const ServerLive = RpcServer.layer(BrowsingRpcs).pipe(
 ) as Layer.Layer<never, never, never>;
 
 // Fork the RPC server — runs for the lifetime of the app
-// TODO: Dispose runtime and rpcServerRuntime on window close to release resources in dev mode.
 const rpcServerRuntime = ManagedRuntime.make(ServerLive);
 await rpcServerRuntime.runtime();
 
-console.info(`${APP_NAME} v${APP_VERSION} started`);
+console.info(`[bun] ${APP_NAME} v${APP_VERSION} started`);
