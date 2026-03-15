@@ -26,13 +26,10 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 
 	function openCc() {
 		setCcOpen(true);
-		// Add mask so CommandCenter overlay receives clicks on top of the webview
-		webviewRef?.addMaskSelector("[data-command-center-overlay]");
 	}
 
 	function closeCc() {
 		setCcOpen(false);
-		webviewRef?.removeMaskSelector("[data-command-center-overlay]");
 	}
 
 	function toggleCc() {
