@@ -39,9 +39,13 @@ export const make = (
 
 			// Bridge Electrobun callback into the Effect world via a Mailbox
 			handle.addMessageListener(CHANNEL, (raw) => {
-				const decoded = parser.decode(raw as Uint8Array | string) as readonly FromClientEncoded[];
-				for (const message of decoded) {
-					inbox.unsafeOffer(message);
+				try {
+					const decoded = parser.decode(raw as Uint8Array | string) as readonly FromClientEncoded[];
+					for (const message of decoded) {
+						inbox.unsafeOffer(message);
+					}
+				} catch {
+					// drop malformed message — don't crash the process
 				}
 			});
 

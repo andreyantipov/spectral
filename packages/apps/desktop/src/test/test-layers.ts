@@ -1,4 +1,4 @@
-import { type Page, type Session, SessionRepository } from "@ctrl/core.shared";
+import { DEFAULT_TAB_URL, type Page, type Session, SessionRepository } from "@ctrl/core.shared";
 import { type TestSpanExporter, TestSpanExporterLive } from "@ctrl/domain.adapter.otel";
 import { SessionFeatureLive } from "@ctrl/domain.feature.session";
 import { BrowsingHandlersLive, type BrowsingRpcs } from "@ctrl/domain.service.browsing";
@@ -11,8 +11,8 @@ const makeSession = (mode: "visual"): Session => {
 	const id = String(++nextId);
 	return {
 		id,
-		pages: [],
-		currentIndex: -1,
+		pages: [{ url: DEFAULT_TAB_URL, title: null, loadedAt: new Date().toISOString() }],
+		currentIndex: 0,
 		mode,
 		isActive: false,
 		createdAt: new Date().toISOString(),

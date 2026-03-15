@@ -3,8 +3,9 @@ import type { Client } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import { Effect } from "effect";
+import { fileURLToPath } from "node:url";
 
-const migrationsFolder = new URL("../migrations", import.meta.url).pathname;
+const migrationsFolder = fileURLToPath(new URL("../migrations", import.meta.url));
 
 /**
  * Ensures the database schema is up to date using Drizzle migrations.

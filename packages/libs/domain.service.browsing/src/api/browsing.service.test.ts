@@ -1,5 +1,5 @@
 import type { DatabaseError } from "@ctrl/core.shared";
-import { type Page, type Session, SessionRepository, spanName } from "@ctrl/core.shared";
+import { DEFAULT_TAB_URL, type Page, type Session, SessionRepository, spanName } from "@ctrl/core.shared";
 import {
 	assertContainsSpan,
 	TestSpanExporter,
@@ -22,8 +22,8 @@ const makeSession = (mode: "visual"): Session => {
 	const id = String(++nextId);
 	return {
 		id,
-		pages: [],
-		currentIndex: -1,
+		pages: [{ url: DEFAULT_TAB_URL, title: null, loadedAt: new Date().toISOString() }],
+		currentIndex: 0,
 		mode,
 		isActive: false,
 		createdAt: new Date().toISOString(),
