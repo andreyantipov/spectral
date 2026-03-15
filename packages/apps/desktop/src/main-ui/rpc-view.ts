@@ -4,7 +4,7 @@ type EmptyHandlers = Record<string, never>;
 
 type MessageHandlers = {
 	"effect-rpc": () => void;
-	"toggle-command-center": () => void;
+	"app-commands": () => void;
 };
 
 export function defineRPC<T>(ev: {
@@ -15,10 +15,7 @@ export function defineRPC<T>(ev: {
 			requests: {} as EmptyHandlers,
 			messages: {
 				"effect-rpc": () => {},
-				"toggle-command-center": () => {
-					console.info("[webview] received toggle-command-center, dispatching DOM event");
-					window.dispatchEvent(new CustomEvent("ctrl:toggle-command-center"));
-				},
+				"app-commands": () => {},
 			},
 		},
 	});

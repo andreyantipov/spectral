@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { APP_NAME, APP_VERSION } from "@ctrl/core.shared";
 import { ensureSchema } from "@ctrl/domain.adapter.db";
+import { createIpcBridge, type ElectrobunHandle } from "@ctrl/domain.adapter.electrobun";
 import { type ElectrobunRpcHandle, ElectrobunServerProtocol } from "@ctrl/domain.adapter.rpc";
 import { BrowsingRpcs } from "@ctrl/domain.service.browsing";
 import { RpcSerialization, RpcServer } from "@effect/rpc";
@@ -23,25 +24,6 @@ const rt = await runtime.runtime();
 
 // Ensure database schema exists
 await Runtime.runPromise(rt)(ensureSchema);
-
-// Register menu event handler BEFORE setting the menu
-// Log everything to debug event delivery
-ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
-	console.info("[bun] menu-clicked raw event:", JSON.stringify(event, null, 2));
-	const asAny = event as Record<string, unknown>;
-	const action =
-		(asAny?.data as Record<string, unknown>)?.action ??
-		asAny?.action ??
-		(typeof asAny?.detail === "string" ? asAny.detail : undefined);
-	console.info("[bun] extracted action:", action);
-
-	if (action === "toggle-command-center") {
-		console.info("[bun] executing toggle in webview");
-		win.webview.executeJavascript(
-			"if(window.__ctrlToggleCommandCenter) window.__ctrlToggleCommandCenter()",
-		);
-	}
-});
 
 ApplicationMenu.setApplicationMenu([
 	{
@@ -115,5 +97,16 @@ const ServerLive = RpcServer.layer(BrowsingRpcs).pipe(
 // Fork the RPC server — runs for the lifetime of the app
 const rpcServerRuntime = ManagedRuntime.make(ServerLive);
 await rpcServerRuntime.runtime();
+
+// Create IPC bridge for app commands (uses same handle as effect-rpc)
+const ipcBridge = createIpcBridge(rpcHandle as unknown as ElectrobunHandle);
+
+// Menu accelerator → IPC bridge (no executeJavascript!)
+ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
+	const data = (event as { data?: { action?: string } })?.data;
+	if (data?.action === "toggle-command-center") {
+		ipcBridge.send({ type: "toggle-command-center" });
+	}
+});
 
 console.info(`[bun] ${APP_NAME} v${APP_VERSION} started`);

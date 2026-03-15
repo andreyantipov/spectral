@@ -110,19 +110,24 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 		}
 	}
 
-	// Handle Cmd+K from Bun process (via ApplicationMenu accelerator)
-	function handleGlobalToggle() {
-		toggleCc();
-	}
-
 	onMount(() => {
-		// Bun process sends toggle via executeJavascript → window global
-		(window as unknown as Record<string, unknown>).__ctrlToggleCommandCenter = handleGlobalToggle;
 		document.addEventListener("keydown", handleKeyDown);
+
+		// Subscribe to IPC bridge for commands from the Bun process
+		const bridge = (window as unknown as Record<string, unknown>).__ipcBridge as
+			| { subscribe: (handler: (cmd: { type: string }) => void) => () => void }
+			| undefined;
+		if (bridge) {
+			const unsub = bridge.subscribe((cmd) => {
+				if (cmd.type === "toggle-command-center") {
+					toggleCc();
+				}
+			});
+			onCleanup(unsub);
+		}
 	});
 
 	onCleanup(() => {
-		delete (window as unknown as Record<string, unknown>).__ctrlToggleCommandCenter;
 		document.removeEventListener("keydown", handleKeyDown);
 	});
 
