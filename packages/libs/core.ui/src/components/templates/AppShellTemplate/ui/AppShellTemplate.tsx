@@ -7,6 +7,7 @@ export type AppShellTemplateProps = {
 	sidebar: SidebarProps;
 	commandCenter: Omit<CommandCenterProps, "open" | "onClose">;
 	currentUrl?: string;
+	onOverlayToggle?: (visible: boolean) => void;
 	children?: JSX.Element;
 };
 
@@ -16,11 +17,13 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 
 	function handleNewTab() {
 		setCcOpen(true);
+		props.onOverlayToggle?.(true);
 		props.sidebar.onNewTab?.();
 	}
 
 	function handleCcClose() {
 		setCcOpen(false);
+		props.onOverlayToggle?.(false);
 	}
 
 	function handleCcSelect(id: string) {
@@ -36,7 +39,9 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.metaKey && e.key === "k") {
 			e.preventDefault();
-			setCcOpen((prev) => !prev);
+			const next = !ccOpen();
+			setCcOpen(next);
+			props.onOverlayToggle?.(next);
 		}
 	}
 

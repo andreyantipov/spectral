@@ -12,6 +12,7 @@ export type SidebarItem = {
 	id: string;
 	icon?: JSX.Element;
 	label: string;
+	secondaryLabel?: string;
 	indent?: number;
 };
 
@@ -32,6 +33,7 @@ export type SidebarProps = {
 	onNewTab?: () => void;
 	onWidthChange?: (width: number) => void;
 	onCollapseChange?: (collapsed: boolean) => void;
+	panelActions?: JSX.Element;
 	children?: JSX.Element;
 };
 
@@ -122,16 +124,19 @@ export function Sidebar(props: SidebarProps) {
 						<span class={$().panelTitle}>
 							{props.tabs.find((t) => t.id === props.activeTabId)?.label ?? ""}
 						</span>
-						<Show when={props.onNewTab}>
-							<button
-								type="button"
-								class={$().panelAction}
-								onClick={() => props.onNewTab?.()}
-								title="New tab"
-							>
-								+
-							</button>
-						</Show>
+						<div class={$().panelActions}>
+							{props.panelActions}
+							<Show when={props.onNewTab}>
+								<button
+									type="button"
+									class={$().panelAction}
+									onClick={() => props.onNewTab?.()}
+									title="New tab"
+								>
+									+
+								</button>
+							</Show>
+						</div>
 					</div>
 
 					<div class={$().panelContent}>
@@ -152,6 +157,9 @@ export function Sidebar(props: SidebarProps) {
 												<span class={s().panelItemIcon}>{item.icon}</span>
 											</Show>
 											<span class={s().panelItemLabel}>{item.label}</span>
+											<Show when={item.secondaryLabel}>
+												<span class={s().panelItemSecondary}>{item.secondaryLabel}</span>
+											</Show>
 											<Show when={props.onItemClose}>
 												<button
 													type="button"

@@ -15,6 +15,16 @@ async function initApp() {
 	const rpc = defineRPC(Electroview);
 	new Electroview({ rpc });
 
+	// Expose RPC send for UI components that need to message the Bun process
+	// (e.g., hide/show BrowserView when CommandCenter opens)
+	(window as unknown as Record<string, unknown>).__ctrlpage = {
+		sendToBun: (channel: string, data: unknown) => {
+			const sender = (rpc as unknown as Record<string, Record<string, (data: unknown) => void>>)
+				.send;
+			sender?.[channel]?.(data);
+		},
+	};
+
 	// Build the webview Effect layer with the Electrobun RPC handle.
 	// The Electrobun RPC handle is structurally compatible with ElectrobunRpcHandle
 	// but the Electrobun types are opaque, so we cast.

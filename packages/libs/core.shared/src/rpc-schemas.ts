@@ -24,6 +24,7 @@ export type MainRPCSchema = {
 		};
 		messages: {
 			"effect-rpc": EffectRpcMessage;
+			"content-view-visible": { visible: boolean };
 		};
 	};
 	webview: {

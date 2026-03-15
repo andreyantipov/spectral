@@ -9,8 +9,9 @@ import { Effect, type Runtime } from "effect";
 import { BrowserView } from "electrobun/bun";
 import type { AppLayer } from "./layers";
 import { makeRpcHandler } from "./rpc-handler";
+import type { ViewManager } from "./view-manager";
 
-export function createMainRPC(runtime: Runtime.Runtime<AppLayer>) {
+export function createMainRPC(runtime: Runtime.Runtime<AppLayer>, viewManager: ViewManager) {
 	return BrowserView.defineRPC<MainRPCSchema>({
 		handlers: {
 			requests: {
@@ -22,10 +23,10 @@ export function createMainRPC(runtime: Runtime.Runtime<AppLayer>) {
 				),
 			},
 			messages: {
-				// The effect-rpc channel is handled by ElectrobunServerProtocol via
-				// addMessageListener. Electrobun requires a handler to be registered
-				// so it allows the channel through IPC.
 				"effect-rpc": () => {},
+				"content-view-visible": (data: { visible: boolean }) => {
+					viewManager.setContentViewVisible(data.visible);
+				},
 			},
 		},
 	});

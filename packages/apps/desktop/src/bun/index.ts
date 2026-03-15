@@ -65,7 +65,7 @@ ApplicationMenu.setApplicationMenu([
 const viewManager = new ViewManager();
 
 // Create Electrobun RPC (legacy request/response + effect-rpc message channel)
-const mainRPC = createMainRPC(rt);
+const mainRPC = createMainRPC(rt, viewManager);
 
 // Create window
 const win = new BrowserWindow({
