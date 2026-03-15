@@ -29,7 +29,7 @@ export function useBrowsingRpc(): {
 		RpcClient.make(BrowsingRpcs).pipe(Effect.provideService(Scope.Scope, scope)),
 	) as RpcClient.FromGroup<typeof BrowsingRpcs>;
 
-	const sessionStream = client.sessionChanges().pipe(Stream.orDie);
+	const sessionStream = client.sessionChanges().pipe(Stream.catchAll(() => Stream.empty));
 
 	const state = useStream<BrowsingState | undefined>(sessionStream, undefined);
 

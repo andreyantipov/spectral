@@ -101,6 +101,7 @@ const ServerLive = RpcServer.layer(BrowsingRpcs).pipe(
 ) as Layer.Layer<never, never, never>;
 
 // Fork the RPC server — runs for the lifetime of the app
+// TODO: Dispose runtime and rpcServerRuntime on window close to release resources in dev mode.
 const rpcServerRuntime = ManagedRuntime.make(ServerLive);
 await rpcServerRuntime.runtime();
 

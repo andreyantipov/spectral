@@ -10,7 +10,8 @@ export const BrowsingHandlersLive = BrowsingRpcs.toLayer(
 		const sessions = yield* SessionFeature;
 
 		return withTracing(BROWSING_SERVICE, {
-			createSession: ({ mode }: { readonly mode: "visual" }) => sessions.create(mode),
+			createSession: ({ mode }: { readonly mode: "visual" }) =>
+				sessions.create(mode).pipe(Effect.tap((s) => sessions.setActive(s.id))),
 			removeSession: ({ id }: { readonly id: string }) => sessions.remove(id),
 			navigate: ({ id, url }: { readonly id: string; readonly url: string }) =>
 				sessions.navigate(id, url),

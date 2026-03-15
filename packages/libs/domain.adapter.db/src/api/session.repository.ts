@@ -7,7 +7,7 @@ import {
 	withTracing,
 } from "@ctrl/core.shared";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
-import { and, eq, gt } from "drizzle-orm";
+import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { Effect, Layer } from "effect";
 import { pagesTable } from "../model/pages.schema";
 import { sessionsTable } from "../model/sessions.schema";
@@ -38,10 +38,12 @@ export const SessionRepositoryLive = Layer.effect(
 		return withTracing("SessionRepository", {
 			getAll: () =>
 				Effect.gen(function* () {
-					const sessions = yield* db.select().from(sessionsTable);
-					const pages = yield* db.select().from(pagesTable);
-					// Sort pages by pageIndex for consistent ordering
-					pages.sort((a, b) => a.pageIndex - b.pageIndex);
+					const sessions = yield* db
+						.select()
+						.from(sessionsTable)
+						.orderBy(asc(sessionsTable.createdAt));
+					// NOTE: Loads all pages in memory. For large histories, consider per-session page loading.
+					const pages = yield* db.select().from(pagesTable).orderBy(asc(pagesTable.pageIndex));
 					return sessions.map((s) => assembleSession(s, pages));
 				}).pipe(
 					Effect.catchAll((cause) =>
@@ -107,20 +109,18 @@ export const SessionRepositoryLive = Layer.effect(
 					),
 
 			setActive: (id: string) =>
-				Effect.gen(function* () {
-					// Deactivate all sessions
-					yield* db.update(sessionsTable).set({ isActive: false, updatedAt: now() });
-					// Activate the target session
-					yield* db
-						.update(sessionsTable)
-						.set({ isActive: true, updatedAt: now() })
-						.where(eq(sessionsTable.id, id));
-				}).pipe(
-					Effect.asVoid,
-					Effect.catchAll((cause) =>
-						Effect.fail(new DatabaseError({ message: "Failed to set active session", cause })),
+				db
+					.update(sessionsTable)
+					.set({
+						isActive: sql`CASE WHEN ${sessionsTable.id} = ${id} THEN 1 ELSE 0 END`,
+						updatedAt: now(),
+					})
+					.pipe(
+						Effect.asVoid,
+						Effect.catchAll((cause) =>
+							Effect.fail(new DatabaseError({ message: "Failed to set active session", cause })),
+						),
 					),
-				),
 
 			updateCurrentIndex: (id: string, index: number) =>
 				db
