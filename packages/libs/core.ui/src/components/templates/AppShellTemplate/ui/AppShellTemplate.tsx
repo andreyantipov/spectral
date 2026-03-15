@@ -124,14 +124,14 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 		webviewRef.on("host-message", handleHostMessage);
 	}
 
-	// Force mask rect sync when CommandCenter opens/closes.
-	// The OverlaySyncController only sends masks when the webview position changes.
-	// When the CC overlay appears (mask elements change) but the webview hasn't moved,
-	// the sync is skipped. Force it so the native CAShapeLayer mask is recalculated.
+	// Hide the native webview surface while the CommandCenter is open.
+	// The native WKWebView composites above the DOM layer — no amount of z-index
+	// or mask trickery can make a DOM overlay render visually on top of the native
+	// surface. toggleHidden removes the native surface so the DOM overlay is visible.
+	// The page reappears instantly when the overlay closes.
 	createEffect(() => {
-		const _open = ccOpen();
 		if (webviewRef) {
-			requestAnimationFrame(() => webviewRef?.syncDimensions(true));
+			webviewRef.toggleHidden(ccOpen());
 		}
 	});
 
