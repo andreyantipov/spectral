@@ -38,9 +38,8 @@ export const commandCenter = sva({
 			width: "640px",
 			maxHeight: "min(480px, 60vh)",
 			bg: "bg.secondary",
-			borderRadius: 0,
+			borderRadius: "16px",
 			overflow: "hidden",
-			boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.1)",
 			pointerEvents: "auto",
 		},
 		searchBar: {

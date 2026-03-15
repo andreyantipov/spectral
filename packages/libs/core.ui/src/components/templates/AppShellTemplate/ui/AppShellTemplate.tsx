@@ -160,16 +160,16 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 					</Show>
 					{props.children}
 				</div>
-			</div>
 
-			<CommandCenter
-				{...props.commandCenter}
-				open={ccOpen()}
-				initialQuery={props.currentUrl}
-				onClose={closeCc}
-				onSelect={handleCcSelect}
-				onSubmitRaw={handleCcSubmitRaw}
-			/>
+				<CommandCenter
+					{...props.commandCenter}
+					open={ccOpen()}
+					initialQuery={props.currentUrl}
+					onClose={closeCc}
+					onSelect={handleCcSelect}
+					onSubmitRaw={handleCcSubmitRaw}
+				/>
+			</div>
 
 			<Notifications placement="bottom-end" />
 		</div>

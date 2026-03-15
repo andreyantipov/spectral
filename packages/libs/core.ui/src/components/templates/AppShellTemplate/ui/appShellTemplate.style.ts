@@ -19,6 +19,7 @@ export const appShellTemplate = sva({
 			minWidth: 0,
 			height: "100%",
 			bg: "bg.primary",
+			position: "relative",
 		},
 		page: {
 			display: "flex",
