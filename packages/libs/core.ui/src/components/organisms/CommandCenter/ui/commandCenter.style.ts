@@ -25,18 +25,17 @@ export const commandCenter = sva({
 	base: {
 		overlay: {
 			position: "fixed",
-			top: "50%",
+			top: "20%",
 			left: "50%",
-			transform: "translate(-50%, -50%)",
-			mt: "-60px",
+			transform: "translateX(-50%)",
 			zIndex: 999999,
-			width: "560px",
+			width: "520px",
 		},
 		palette: {
 			display: "flex",
 			flexDirection: "column",
 			width: "100%",
-			maxHeight: "520px",
+			maxHeight: "min(480px, 60vh)",
 			bg: "bg.secondary",
 			borderRadius: "2xl",
 			overflow: "hidden",

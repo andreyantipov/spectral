@@ -20,20 +20,12 @@ type IpcBridgeHandle = {
 	subscribe: (handler: (cmd: { type: string }) => void) => () => void;
 };
 
-// Preload script: forwards Cmd+T, Cmd+K, Cmd+/, Escape from webview tag to host
+// Preload script: forwards Cmd+K, Escape from webview tag to host
 const SHORTCUT_PRELOAD = `
 document.addEventListener('keydown', function(e) {
-  if ((e.metaKey || e.ctrlKey) && e.key === 't') {
-    e.preventDefault();
-    window.__electrobunSendToHost({ type: 'shortcut', key: 'cmd+t' });
-  }
   if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
     e.preventDefault();
     window.__electrobunSendToHost({ type: 'shortcut', key: 'cmd+k' });
-  }
-  if ((e.metaKey || e.ctrlKey) && e.key === '/') {
-    e.preventDefault();
-    window.__electrobunSendToHost({ type: 'shortcut', key: 'cmd+/' });
   }
   if (e.key === 'Escape') {
     window.__electrobunSendToHost({ type: 'shortcut', key: 'escape' });
@@ -88,14 +80,14 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 	function handleHostMessage(event: CustomEvent) {
 		const msg = event.detail as { type?: string; key?: string } | undefined;
 		if (msg?.type === "shortcut") {
-			if (msg.key === "cmd+t" || msg.key === "cmd+k" || msg.key === "cmd+/") toggleCc();
+			if (msg.key === "cmd+k") toggleCc();
 			else if (msg.key === "escape" && ccOpen()) closeCc();
 		}
 	}
 
-	// Cmd+T/Cmd+K/Cmd+/ from host webview DOM (when sidebar or empty area has focus)
+	// Cmd+K from host webview DOM (when sidebar or empty area has focus)
 	function handleKeyDown(e: KeyboardEvent) {
-		if (e.metaKey && (e.key === "t" || e.key === "k" || e.key === "/")) {
+		if (e.metaKey && e.key === "k") {
 			e.preventDefault();
 			toggleCc();
 		}
