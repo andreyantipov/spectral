@@ -9,9 +9,8 @@ import { Effect, type Runtime } from "effect";
 import { BrowserView } from "electrobun/bun";
 import type { AppLayer } from "./layers";
 import { makeRpcHandler } from "./rpc-handler";
-import type { ViewManager } from "./view-manager";
 
-export function createMainRPC(runtime: Runtime.Runtime<AppLayer>, viewManager: ViewManager) {
+export function createMainRPC(runtime: Runtime.Runtime<AppLayer>) {
 	return BrowserView.defineRPC<MainRPCSchema>({
 		handlers: {
 			requests: {
@@ -24,9 +23,6 @@ export function createMainRPC(runtime: Runtime.Runtime<AppLayer>, viewManager: V
 			},
 			messages: {
 				"effect-rpc": () => {},
-				"content-view-visible": (data: { visible: boolean }) => {
-					viewManager.setContentViewVisible(data.visible);
-				},
 			},
 		},
 	});

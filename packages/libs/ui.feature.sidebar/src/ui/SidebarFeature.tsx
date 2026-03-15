@@ -96,16 +96,8 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		return session ? currentUrl(session) : undefined;
 	};
 
-	const handleOverlayToggle = (visible: boolean) => {
-		const ctrlpage = (window as unknown as Record<string, unknown>).__ctrlpage as
-			| { sendToBun: (channel: string, data: unknown) => void }
-			| undefined;
-		ctrlpage?.sendToBun("content-view-visible", { visible: !visible });
-	};
-
 	return (
 		<AppShellTemplate
-			onOverlayToggle={handleOverlayToggle}
 			sidebar={{
 				tabs: sidebarTabs,
 				activeTabId: "sessions",
