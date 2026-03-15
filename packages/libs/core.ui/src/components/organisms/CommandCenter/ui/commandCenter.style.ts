@@ -3,6 +3,7 @@ import { sva } from "../../../../../styled-system/css";
 export const commandCenter = sva({
 	slots: [
 		"overlay",
+		"maskTarget",
 		"palette",
 		"searchBar",
 		"searchIcon",
@@ -32,6 +33,10 @@ export const commandCenter = sva({
 			zIndex: 999999,
 			pointerEvents: "none",
 		},
+		maskTarget: {
+			padding: "16px",
+			pointerEvents: "auto",
+		},
 		palette: {
 			display: "flex",
 			flexDirection: "column",
@@ -40,7 +45,7 @@ export const commandCenter = sva({
 			bg: "bg.secondary",
 			borderRadius: "16px",
 			overflow: "hidden",
-			pointerEvents: "auto",
+			boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.08), 0 16px 70px rgba(0, 0, 0, 0.5)",
 		},
 		searchBar: {
 			display: "flex",

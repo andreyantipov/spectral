@@ -101,83 +101,87 @@ export function CommandCenter(props: CommandCenterProps) {
 	return (
 		<Show when={props.open}>
 			<div class={$().overlay}>
-				<div class={$().palette} role="dialog" data-command-center-overlay="">
-					<div class={$().searchBar}>
-						<span class={$().searchIcon}>&#8981;</span>
-						<input
-							ref={(el) => setTimeout(() => el.focus(), 0)}
-							class={$().searchInput}
-							placeholder={props.placeholder ?? "Search or type a command..."}
-							value={query()}
-							onInput={(e) => {
-								setQuery(e.currentTarget.value);
-								setActiveIndex(0);
-							}}
-						/>
-						<span class={$().shortcutBadge}>⌘K</span>
-					</div>
+				{/* Mask target: slightly padded so the rectangular mask cutout
+				    covers the palette's rounded corners without exposing page content */}
+				<div class={$().maskTarget} data-command-center-overlay="">
+					<div class={$().palette} role="dialog">
+						<div class={$().searchBar}>
+							<span class={$().searchIcon}>&#8981;</span>
+							<input
+								ref={(el) => setTimeout(() => el.focus(), 0)}
+								class={$().searchInput}
+								placeholder={props.placeholder ?? "Search or type a command..."}
+								value={query()}
+								onInput={(e) => {
+									setQuery(e.currentTarget.value);
+									setActiveIndex(0);
+								}}
+							/>
+							<span class={$().shortcutBadge}>⌘K</span>
+						</div>
 
-					<div class={$().divider} />
+						<div class={$().divider} />
 
-					<div class={$().results}>
-						{(() => {
-							flatIndex = 0;
-							return null;
-						})()}
-						<For each={[...sections().entries()]}>
-							{([section, items]) => (
-								<>
-									<Show when={section}>
-										<span class={$().sectionLabel}>{section}</span>
-									</Show>
-									<For each={items}>
-										{(item) => {
-											const idx = flatIndex++;
-											const s = () => (idx === activeIndex() ? $active() : $());
-											return (
-												<button
-													type="button"
-													class={s().resultItem}
-													onClick={() => props.onSelect?.(item.id)}
-													onMouseEnter={() => setActiveIndex(idx)}
-												>
-													<Show when={item.icon}>
-														<span class={s().resultIcon}>{item.icon}</span>
-													</Show>
-													<span class={s().resultLabel}>{item.label}</span>
-													<Show when={item.secondaryLabel}>
-														<span class={s().resultSecondary}>{item.secondaryLabel}</span>
-													</Show>
-													<Show when={item.badge}>
-														<span class={s().resultBadge}>
-															{item.badge}
-															<span class={s().resultBadgeIcon}>→</span>
-														</span>
-													</Show>
-												</button>
-											);
-										}}
-									</For>
-								</>
-							)}
-						</For>
-					</div>
+						<div class={$().results}>
+							{(() => {
+								flatIndex = 0;
+								return null;
+							})()}
+							<For each={[...sections().entries()]}>
+								{([section, items]) => (
+									<>
+										<Show when={section}>
+											<span class={$().sectionLabel}>{section}</span>
+										</Show>
+										<For each={items}>
+											{(item) => {
+												const idx = flatIndex++;
+												const s = () => (idx === activeIndex() ? $active() : $());
+												return (
+													<button
+														type="button"
+														class={s().resultItem}
+														onClick={() => props.onSelect?.(item.id)}
+														onMouseEnter={() => setActiveIndex(idx)}
+													>
+														<Show when={item.icon}>
+															<span class={s().resultIcon}>{item.icon}</span>
+														</Show>
+														<span class={s().resultLabel}>{item.label}</span>
+														<Show when={item.secondaryLabel}>
+															<span class={s().resultSecondary}>{item.secondaryLabel}</span>
+														</Show>
+														<Show when={item.badge}>
+															<span class={s().resultBadge}>
+																{item.badge}
+																<span class={s().resultBadgeIcon}>→</span>
+															</span>
+														</Show>
+													</button>
+												);
+											}}
+										</For>
+									</>
+								)}
+							</For>
+						</div>
 
-					<div class={$().divider} />
+						<div class={$().divider} />
 
-					<div class={$().footer}>
-						<span class={$().footerHint}>
-							<span class={$().footerHintKey}>↑↓</span>
-							<span class={$().footerHintLabel}>navigate</span>
-						</span>
-						<span class={$().footerHint}>
-							<span class={$().footerHintKey}>↵</span>
-							<span class={$().footerHintLabel}>open</span>
-						</span>
-						<span class={$().footerHint}>
-							<span class={$().footerHintKey}>esc</span>
-							<span class={$().footerHintLabel}>dismiss</span>
-						</span>
+						<div class={$().footer}>
+							<span class={$().footerHint}>
+								<span class={$().footerHintKey}>↑↓</span>
+								<span class={$().footerHintLabel}>navigate</span>
+							</span>
+							<span class={$().footerHint}>
+								<span class={$().footerHintKey}>↵</span>
+								<span class={$().footerHintLabel}>open</span>
+							</span>
+							<span class={$().footerHint}>
+								<span class={$().footerHintKey}>esc</span>
+								<span class={$().footerHintLabel}>dismiss</span>
+							</span>
+						</div>
 					</div>
 				</div>
 			</div>
