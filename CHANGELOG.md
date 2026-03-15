@@ -1,3 +1,30 @@
+# [0.5.0](https://github.com/andreyantipov/ctrl.page/compare/v0.4.0...v0.5.0) (2026-03-15)
+
+
+### Bug Fixes
+
+* address PR review — dedup helpers, pin versions, fix empty session, update docs ([2f9e181](https://github.com/andreyantipov/ctrl.page/commit/2f9e1813b1d06f6e128e9f8ac1ffd862fe4b0e80))
+* address PR review — ordering, transactions, error handling, activation ([b85e354](https://github.com/andreyantipov/ctrl.page/commit/b85e35495f3ff0cd6aeaa68baeb2a0b2a72bef26))
+* align mock sessions with production, add RPC error handling, fix scope lifecycle ([066fa8a](https://github.com/andreyantipov/ctrl.page/commit/066fa8a0de6e80e8c395e73f9126a0d9ce45d179))
+* remove node:path/url imports from ensure-schema, strengthen no-raw-sql GritQL rule ([abb4199](https://github.com/andreyantipov/ctrl.page/commit/abb4199dfda2c657005d5d5693fda3771042ae83))
+* remove node:url import — use decodeURIComponent(URL.pathname) for CI compatibility ([d3f98c5](https://github.com/andreyantipov/ctrl.page/commit/d3f98c5aab383c57486bf9b21cb6f3026806ec0a))
+* resolve biome lint issues (forEach return, import sorting, formatting) ([9ed596b](https://github.com/andreyantipov/ctrl.page/commit/9ed596b8366adba6185f1cfb2f5461f2232f2ee4))
+* restore workspace deps for turbo build ordering — only workspace:* allowed in libs ([a176582](https://github.com/andreyantipov/ctrl.page/commit/a17658241cc697ef327f764e1b253837fc9a74bd))
+* sort imports in browsing service (biome) ([ca49e0b](https://github.com/andreyantipov/ctrl.page/commit/ca49e0bb1127821326ab4e897bad155923f60238))
+* strip dependencies from libs package.json — root is single source of truth ([851b79e](https://github.com/andreyantipov/ctrl.page/commit/851b79e29913c64b8a791cadd55ea9335a53fbb5))
+
+
+### Features
+
+* **core.shared:** migrate Tab types to Session with Effect Schema as single source of truth ([32bd192](https://github.com/andreyantipov/ctrl.page/commit/32bd1929353f080ec14f99af27b917d4409e967f))
+* **desktop:** wire RPC server on Bun, RPC client on webview ([5c58b85](https://github.com/andreyantipov/ctrl.page/commit/5c58b859a01584ef0dbb06b33e18301ed48b17fd))
+* **domain.adapter.db:** implement session + pages schema with SessionRepository ([70bc311](https://github.com/andreyantipov/ctrl.page/commit/70bc3111da2a3f14b8f12465db68b355d07604e6))
+* **domain.adapter.db:** switch to drizzle-kit migrations — zero handwritten SQL ([246b1a1](https://github.com/andreyantipov/ctrl.page/commit/246b1a18b4e31b990ca9a7e115a6680f7293b907))
+* **domain.adapter.rpc:** implement generic Effect<->Electrobun IPC tunnel ([6aa0e52](https://github.com/andreyantipov/ctrl.page/commit/6aa0e522daf856e98f842aa31e7d41357ca3ba41))
+* **domain.feature.session:** rename from tab, implement session model with page history navigation ([7b40ddc](https://github.com/andreyantipov/ctrl.page/commit/7b40ddc98244f5b1155aa179ed68df2e194cb855))
+* **domain.service.browsing:** migrate to RPC group as service contract with session model ([265ce33](https://github.com/andreyantipov/ctrl.page/commit/265ce33585b729f15c4d13fb99ee27da62a60f7e))
+* **ui.feature.sidebar:** migrate to session model with RPC client ([f3933c1](https://github.com/andreyantipov/ctrl.page/commit/f3933c16e5276230f6fee8b04025a4cf53c3fa13))
+
 # [0.4.0](https://github.com/andreyantipov/ctrl.page/compare/v0.3.1...v0.4.0) (2026-03-14)
 
 
