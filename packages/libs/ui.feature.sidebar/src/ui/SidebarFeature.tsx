@@ -1,4 +1,4 @@
-import { currentPage } from "@ctrl/core.shared";
+import { currentPage, currentUrl } from "@ctrl/core.shared";
 import { AppShellTemplate, type SidebarItem as CoreSidebarItem, useRuntime } from "@ctrl/core.ui";
 import type { JSX } from "solid-js";
 import { useBrowsingRpc } from "../api/use-sidebar";
@@ -85,6 +85,17 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		if (looksLikeUrl(id)) navigateActiveSession(normalizeUrl(id));
 	};
 
+	const handleSubmitRaw = (query: string) => {
+		if (looksLikeUrl(query)) {
+			navigateActiveSession(normalizeUrl(query));
+		}
+	};
+
+	const activeUrl = () => {
+		const session = activeSession();
+		return session ? currentUrl(session) : undefined;
+	};
+
 	return (
 		<AppShellTemplate
 			sidebar={{
@@ -99,7 +110,9 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 			commandCenter={{
 				items: buildCommandCenterItems(state()),
 				onSelect: handleCcSelect,
+				onSubmitRaw: handleSubmitRaw,
 			}}
+			currentUrl={activeUrl()}
 		>
 			{props.children}
 		</AppShellTemplate>

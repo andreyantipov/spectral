@@ -6,6 +6,7 @@ import { appShellTemplate } from "./appShellTemplate.style";
 export type AppShellTemplateProps = {
 	sidebar: SidebarProps;
 	commandCenter: Omit<CommandCenterProps, "open" | "onClose">;
+	currentUrl?: string;
 	children?: JSX.Element;
 };
 
@@ -53,6 +54,7 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 			<CommandCenter
 				{...props.commandCenter}
 				open={ccOpen()}
+				initialQuery={props.currentUrl}
 				onClose={handleCcClose}
 				onSelect={handleCcSelect}
 			/>
