@@ -8,8 +8,6 @@ import { appShellTemplate } from "./appShellTemplate.style";
 type WebviewTagElement = HTMLElement & {
 	loadURL: (url: string) => void;
 	toggleHidden: (hidden?: boolean) => void;
-	syncScreenshot: (callback?: () => void) => void;
-	clearScreenImage: () => void;
 	on: (event: string, handler: (event: CustomEvent) => void) => void;
 	off: (event: string, handler: (event: CustomEvent) => void) => void;
 };
@@ -50,25 +48,16 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 
 	function openCc() {
 		if (ccOpen()) return;
-		// Capture screenshot of the page, then hide native view.
-		// The screenshot stays as a background image on the anchor element,
-		// so the page appears "still there" while CommandCenter overlays it.
-		if (webviewRef) {
-			webviewRef.syncScreenshot(() => {
-				webviewRef?.toggleHidden(true);
-			});
-		}
+		// Hide native webview so CommandCenter overlay is visible on top
+		webviewRef?.toggleHidden(true);
 		setCcOpen(true);
 	}
 
 	function closeCc() {
 		if (!ccOpen()) return;
 		setCcOpen(false);
-		// Restore the native webview and clean up the screenshot background
-		if (webviewRef) {
-			webviewRef.toggleHidden(false);
-			webviewRef.clearScreenImage();
-		}
+		// Restore native webview
+		webviewRef?.toggleHidden(false);
 	}
 
 	function toggleCc() {
