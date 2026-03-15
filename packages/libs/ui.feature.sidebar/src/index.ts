@@ -1,1 +1,1 @@
-export { SidebarFeature } from "./ui/SidebarFeature";
+export { SidebarFeature, type SidebarFeatureProps } from "./ui/SidebarFeature";
