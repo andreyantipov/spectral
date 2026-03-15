@@ -1,5 +1,5 @@
 import { RuntimeProvider } from "@ctrl/core.ui";
-import { MainPage } from "@ctrl/ui.pages";
+import { MainPage } from "@ctrl/ui.scenes";
 import type { ManagedRuntime } from "effect";
 
 type AppProps = {

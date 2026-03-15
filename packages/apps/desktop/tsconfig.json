@@ -19,6 +19,6 @@
 		{ "path": "../../libs/domain.feature.session" },
 		{ "path": "../../libs/domain.service.browsing" },
 		{ "path": "../../libs/ui.feature.sidebar" },
-		{ "path": "../../libs/ui.pages" }
+		{ "path": "../../libs/ui.scenes" }
 	]
 }

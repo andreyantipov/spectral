@@ -13,7 +13,7 @@
 		"@ctrl/domain.feature.history": "workspace:*",
 		"@ctrl/domain.feature.session": "workspace:*",
 		"@ctrl/domain.service.browsing": "workspace:*",
-		"@ctrl/ui.pages": "workspace:*",
+		"@ctrl/ui.scenes": "workspace:*",
 		"electrobun": "1.15.1"
 	},
 	"scripts": {

@@ -12,7 +12,7 @@ Sibling packages within the same layer cannot import each other:
 - `ui.feature.*` cannot import other `ui.feature.*`
 
 Note: `domain.service.*` peer isolation is covered by `domain_boundary_rules`.
-Note: `ui.pages` is a single package (not per-page packages), so no peer isolation rule is needed.
+Note: `ui.scenes` is a single package (not per-page packages), so no peer isolation rule is needed.
 
 ```grit
 language js
