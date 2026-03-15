@@ -8,6 +8,7 @@ import { appShellTemplate } from "./appShellTemplate.style";
 type WebviewTagElement = HTMLElement & {
 	loadURL: (url: string) => void;
 	toggleHidden: (hidden?: boolean) => void;
+	togglePassthrough: (passthrough?: boolean) => void;
 	on: (event: string, handler: (event: CustomEvent) => void) => void;
 	off: (event: string, handler: (event: CustomEvent) => void) => void;
 };
@@ -48,16 +49,16 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 
 	function openCc() {
 		if (ccOpen()) return;
-		// Hide native webview so CommandCenter overlay is visible on top
-		webviewRef?.toggleHidden(true);
+		// Enable passthrough so clicks reach the CommandCenter overlay behind the native view.
+		// The page stays visible — passthrough only affects input, not rendering.
+		webviewRef?.togglePassthrough(true);
 		setCcOpen(true);
 	}
 
 	function closeCc() {
 		if (!ccOpen()) return;
 		setCcOpen(false);
-		// Restore native webview
-		webviewRef?.toggleHidden(false);
+		webviewRef?.togglePassthrough(false);
 	}
 
 	function toggleCc() {
