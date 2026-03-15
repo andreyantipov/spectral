@@ -52,8 +52,9 @@ ApplicationMenu.setApplicationMenu([
 	{
 		label: "View",
 		submenu: [
+			{ label: "Command Center", action: "toggle-command-center", accelerator: "Cmd+T" },
 			{ label: "Command Center", action: "toggle-command-center", accelerator: "Cmd+K" },
-			{ label: "Command Center Alt", action: "toggle-command-center", accelerator: "Cmd+/" },
+			{ label: "Command Center", action: "toggle-command-center", accelerator: "Cmd+/" },
 			{ type: "separator" },
 			{ label: "Toggle Full Screen", role: "toggleFullScreen", accelerator: "Cmd+Ctrl+F" },
 		],

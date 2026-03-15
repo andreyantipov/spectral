@@ -111,6 +111,7 @@ export const commandCenter = sva({
 			display: "flex",
 			alignItems: "center",
 			height: "40px",
+			width: "100%",
 			px: "12px",
 			gap: "10px",
 			borderRadius: "md",
@@ -119,6 +120,9 @@ export const commandCenter = sva({
 			fontSize: "13px",
 			fontFamily: "body",
 			color: "fg.primary",
+			border: "none",
+			bg: "transparent",
+			textAlign: "left",
 			transition: "all 0.1s ease",
 			_hover: {
 				bg: "bg.tertiary",

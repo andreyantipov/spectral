@@ -9,6 +9,7 @@ type WebviewTagElement = HTMLElement & {
 	loadURL: (url: string) => void;
 	toggleHidden: (hidden?: boolean) => void;
 	togglePassthrough: (passthrough?: boolean) => void;
+	syncDimensions: (force?: boolean) => void;
 	on: (event: string, handler: (event: CustomEvent) => void) => void;
 	off: (event: string, handler: (event: CustomEvent) => void) => void;
 };
@@ -17,9 +18,13 @@ type IpcBridgeHandle = {
 	subscribe: (handler: (cmd: { type: string }) => void) => () => void;
 };
 
-// Preload script: forwards Cmd+K, Cmd+/, Escape from webview tag to host
+// Preload script: forwards Cmd+T, Cmd+K, Cmd+/, Escape from webview tag to host
 const SHORTCUT_PRELOAD = `
 document.addEventListener('keydown', function(e) {
+  if ((e.metaKey || e.ctrlKey) && e.key === 't') {
+    e.preventDefault();
+    window.__electrobunSendToHost({ type: 'shortcut', key: 'cmd+t' });
+  }
   if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
     e.preventDefault();
     window.__electrobunSendToHost({ type: 'shortcut', key: 'cmd+k' });
@@ -81,14 +86,14 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 	function handleHostMessage(event: CustomEvent) {
 		const msg = event.detail as { type?: string; key?: string } | undefined;
 		if (msg?.type === "shortcut") {
-			if (msg.key === "cmd+k" || msg.key === "cmd+/") toggleCc();
+			if (msg.key === "cmd+t" || msg.key === "cmd+k" || msg.key === "cmd+/") toggleCc();
 			else if (msg.key === "escape" && ccOpen()) closeCc();
 		}
 	}
 
-	// Cmd+K/Cmd+/ from host webview DOM (when sidebar or empty area has focus)
+	// Cmd+T/Cmd+K/Cmd+/ from host webview DOM (when sidebar or empty area has focus)
 	function handleKeyDown(e: KeyboardEvent) {
-		if (e.metaKey && (e.key === "k" || e.key === "/")) {
+		if (e.metaKey && (e.key === "t" || e.key === "k" || e.key === "/")) {
 			e.preventDefault();
 			toggleCc();
 		}
@@ -118,6 +123,17 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 		webviewRef = el as WebviewTagElement;
 		webviewRef.on("host-message", handleHostMessage);
 	}
+
+	// Force mask rect sync when CommandCenter opens/closes.
+	// The OverlaySyncController only sends masks when the webview position changes.
+	// When the CC overlay appears (mask elements change) but the webview hasn't moved,
+	// the sync is skipped. Force it so the native CAShapeLayer mask is recalculated.
+	createEffect(() => {
+		const _open = ccOpen();
+		if (webviewRef) {
+			requestAnimationFrame(() => webviewRef?.syncDimensions(true));
+		}
+	});
 
 	createEffect(() => {
 		const url = props.currentUrl;

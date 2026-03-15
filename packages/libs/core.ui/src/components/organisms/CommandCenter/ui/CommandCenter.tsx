@@ -104,13 +104,13 @@ export function CommandCenter(props: CommandCenterProps) {
 			<div
 				class={$().overlay}
 				role="presentation"
-				data-command-center-overlay=""
 				onClick={() => props.onClose?.()}
 				onKeyDown={(e) => e.key === "Escape" && props.onClose?.()}
 			>
 				<div
 					class={$().palette}
 					role="dialog"
+					data-command-center-overlay=""
 					onClick={(e) => e.stopPropagation()}
 					onKeyDown={(e) => e.stopPropagation()}
 				>

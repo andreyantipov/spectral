@@ -153,6 +153,7 @@ export const sidebar = sva({
 			display: "flex",
 			alignItems: "center",
 			height: "30px",
+			width: "100%",
 			px: "8px",
 			gap: "6px",
 			fontSize: "12px",
@@ -162,6 +163,9 @@ export const sidebar = sva({
 			flexShrink: 0,
 			borderRadius: "sm",
 			mx: "4px",
+			border: "none",
+			bg: "transparent",
+			textAlign: "left",
 			transition: "all 0.1s ease",
 			_hover: {
 				bg: "bg.secondary",
