@@ -155,7 +155,7 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 							ref={setupWebview}
 							src={props.currentUrl}
 							preload={SHORTCUT_PRELOAD}
-							style="width: 100%; height: 100%; display: block; background: transparent;"
+							style={`width: 100%; height: 100%; display: block; background: transparent; border-radius: ${ccOpen() ? "8px" : "0"};`}
 						/>
 					</Show>
 					{props.children}
