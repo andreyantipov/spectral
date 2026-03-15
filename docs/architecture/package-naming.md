@@ -26,6 +26,10 @@ The second level of `domain.*.*` encodes the hexagonal layer:
 
 Alphabetical `a → f → s` matches dependency direction within `domain`.
 
+### Special adapter: `domain.adapter.rpc`
+
+`domain.adapter.rpc` is a **generic Electrobun IPC tunnel** — it has no knowledge of sessions, browsing, or any other domain concept. It exports `ElectrobunServerProtocol` (Bun/main-process side) and `ElectrobunClientProtocol` (webview side), each implementing the corresponding `@effect/rpc` protocol interface. The domain contract (`BrowsingRpcs`) lives in `domain.service.browsing` and is separate from the transport layer.
+
 ## UI Tiers (`f → p`)
 
 The second level of `ui.*.*` encodes the presentation layer:
@@ -59,7 +63,7 @@ Everything else is internal. GritQL enforces this — see `docs/architecture/dep
 
 1. Pick the correct namespace based on what the package does (foundation → core, business logic → domain, presentation → ui).
 2. Pick the correct tier within that namespace.
-3. Use a short, lowercase noun for the third level: `tab`, `bookmark`, `sidebar`, `main`.
+3. Use a short, lowercase noun for the third level: `session`, `bookmark`, `sidebar`, `main`. Note: the browsing unit of work is called a **session** (not tab) — `domain.feature.session` not `domain.feature.tab`.
 4. The resulting name is both the directory name and the npm package name: `@ctrl/<namespace>.<tier>.<name>`.
 
 Examples:

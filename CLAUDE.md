@@ -40,6 +40,9 @@ A local Ollama instance is available via MCP tools (`ollama_chat`, `ollama_gener
 - No hardcoded strings for span names or service identifiers
 - GritQL enforces all boundaries — run `bunx grit check .` before committing
 - Two public surfaces: `domain.service.*` (for UI) and `ui.pages` (for apps)
+- **`BrowsingRpcs`** is the service contract — an `@effect/rpc` `RpcGroup` exported from `domain.service.browsing`. There is no separate `BrowsingService` `Context.Tag`.
+- **`Effect Schema` is the single source of truth** for domain types — derive TypeScript types from schemas, never duplicate them.
+- The browsing unit of work is a **session** — use `domain.feature.session` not `domain.feature.tab`. Constants use `SESSION_FEATURE`, not `TAB_FEATURE`.
 
 ## Notes
 

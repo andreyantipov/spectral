@@ -10,6 +10,7 @@
 	"references": [
 		{ "path": "../core.shared" },
 		{ "path": "../core.ui" },
+		{ "path": "../domain.feature.session" },
 		{ "path": "../domain.service.browsing" }
 	]
 }

@@ -24,18 +24,24 @@ No package may import a peer at the same tier. Composition happens one level up.
 - `ui.feature.*` packages cannot import each other — UI features are atomic
 - `ui.pages` is a single package, so no peer isolation rule is needed
 
+## Service Contract: `BrowsingRpcs`
+
+`domain.service.browsing` exports `BrowsingRpcs` — an `@effect/rpc` `RpcGroup` that is the **single service contract** for all browsing operations. There is no separate `BrowsingService` `Context.Tag`. The UI layer calls RPCs via a generated client; the Bun side implements handlers via `BrowsingHandlersLive`.
+
+The transport (`ElectrobunServerProtocol` / `ElectrobunClientProtocol` from `domain.adapter.rpc`) is wired at the composition root and is entirely separate from the RPC contract.
+
 ## Valid and Invalid Imports
 
 **Valid:**
 ```typescript
 // ui.feature.sidebar importing from domain.service.*  ✓
-import { BrowsingService } from "@ctrl/domain.service.browsing"
+import { BrowsingRpcs } from "@ctrl/domain.service.browsing"
 
-// domain.feature.tab importing from core.shared  ✓
-import { TabRepository } from "@ctrl/core.shared"
+// domain.feature.session importing from core.shared  ✓
+import { SessionRepository } from "@ctrl/core.shared"
 
 // domain.service.browsing importing from domain.feature.*  ✓
-import { TabFeature } from "@ctrl/domain.feature.tab"
+import { SessionFeature } from "@ctrl/domain.feature.session"
 
 // ui.pages importing from ui.feature.*  ✓
 import { SidebarFeature } from "@ctrl/ui.feature.sidebar"
@@ -44,16 +50,16 @@ import { SidebarFeature } from "@ctrl/ui.feature.sidebar"
 **Invalid:**
 ```typescript
 // ui.* importing from domain.feature.*  ✗
-import { TabFeature } from "@ctrl/domain.feature.tab"
+import { SessionFeature } from "@ctrl/domain.feature.session"
 
 // ui.* importing from domain.adapter.*  ✗
-import { TabRepositoryLive } from "@ctrl/domain.adapter.db"
+import { SessionRepositoryLive } from "@ctrl/domain.adapter.db"
 
-// domain.feature.tab importing from domain.adapter.*  ✗
+// domain.feature.session importing from domain.adapter.*  ✗
 // (features use ports via DI, never adapters directly)
-import { TabRepositoryLive } from "@ctrl/domain.adapter.db"
+import { SessionRepositoryLive } from "@ctrl/domain.adapter.db"
 
-// domain.feature.tab importing a peer domain.feature.*  ✗
+// domain.feature.session importing a peer domain.feature.*  ✗
 import { BookmarkFeature } from "@ctrl/domain.feature.bookmark"
 
 // domain.service.browsing importing domain.adapter.*  ✗
@@ -63,7 +69,7 @@ import { DatabaseServiceLive } from "@ctrl/domain.adapter.db"
 import { SidebarFeature } from "@ctrl/ui.feature.sidebar"
 
 // core.* importing domain.* or ui.*  ✗
-import { TabFeature } from "@ctrl/domain.feature.tab"
+import { SessionFeature } from "@ctrl/domain.feature.session"
 ```
 
 ## GritQL Enforcement

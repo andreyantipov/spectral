@@ -28,13 +28,23 @@ Every `domain.feature.*` has unit tests with mocked ports. No DB, no real servic
 Pattern: create a `MockRepo` Layer → compose with the feature Layer → run the effect.
 
 ```typescript
-const MockRepo = Layer.succeed(TabRepository, {
-  getAll: () => Effect.succeed([mockTab]),
-  create: (url) => Effect.succeed({ id: "1", url, title: "" }),
+const MockRepo = Layer.succeed(SessionRepository, {
+  getAll: () => Effect.succeed([mockSession]),
+  getById: (id) => Effect.succeed(mockSession),
+  create: (mode) => Effect.succeed({
+    id: "1", mode, pages: [{ url: DEFAULT_TAB_URL, title: null, loadedAt: new Date().toISOString() }],
+    currentIndex: 0, isActive: false,
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+  }),
   remove: (id) => Effect.succeed(void 0),
+  setActive: (id) => Effect.succeed(void 0),
+  updateCurrentIndex: (id, index) => Effect.succeed(void 0),
+  addPage: (sessionId, url, atIndex) => Effect.succeed({ url, title: null, loadedAt: new Date().toISOString() }),
+  removePagesAfterIndex: (sessionId, index) => Effect.succeed(void 0),
+  updatePageTitle: (sessionId, pageIndex, title) => Effect.succeed(void 0),
 })
 
-const TestLayer = TabFeatureLive.pipe(Layer.provide(MockRepo))
+const TestLayer = SessionFeatureLive.pipe(Layer.provide(MockRepo))
 ```
 
 Tests run via `Effect.provide(TestLayer)` + `Effect.runPromise`.
@@ -52,21 +62,20 @@ Every `domain.service.*` has trace assertions verifying that service boundaries 
 ```typescript
 import { spanName } from "@ctrl/core.shared"
 import { BROWSING_SERVICE } from "../lib/constants"
-import { TAB_FEATURE } from "@ctrl/domain.feature.tab"
+import { SESSION_FEATURE } from "@ctrl/domain.feature.session"
 
 // In tests:
-expect(spans).toContainSpan(spanName(BROWSING_SERVICE, "createTab"))
-expect(spans).toContainSpan(spanName(TAB_FEATURE, "create"))
+expect(spans).toContainSpan(spanName(BROWSING_SERVICE, "createSession"))
+expect(spans).toContainSpan(spanName(SESSION_FEATURE, "create"))
 ```
 
-Service name constants (`TAB_FEATURE`, `BROWSING_SERVICE`, etc.) are defined in each package's `lib/constants.ts` and exported from the package index.
+Service name constants (`SESSION_FEATURE`, `BROWSING_SERVICE`, etc.) are defined in each package's `lib/constants.ts` and exported from the package index.
 
 ### Test Layer Setup
 
 ```typescript
-const TestLayer = BrowsingServiceLive.pipe(
-  Layer.provide(TabFeatureLive),
-  Layer.provide(HistoryFeatureLive),
+const TestLayer = BrowsingHandlersLive.pipe(
+  Layer.provide(SessionFeatureLive),
   Layer.provide(MockRepo),
   Layer.provide(TestSpanExporter.layer),  // from domain.adapter.otel
 )
@@ -101,14 +110,30 @@ Integration tests in `packages/apps/*/test/` wire up the full Layer stack with o
 
 ```typescript
 const PipelineTestLayer = Layer.mergeAll(
-  BrowsingServiceLive,
-  TabFeatureLive,
-  HistoryFeatureLive,
+  BrowsingHandlersLive,
+  SessionFeatureLive,
   MockDatabaseServiceLive,  // in-memory SQLite
   MockTransportLive,        // simulates RPC
   TestSpanExporter.layer,
 )
 ```
+
+### RPC Tunnel Test Pattern
+
+To test the `domain.adapter.rpc` tunnel in isolation, create a mock Electrobun pair (two in-memory handles wired back-to-back) and exercise the server/client protocol round-trip without involving any domain logic:
+
+```typescript
+// packages/libs/domain.adapter.rpc/src/api/*.test.ts
+const [serverHandle, clientHandle] = makeMockElectrobunPair()
+
+const serverProtocol = yield* ElectrobunServerProtocol(serverHandle)
+const clientProtocol = yield* ElectrobunClientProtocol(clientHandle)
+
+// Assert that a request sent from the client arrives at the server
+// and the response is delivered back to the client.
+```
+
+This keeps transport tests free of domain concerns and makes failures easy to localise.
 
 L4 tests verify: stream delivers data after mutation, complete span chain with correct parent-child relationships, and zero error-status spans.
 

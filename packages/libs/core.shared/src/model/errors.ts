@@ -1,11 +1,11 @@
-import { Data } from "effect";
+import { Schema } from "effect";
 
-export class DatabaseError extends Data.TaggedError("DatabaseError")<{
-	readonly message: string;
-	readonly cause?: unknown;
-}> {}
+export class DatabaseError extends Schema.TaggedError<DatabaseError>()("DatabaseError", {
+	message: Schema.String,
+	cause: Schema.optional(Schema.Unknown),
+}) {}
 
-export class ValidationError extends Data.TaggedError("ValidationError")<{
-	readonly message: string;
-	readonly field?: string;
-}> {}
+export class ValidationError extends Schema.TaggedError<ValidationError>()("ValidationError", {
+	message: Schema.String,
+	field: Schema.optional(Schema.String),
+}) {}

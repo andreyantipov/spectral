@@ -1,36 +1,40 @@
-import { DEFAULT_TAB_URL } from "@ctrl/core.shared";
 import { type SidebarItem as CoreSidebarItem, Sidebar, useRuntime } from "@ctrl/core.ui";
-import { useBrowsingService } from "../api/use-sidebar";
-import { mapTabsToSidebarItems } from "../model/sidebar.bindings";
+import { useBrowsingRpc } from "../api/use-sidebar";
+import { mapSessionsToSidebarItems } from "../model/sidebar.bindings";
 
 export function SidebarFeature() {
-	const { data, actions } = useBrowsingService();
+	const { client, state } = useBrowsingRpc();
 	const runtime = useRuntime();
 
 	const items = (): CoreSidebarItem[] =>
-		mapTabsToSidebarItems(data()?.tabs).map((item) => ({
+		mapSessionsToSidebarItems(state()?.sessions).map((item) => ({
 			id: item.id,
 			label: item.label,
 		}));
 
 	const activeItemId = () =>
-		mapTabsToSidebarItems(data()?.tabs).find((item) => item.active)?.id ?? null;
+		mapSessionsToSidebarItems(state()?.sessions).find((item) => item.active)?.id ?? null;
 
 	const handleNewTab = () => {
-		void runtime.runPromise(actions.createTab(DEFAULT_TAB_URL));
+		void runtime.runPromise(client.createSession({ mode: "visual" }));
+	};
+
+	const handleItemClick = (id: string) => {
+		void runtime.runPromise(client.setActive({ id }));
 	};
 
 	const handleItemClose = (id: string) => {
-		void runtime.runPromise(actions.removeTab(id));
+		void runtime.runPromise(client.removeSession({ id }));
 	};
 
 	return (
 		<Sidebar
-			tabs={[{ id: "tabs", icon: <span>⊞</span>, label: "Tabs" }]}
-			activeTabId="tabs"
+			tabs={[{ id: "sessions", icon: <span>{"#"}</span>, label: "Sessions" }]}
+			activeTabId="sessions"
 			items={items()}
 			activeItemId={activeItemId()}
 			onNewTab={handleNewTab}
+			onItemClick={handleItemClick}
 			onItemClose={handleItemClose}
 		/>
 	);

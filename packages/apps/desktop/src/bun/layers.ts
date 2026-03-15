@@ -1,8 +1,8 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { makeDbClient, TabRepositoryLive } from "@ctrl/domain.adapter.db";
-import { TabFeatureLive } from "@ctrl/domain.feature.tab";
-import { BrowsingServiceLive } from "@ctrl/domain.service.browsing";
+import { makeDbClient, SessionRepositoryLive } from "@ctrl/domain.adapter.db";
+import { SessionFeatureLive } from "@ctrl/domain.feature.session";
+import { BrowsingHandlersLive } from "@ctrl/domain.service.browsing";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { Layer } from "effect";
 
@@ -12,15 +12,14 @@ const dbPath = join(homedir(), ".ctrl.page", "data.db");
 const DbClientLive = makeDbClient(`file:${dbPath}`);
 const DrizzleLive = drizzleLayer.pipe(Layer.provide(DbClientLive));
 
-// Domain: TabRepository -> TabFeature -> BrowsingService
-const TabRepositoryLayer = TabRepositoryLive.pipe(Layer.provide(DrizzleLive));
-const TabFeatureLayer = TabFeatureLive.pipe(Layer.provide(TabRepositoryLayer));
-const BrowsingServiceLayer = BrowsingServiceLive.pipe(Layer.provide(TabFeatureLayer));
+// Domain: SessionRepository -> SessionFeature -> BrowsingHandlers
+const SessionRepositoryLayer = SessionRepositoryLive.pipe(Layer.provide(DrizzleLive));
+const SessionFeatureLayer = SessionFeatureLive.pipe(Layer.provide(SessionRepositoryLayer));
+const BrowsingHandlersLayer = BrowsingHandlersLive.pipe(Layer.provide(SessionFeatureLayer));
 
 // Compose: expose all layers needed by the app
 // - DbClientLive: for migrations (LibsqlClient)
-// - TabRepositoryLayer: TabManager still uses TabRepository directly during transition
-// - BrowsingServiceLayer: new hex architecture entry point
-export const DesktopLive = Layer.mergeAll(DbClientLive, TabRepositoryLayer, BrowsingServiceLayer);
+// - BrowsingHandlersLayer: Effect RPC handler implementations
+export const DesktopLive = Layer.mergeAll(DbClientLive, BrowsingHandlersLayer);
 
 export type AppLayer = Layer.Layer.Success<typeof DesktopLive>;

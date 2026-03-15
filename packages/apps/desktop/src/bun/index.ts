@@ -3,11 +3,14 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { APP_NAME, APP_VERSION } from "@ctrl/core.shared";
 import { ensureSchema } from "@ctrl/domain.adapter.db";
-import { ManagedRuntime, Runtime } from "effect";
+import { type ElectrobunRpcHandle, ElectrobunServerProtocol } from "@ctrl/domain.adapter.rpc";
+import { BrowsingRpcs } from "@ctrl/domain.service.browsing";
+import { RpcSerialization, RpcServer } from "@effect/rpc";
+import { Layer, ManagedRuntime, Runtime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
-import { DesktopLive } from "./layers";
+import { type AppLayer, DesktopLive } from "./layers";
 import { createMainRPC } from "./rpc";
-import { TabManager } from "./tab-manager";
+import { ViewManager } from "./view-manager";
 
 // Ensure data directory exists
 mkdirSync(join(homedir(), ".ctrl.page"), { recursive: true });
@@ -54,11 +57,14 @@ ApplicationMenu.setApplicationMenu([
 	},
 ]);
 
-// Create TabManager with Effect runtime
-const tabManager = new TabManager(rt);
+// Create ViewManager (BrowserView management only, no domain logic)
+// TODO: Wire ViewManager to BrowsingService.sessionChanges stream
+// to sync BrowserViews with sessions (create/destroy/navigate).
+// This requires the RPC server streaming to be fully operational.
+const viewManager = new ViewManager();
 
-// Create RPC with tabManager
-const mainRPC = createMainRPC(rt, tabManager);
+// Create Electrobun RPC (legacy request/response + effect-rpc message channel)
+const mainRPC = createMainRPC(rt);
 
 // Create window
 const win = new BrowserWindow({
@@ -70,11 +76,33 @@ const win = new BrowserWindow({
 	rpc: mainRPC,
 });
 
-// Wire up tabManager with window context
-tabManager.setWindow(win);
-tabManager.setRPC(win.webview.rpc);
+// Wire up ViewManager with window context
+viewManager.setWindow(win);
 
-// Initialize tabs (loads from DB, creates content view)
-await tabManager.init();
+// Start the Effect RPC server over the Electrobun IPC tunnel.
+// The server listens on the webview's RPC handle and routes requests
+// to BrowsingHandlersLive (already in the runtime context).
+// The Electrobun RPC handle is structurally compatible with ElectrobunRpcHandle
+// but the Electrobun types are opaque, so we cast.
+const rpcHandle = win.webview.rpc as unknown as ElectrobunRpcHandle;
+
+const SerializationLive = RpcSerialization.layerJson;
+
+const ServerProtocolLive = Layer.scoped(
+	RpcServer.Protocol,
+	ElectrobunServerProtocol(rpcHandle),
+).pipe(Layer.provide(SerializationLive));
+
+const HandlersFromRuntime = Layer.succeedContext(rt.context) as Layer.Layer<AppLayer, never, never>;
+
+const ServerLive = RpcServer.layer(BrowsingRpcs).pipe(
+	Layer.provide(ServerProtocolLive),
+	Layer.provide(HandlersFromRuntime),
+) as Layer.Layer<never, never, never>;
+
+// Fork the RPC server — runs for the lifetime of the app
+// TODO: Dispose runtime and rpcServerRuntime on window close to release resources in dev mode.
+const rpcServerRuntime = ManagedRuntime.make(ServerLive);
+await rpcServerRuntime.runtime();
 
 console.info(`${APP_NAME} v${APP_VERSION} started`);

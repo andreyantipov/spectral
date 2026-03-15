@@ -9,7 +9,9 @@
 	"scripts": {
 		"build": "tsgo --build",
 		"check": "tsgo --noEmit",
-		"test": "vitest run"
+		"test": "vitest run",
+		"db:generate": "drizzle-kit generate",
+		"db:push": "drizzle-kit push"
 	},
 	"dependencies": {
 		"@ctrl/core.shared": "workspace:*"

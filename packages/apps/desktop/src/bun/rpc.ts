@@ -9,9 +9,8 @@ import { Effect, type Runtime } from "effect";
 import { BrowserView } from "electrobun/bun";
 import type { AppLayer } from "./layers";
 import { makeRpcHandler } from "./rpc-handler";
-import type { TabManager } from "./tab-manager";
 
-export function createMainRPC(runtime: Runtime.Runtime<AppLayer>, tabManager: TabManager) {
+export function createMainRPC(runtime: Runtime.Runtime<AppLayer>) {
 	return BrowserView.defineRPC<MainRPCSchema>({
 		handlers: {
 			requests: {
@@ -21,45 +20,13 @@ export function createMainRPC(runtime: Runtime.Runtime<AppLayer>, tabManager: Ta
 						version: APP_VERSION,
 					}),
 				),
-
-				getTabs: (_raw: unknown) => tabManager.getSidebarState(),
-
-				createTab: (raw: unknown) => {
-					const params = raw as { url: string };
-					return tabManager.createTab(params.url);
-				},
-
-				closeTab: (raw: unknown) => {
-					const params = raw as { id: string };
-					return tabManager.closeTab(params.id);
-				},
-
-				switchTab: (raw: unknown) => {
-					const params = raw as { id: string };
-					return tabManager.switchTab(params.id);
-				},
-
-				navigateTab: (raw: unknown) => {
-					const params = raw as { url: string };
-					return tabManager.navigateTab(params.url);
-				},
-
-				setSidebarSection: (raw: unknown) => {
-					const params = raw as { id: string };
-					return tabManager.setSidebarSection(params.id);
-				},
-
-				setSidebarCollapsed: (raw: unknown) => {
-					const params = raw as { collapsed: boolean };
-					return tabManager.setSidebarCollapsed(params.collapsed);
-				},
-
-				setSidebarWidth: (raw: unknown) => {
-					const params = raw as { width: number };
-					return tabManager.setSidebarWidth(params.width);
-				},
 			},
-			messages: {},
+			messages: {
+				// The effect-rpc channel is handled by ElectrobunServerProtocol via
+				// addMessageListener. Electrobun requires a handler to be registered
+				// so it allows the channel through IPC.
+				"effect-rpc": () => {},
+			},
 		},
 	});
 }

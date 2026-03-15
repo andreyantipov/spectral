@@ -1,10 +1,11 @@
+import type { ElectrobunRpcHandle } from "@ctrl/domain.adapter.rpc";
+import { ManagedRuntime } from "effect";
+import { createWebviewLive } from "./layers";
 import { mount } from "./mount";
 
-// Mount UI immediately — don't let RPC init failure block rendering
-const rpcPromise = initElectrobun();
-mount(rpcPromise);
+initApp();
 
-async function initElectrobun() {
+async function initApp() {
 	// Wait for electrobun globals to be injected by the native layer
 	await waitForGlobal("__electrobun", 2000);
 
@@ -13,7 +14,17 @@ async function initElectrobun() {
 
 	const rpc = defineRPC(Electroview);
 	new Electroview({ rpc });
-	return rpc;
+
+	// Build the webview Effect layer with the Electrobun RPC handle.
+	// The Electrobun RPC handle is structurally compatible with ElectrobunRpcHandle
+	// but the Electrobun types are opaque, so we cast.
+	const WebviewLive = createWebviewLive(rpc as unknown as ElectrobunRpcHandle);
+	const runtime = ManagedRuntime.make(WebviewLive);
+
+	// Ensure the runtime (and RPC client protocol) is initialized before rendering
+	await runtime.runtime();
+
+	mount(runtime);
 }
 
 function waitForGlobal(name: string, timeout: number): Promise<void> {

@@ -1,5 +1,3 @@
-import type { Tab } from "@ctrl/core.shared";
+import type { BrowsingState } from "@ctrl/core.shared";
 
-export type BrowsingState = {
-	readonly tabs: Tab[];
-};
+export type { BrowsingState };

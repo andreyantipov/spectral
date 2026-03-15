@@ -1,5 +1,6 @@
 export { ensureSchema } from "./api/ensure-schema";
-export { TabRepositoryLive } from "./api/tab.repository";
+export { SessionRepositoryLive } from "./api/session.repository";
 export { makeDbClient } from "./lib/client";
 export { makeRepository } from "./lib/make-repository";
-export { tabsTable } from "./model/tabs.schema";
+export { pagesTable } from "./model/pages.schema";
+export { sessionsTable } from "./model/sessions.schema";
