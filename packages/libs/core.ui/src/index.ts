@@ -9,11 +9,20 @@ export { AddressBar } from "./components/molecules/AddressBar";
 export type { TabBarProps, TabData } from "./components/molecules/TabBar";
 export { TabBar } from "./components/molecules/TabBar";
 export {
+	CommandCenter,
+	type CommandCenterItem,
+	type CommandCenterProps,
+} from "./components/organisms/CommandCenter";
+export {
 	Sidebar,
 	type SidebarItem,
 	type SidebarProps,
 	type SidebarTab,
 } from "./components/organisms/Sidebar";
+export {
+	AppShellTemplate,
+	type AppShellTemplateProps,
+} from "./components/templates/AppShellTemplate";
 
 export { RuntimeProvider, useRuntime } from "./lib/runtime-provider";
 export { useDomainService } from "./lib/use-domain-service";
