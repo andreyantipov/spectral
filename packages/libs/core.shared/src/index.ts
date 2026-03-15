@@ -6,6 +6,7 @@ export { DEFAULT_SESSION_MODE, DEFAULT_TAB_TITLE, DEFAULT_TAB_URL } from "./lib/
 export { canGoBack, canGoForward, currentPage, currentUrl } from "./lib/session.helpers";
 export { spanName } from "./lib/span-name";
 export { withTracing } from "./lib/with-tracing";
+export type { AppCommand, ShowNotification, ToggleCommandCenter } from "./model/commands";
 export * from "./model/errors";
 export * from "./model/ports";
 export * from "./model/schemas";

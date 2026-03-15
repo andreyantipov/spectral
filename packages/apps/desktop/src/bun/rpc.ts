@@ -23,6 +23,7 @@ export function createMainRPC(runtime: Runtime.Runtime<AppLayer>) {
 			},
 			messages: {
 				"effect-rpc": () => {},
+				"app-commands": () => {},
 			},
 		},
 	});
