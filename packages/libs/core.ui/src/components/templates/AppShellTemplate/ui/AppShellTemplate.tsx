@@ -15,35 +15,39 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 	const $ = appShellTemplate;
 	const [ccOpen, setCcOpen] = createSignal(false);
 
-	function handleNewTab() {
+	function openCc() {
 		setCcOpen(true);
 		props.onOverlayToggle?.(true);
+	}
+
+	function closeCc() {
+		setCcOpen(false);
+		props.onOverlayToggle?.(false);
+	}
+
+	function handleNewTab() {
+		openCc();
 		props.sidebar.onNewTab?.();
 	}
 
-	function handleCcClose() {
-		setCcOpen(false);
-		props.onOverlayToggle?.(false);
-	}
-
 	function handleCcSelect(id: string) {
-		setCcOpen(false);
-		props.onOverlayToggle?.(false);
+		closeCc();
 		props.commandCenter.onSelect?.(id);
 	}
 
 	function handleCcSubmitRaw(query: string) {
-		setCcOpen(false);
-		props.onOverlayToggle?.(false);
+		closeCc();
 		props.commandCenter.onSubmitRaw?.(query);
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
 		if (e.metaKey && e.key === "k") {
 			e.preventDefault();
-			const next = !ccOpen();
-			setCcOpen(next);
-			props.onOverlayToggle?.(next);
+			if (ccOpen()) {
+				closeCc();
+			} else {
+				openCc();
+			}
 		}
 	}
 
@@ -57,22 +61,17 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 
 	return (
 		<div class={$().root}>
-			{/* Draggable titlebar region — Electrobun uses this CSS class for window dragging */}
-			<div class={`${$().titleBar} electrobun-webkit-app-region-drag`} />
+			<Sidebar {...props.sidebar} onNewTab={handleNewTab} />
 
-			<div class={$().body}>
-				<Sidebar {...props.sidebar} onNewTab={handleNewTab} />
-
-				<div class={$().content}>
-					<div class={$().page}>{props.children}</div>
-				</div>
+			<div class={$().content}>
+				<div class={$().page}>{props.children}</div>
 			</div>
 
 			<CommandCenter
 				{...props.commandCenter}
 				open={ccOpen()}
 				initialQuery={props.currentUrl}
-				onClose={handleCcClose}
+				onClose={closeCc}
 				onSelect={handleCcSelect}
 				onSubmitRaw={handleCcSubmitRaw}
 			/>

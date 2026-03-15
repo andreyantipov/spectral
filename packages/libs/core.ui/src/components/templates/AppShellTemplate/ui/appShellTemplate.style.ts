@@ -1,30 +1,16 @@
 import { sva } from "../../../../../styled-system/css";
 
 export const appShellTemplate = sva({
-	slots: ["root", "titleBar", "body", "content", "page"],
+	slots: ["root", "content", "page"],
 	base: {
 		root: {
 			display: "flex",
-			flexDirection: "column",
+			flexDirection: "row",
 			height: "100%",
 			width: "100%",
 			bg: "bg.primary",
 			overflow: "hidden",
 			position: "relative",
-		},
-		titleBar: {
-			display: "flex",
-			alignItems: "center",
-			height: "32px",
-			px: "80px",
-			flexShrink: 0,
-			userSelect: "none",
-		},
-		body: {
-			display: "flex",
-			flexDirection: "row",
-			flex: 1,
-			minHeight: 0,
 		},
 		content: {
 			display: "flex",
