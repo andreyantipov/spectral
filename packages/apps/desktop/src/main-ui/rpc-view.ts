@@ -16,7 +16,7 @@ export function defineRPC<T>(ev: {
 			messages: {
 				"effect-rpc": () => {},
 				"toggle-command-center": () => {
-					// Dispatch a custom DOM event that AppShellTemplate listens for
+					console.info("[webview] received toggle-command-center, dispatching DOM event");
 					window.dispatchEvent(new CustomEvent("ctrl:toggle-command-center"));
 				},
 			},
