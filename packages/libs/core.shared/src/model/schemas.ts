@@ -16,6 +16,20 @@ export const SessionSchema = Schema.Struct({
 	updatedAt: Schema.String,
 });
 
+export const BookmarkSchema = Schema.Struct({
+	id: Schema.String,
+	url: Schema.String,
+	title: Schema.NullOr(Schema.String),
+	createdAt: Schema.String,
+});
+
+export const HistoryEntrySchema = Schema.Struct({
+	id: Schema.String,
+	url: Schema.String,
+	title: Schema.NullOr(Schema.String),
+	visitedAt: Schema.String,
+});
+
 export const BrowsingStateSchema = Schema.Struct({
 	sessions: Schema.Array(SessionSchema),
 });
@@ -23,4 +37,6 @@ export const BrowsingStateSchema = Schema.Struct({
 // Types derived from schemas — no manual definitions
 export type Page = typeof PageSchema.Type;
 export type Session = typeof SessionSchema.Type;
+export type Bookmark = typeof BookmarkSchema.Type;
+export type HistoryEntry = typeof HistoryEntrySchema.Type;
 export type BrowsingState = typeof BrowsingStateSchema.Type;
