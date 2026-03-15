@@ -124,15 +124,15 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 		webviewRef.on("host-message", handleHostMessage);
 	}
 
-	// Hide the native webview surface while the CommandCenter is open.
-	// The native WKWebView composites above the DOM layer — no amount of z-index
-	// or mask trickery can make a DOM overlay render visually on top of the native
-	// surface. toggleHidden removes the native surface so the DOM overlay is visible.
-	// The page reappears instantly when the overlay closes.
+	// Force all webviews to re-sync mask rects when CommandCenter opens/closes.
+	// The OverlaySyncController only sends masks when the webview position changes —
+	// force sync so the native CAShapeLayer cuts a hole for the palette element.
+	// This is the same pattern used by Electrobun's Colab app.
 	createEffect(() => {
-		if (webviewRef) {
-			webviewRef.toggleHidden(ccOpen());
-		}
+		const _open = ccOpen();
+		document.querySelectorAll("electrobun-webview").forEach((el) => {
+			(el as WebviewTagElement).syncDimensions?.(true);
+		});
 	});
 
 	createEffect(() => {

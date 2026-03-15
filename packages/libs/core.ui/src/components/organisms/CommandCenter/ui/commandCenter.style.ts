@@ -25,13 +25,10 @@ export const commandCenter = sva({
 	base: {
 		overlay: {
 			position: "fixed",
-			inset: 0,
-			bg: "rgba(0, 0, 0, 0.5)",
-			display: "flex",
-			alignItems: "flex-start",
-			justifyContent: "center",
-			pt: "100px",
-			zIndex: 100,
+			top: "80px",
+			left: "50%",
+			transform: "translateX(-50%)",
+			zIndex: 999999,
 		},
 		palette: {
 			display: "flex",
@@ -41,7 +38,7 @@ export const commandCenter = sva({
 			bg: "bg.secondary",
 			borderRadius: "xl",
 			overflow: "hidden",
-			boxShadow: "xl",
+			boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
 		},
 		searchBar: {
 			display: "flex",
