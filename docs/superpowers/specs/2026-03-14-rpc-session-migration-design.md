@@ -380,12 +380,12 @@ const changes = client.sessionChanges({})  // Stream
 
 ```typescript
 import { RuntimeProvider } from "@ctrl/core.ui"
-import { MainPage } from "@ctrl/ui.scenes"
+import { MainScene } from "@ctrl/ui.scenes"
 
 export function App(props: { runtime: ManagedRuntime<typeof WebviewLive> }) {
   return (
     <RuntimeProvider runtime={props.runtime}>
-      <MainPage />
+      <MainScene />
     </RuntimeProvider>
   )
 }
