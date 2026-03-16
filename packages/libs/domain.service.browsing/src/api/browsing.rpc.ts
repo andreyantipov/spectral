@@ -1,6 +1,8 @@
 import {
+	BookmarkSchema,
 	BrowsingStateSchema,
 	DatabaseError,
+	HistoryEntrySchema,
 	SessionSchema,
 	ValidationError,
 } from "@ctrl/core.shared";
@@ -8,6 +10,7 @@ import { Rpc, RpcGroup } from "@effect/rpc";
 import { Schema } from "effect";
 
 export class BrowsingRpcs extends RpcGroup.make(
+	// Session RPCs
 	Rpc.make("createSession", {
 		payload: { mode: Schema.Literal("visual") },
 		success: SessionSchema,
@@ -47,7 +50,37 @@ export class BrowsingRpcs extends RpcGroup.make(
 		success: SessionSchema,
 		error: Schema.Union(DatabaseError, ValidationError),
 	}),
-	Rpc.make("sessionChanges", {
+	// Bookmark RPCs
+	Rpc.make("getBookmarks", {
+		success: Schema.Array(BookmarkSchema),
+		error: DatabaseError,
+	}),
+	Rpc.make("addBookmark", {
+		payload: { url: Schema.String, title: Schema.NullOr(Schema.String) },
+		success: BookmarkSchema,
+		error: DatabaseError,
+	}),
+	Rpc.make("removeBookmark", {
+		payload: { id: Schema.String },
+		success: Schema.Void,
+		error: DatabaseError,
+	}),
+	Rpc.make("isBookmarked", {
+		payload: { url: Schema.String },
+		success: Schema.Boolean,
+		error: DatabaseError,
+	}),
+	// History RPCs
+	Rpc.make("getHistory", {
+		success: Schema.Array(HistoryEntrySchema),
+		error: DatabaseError,
+	}),
+	Rpc.make("clearHistory", {
+		success: Schema.Void,
+		error: DatabaseError,
+	}),
+	// Combined stream
+	Rpc.make("browsingChanges", {
 		success: BrowsingStateSchema,
 		stream: true,
 	}),

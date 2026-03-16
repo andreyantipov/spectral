@@ -7,6 +7,8 @@
 	"include": ["src"],
 	"references": [
 		{ "path": "../core.shared" },
+		{ "path": "../domain.feature.bookmark" },
+		{ "path": "../domain.feature.history" },
 		{ "path": "../domain.feature.session" },
 		{ "path": "../domain.adapter.otel" }
 	]

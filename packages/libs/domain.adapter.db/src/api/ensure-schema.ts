@@ -4,9 +4,12 @@ import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import { Effect } from "effect";
 
-// Use URL.pathname directly — paths in this monorepo never contain spaces or special chars.
-// Avoids node:url import which requires @types/node in CI's tsgo compiler.
-const migrationsFolder = decodeURIComponent(new URL("../migrations", import.meta.url).pathname);
+// Resolve migrations folder relative to current module.
+// In dev (unbundled): import.meta.url is .../src/api/ensure-schema.ts → ../migrations works.
+// In prod (bundled by Electrobun): import.meta.url is .../bun/index.js → ./migrations works
+// because electrobun.config.ts copies migrations to bun/migrations/.
+const DEV_PATH = decodeURIComponent(new URL("../migrations", import.meta.url).pathname);
+const BUNDLED_PATH = decodeURIComponent(new URL("./migrations", import.meta.url).pathname);
 
 /**
  * Ensures the database schema is up to date using Drizzle migrations.
@@ -23,11 +26,11 @@ export const ensureSchema = Effect.gen(function* () {
 			"LibsqlClient.sdk not found — @effect/sql-libsql internal API may have changed",
 		);
 	const db = drizzle(libsqlClient);
+
+	// Try dev path first, fall back to bundled path if migration fails.
+	const tryMigrate = (folder: string) => migrate(db, { migrationsFolder: folder });
 	yield* Effect.tryPromise({
-		try: () =>
-			migrate(db, {
-				migrationsFolder,
-			}),
+		try: () => tryMigrate(DEV_PATH).catch(() => tryMigrate(BUNDLED_PATH)),
 		catch: (cause) => new Error(`Migration failed: ${String(cause)}`),
 	});
 });

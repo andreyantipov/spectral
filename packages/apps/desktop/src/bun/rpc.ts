@@ -22,10 +22,8 @@ export function createMainRPC(runtime: Runtime.Runtime<AppLayer>) {
 				),
 			},
 			messages: {
-				// The effect-rpc channel is handled by ElectrobunServerProtocol via
-				// addMessageListener. Electrobun requires a handler to be registered
-				// so it allows the channel through IPC.
 				"effect-rpc": () => {},
+				"app-commands": () => {},
 			},
 		},
 	});

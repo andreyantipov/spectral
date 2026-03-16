@@ -3,6 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { APP_NAME, APP_VERSION } from "@ctrl/core.shared";
 import { ensureSchema } from "@ctrl/domain.adapter.db";
+import { createIpcBridge, type ElectrobunHandle } from "@ctrl/domain.adapter.electrobun";
 import { type ElectrobunRpcHandle, ElectrobunServerProtocol } from "@ctrl/domain.adapter.rpc";
 import { BrowsingRpcs } from "@ctrl/domain.service.browsing";
 import { RpcSerialization, RpcServer } from "@effect/rpc";
@@ -10,7 +11,8 @@ import { Layer, ManagedRuntime, Runtime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
 import { type AppLayer, DesktopLive } from "./layers";
 import { createMainRPC } from "./rpc";
-import { ViewManager } from "./view-manager";
+
+console.info(`[bun] ${APP_NAME} starting...`);
 
 // Ensure data directory exists
 mkdirSync(join(homedir(), ".ctrl.page"), { recursive: true });
@@ -49,19 +51,17 @@ ApplicationMenu.setApplicationMenu([
 	},
 	{
 		label: "View",
-		submenu: [{ label: "Toggle Full Screen", role: "toggleFullScreen", accelerator: "Cmd+Ctrl+F" }],
+		submenu: [
+			{ label: "Command Center", action: "toggle-command-center", accelerator: "Cmd+K" },
+			{ type: "separator" },
+			{ label: "Toggle Full Screen", role: "toggleFullScreen", accelerator: "Cmd+Ctrl+F" },
+		],
 	},
 	{
 		label: "Window",
 		submenu: [{ role: "minimize" }, { role: "zoom" }],
 	},
 ]);
-
-// Create ViewManager (BrowserView management only, no domain logic)
-// TODO: Wire ViewManager to BrowsingService.sessionChanges stream
-// to sync BrowserViews with sessions (create/destroy/navigate).
-// This requires the RPC server streaming to be fully operational.
-const viewManager = new ViewManager();
 
 // Create Electrobun RPC (legacy request/response + effect-rpc message channel)
 const mainRPC = createMainRPC(rt);
@@ -76,14 +76,7 @@ const win = new BrowserWindow({
 	rpc: mainRPC,
 });
 
-// Wire up ViewManager with window context
-viewManager.setWindow(win);
-
 // Start the Effect RPC server over the Electrobun IPC tunnel.
-// The server listens on the webview's RPC handle and routes requests
-// to BrowsingHandlersLive (already in the runtime context).
-// The Electrobun RPC handle is structurally compatible with ElectrobunRpcHandle
-// but the Electrobun types are opaque, so we cast.
 const rpcHandle = win.webview.rpc as unknown as ElectrobunRpcHandle;
 
 const SerializationLive = RpcSerialization.layerJson;
@@ -101,8 +94,18 @@ const ServerLive = RpcServer.layer(BrowsingRpcs).pipe(
 ) as Layer.Layer<never, never, never>;
 
 // Fork the RPC server — runs for the lifetime of the app
-// TODO: Dispose runtime and rpcServerRuntime on window close to release resources in dev mode.
 const rpcServerRuntime = ManagedRuntime.make(ServerLive);
 await rpcServerRuntime.runtime();
 
-console.info(`${APP_NAME} v${APP_VERSION} started`);
+// Create IPC bridge for app commands (uses same handle as effect-rpc)
+const ipcBridge = createIpcBridge(rpcHandle as unknown as ElectrobunHandle);
+
+// Menu accelerator → IPC bridge (no executeJavascript!)
+ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
+	const data = (event as { data?: { action?: string } })?.data;
+	if (data?.action === "toggle-command-center") {
+		ipcBridge.send({ type: "toggle-command-center" });
+	}
+});
+
+console.info(`[bun] ${APP_NAME} v${APP_VERSION} started`);

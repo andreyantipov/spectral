@@ -1,3 +1,4 @@
+import { createIpcBridge, type ElectrobunHandle } from "@ctrl/domain.adapter.electrobun";
 import type { ElectrobunRpcHandle } from "@ctrl/domain.adapter.rpc";
 import { ManagedRuntime } from "effect";
 import { createWebviewLive } from "./layers";
@@ -24,7 +25,10 @@ async function initApp() {
 	// Ensure the runtime (and RPC client protocol) is initialized before rendering
 	await runtime.runtime();
 
-	mount(runtime);
+	// Create IPC bridge for app commands (same handle as effect-rpc)
+	const ipcBridge = createIpcBridge(rpc as unknown as ElectrobunHandle);
+
+	mount(runtime, ipcBridge);
 }
 
 function waitForGlobal(name: string, timeout: number): Promise<void> {

@@ -28,7 +28,7 @@ This spec implements the @effect/rpc bridge to make domain services available in
 - `domain.adapter.db` (session + pages schema replaces tabs schema)
 - `domain.service.browsing` (composes sessions instead of tabs)
 - `ui.feature.sidebar` (uses session data)
-- `ui.pages` (wired with RuntimeProvider)
+- `ui.scenes` (wired with RuntimeProvider)
 - `packages/apps/desktop` (RPC server on Bun, RPC client on webview)
 
 ### Remove
@@ -47,7 +47,7 @@ domain.feature.session         session service: create, navigate, back/forward, 
 domain.service.browsing        composes sessions (PUBLIC API)
 
 ui.feature.sidebar             wires BrowsingService → Sidebar
-ui.pages                       MainPage with RuntimeProvider
+ui.scenes                       MainPage with RuntimeProvider
 ```
 
 ---
@@ -380,12 +380,12 @@ const changes = client.sessionChanges({})  // Stream
 
 ```typescript
 import { RuntimeProvider } from "@ctrl/core.ui"
-import { MainPage } from "@ctrl/ui.pages"
+import { MainScene } from "@ctrl/ui.scenes"
 
 export function App(props: { runtime: ManagedRuntime<typeof WebviewLive> }) {
   return (
     <RuntimeProvider runtime={props.runtime}>
-      <MainPage />
+      <MainScene />
     </RuntimeProvider>
   )
 }

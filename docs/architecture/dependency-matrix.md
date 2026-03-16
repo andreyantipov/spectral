@@ -10,8 +10,8 @@
 | `domain.feature.*` | `core.shared` (ports via DI — never adapters directly) |
 | `domain.service.*` | `domain.feature.*` + `core.shared` |
 | `ui.feature.*` | `domain.service.*` + `core.ui` + `core.shared` |
-| `ui.pages` | `ui.feature.*` + `core.ui` |
-| `packages/apps/*` (UI entry) | `ui.pages` + `core.ui` only |
+| `ui.scenes` | `ui.feature.*` + `core.ui` |
+| `packages/apps/*` (UI entry) | `ui.scenes` + `core.ui` only |
 | `packages/apps/*` (composition root) | ALL domain + core packages (this is the ONLY place that wires Layers) |
 
 ## Peer Isolation Rule
@@ -22,7 +22,7 @@ No package may import a peer at the same tier. Composition happens one level up.
 - `domain.service.*` packages cannot import each other — services compose features, not other services
 - `domain.adapter.*` packages cannot import each other — adapters are independent
 - `ui.feature.*` packages cannot import each other — UI features are atomic
-- `ui.pages` is a single package, so no peer isolation rule is needed
+- `ui.scenes` is a single package, so no peer isolation rule is needed
 
 ## Service Contract: `BrowsingRpcs`
 
@@ -43,7 +43,7 @@ import { SessionRepository } from "@ctrl/core.shared"
 // domain.service.browsing importing from domain.feature.*  ✓
 import { SessionFeature } from "@ctrl/domain.feature.session"
 
-// ui.pages importing from ui.feature.*  ✓
+// ui.scenes importing from ui.feature.*  ✓
 import { SidebarFeature } from "@ctrl/ui.feature.sidebar"
 ```
 
@@ -81,7 +81,7 @@ Rule file location: `.grit/` in the repository root (see `docs/superpowers/specs
 ### Key rules covered:
 
 - `ui.*` may only import `domain.service.*` from the domain namespace
-- `apps/*` may only import `ui.pages` from the UI namespace
+- `apps/*` may only import `ui.scenes` from the UI namespace
 - `domain.feature.*` uses ports (via DI), never adapters directly
 - `domain.service.*` composes features only — no adapter imports, no peer service imports
 - `domain.adapter.*` are independent — no cross-adapter imports, no feature/service imports

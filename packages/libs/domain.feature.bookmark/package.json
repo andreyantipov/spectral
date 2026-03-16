@@ -1,5 +1,5 @@
 {
-	"name": "@ctrl/ui.pages",
+	"name": "@ctrl/domain.feature.bookmark",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -12,7 +12,6 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@ctrl/core.ui": "workspace:*",
-		"@ctrl/ui.feature.sidebar": "workspace:*"
+		"@ctrl/core.shared": "workspace:*"
 	}
 }

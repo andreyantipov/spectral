@@ -8,6 +8,13 @@
 			"when": 1773575379316,
 			"tag": "0000_zippy_omega_flight",
 			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "6",
+			"when": 1773580157542,
+			"tag": "0001_next_stryfe",
+			"breakpoints": true
 		}
 	]
 }

@@ -24,12 +24,14 @@ export type MainRPCSchema = {
 		};
 		messages: {
 			"effect-rpc": EffectRpcMessage;
+			"app-commands": EffectRpcMessage;
 		};
 	};
 	webview: {
 		requests: Record<string, never>;
 		messages: {
 			"effect-rpc": EffectRpcMessage;
+			"app-commands": EffectRpcMessage;
 		};
 	};
 };

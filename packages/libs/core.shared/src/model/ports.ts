@@ -1,15 +1,50 @@
 import { Context, type Effect } from "effect";
+import type { AppCommand } from "./commands";
 import type { DatabaseError } from "./errors";
-import type { Page, Session } from "./schemas";
+import type { Bookmark, HistoryEntry, Page, Session } from "./schemas";
 
 export const DATABASE_SERVICE_ID = "DatabaseService" as const;
 export const SESSION_REPOSITORY_ID = "SessionRepository" as const;
+export const BOOKMARK_REPOSITORY_ID = "BookmarkRepository" as const;
+export const HISTORY_REPOSITORY_ID = "HistoryRepository" as const;
 
 export class DatabaseService extends Context.Tag(DATABASE_SERVICE_ID)<
 	DatabaseService,
 	{
 		readonly query: <A>(f: (db: unknown) => Promise<A>) => Effect.Effect<A, DatabaseError>;
 		readonly transaction: <A>(f: (db: unknown) => Promise<A>) => Effect.Effect<A, DatabaseError>;
+	}
+>() {}
+
+export class BookmarkRepository extends Context.Tag(BOOKMARK_REPOSITORY_ID)<
+	BookmarkRepository,
+	{
+		readonly getAll: () => Effect.Effect<Bookmark[], DatabaseError>;
+		readonly create: (url: string, title: string | null) => Effect.Effect<Bookmark, DatabaseError>;
+		readonly remove: (id: string) => Effect.Effect<void, DatabaseError>;
+		readonly findByUrl: (url: string) => Effect.Effect<Bookmark | undefined, DatabaseError>;
+	}
+>() {}
+
+export class HistoryRepository extends Context.Tag(HISTORY_REPOSITORY_ID)<
+	HistoryRepository,
+	{
+		readonly getAll: () => Effect.Effect<HistoryEntry[], DatabaseError>;
+		readonly record: (
+			url: string,
+			title: string | null,
+		) => Effect.Effect<HistoryEntry, DatabaseError>;
+		readonly clear: () => Effect.Effect<void, DatabaseError>;
+	}
+>() {}
+
+export const IPC_BRIDGE_ID = "IpcBridge" as const;
+
+export class IpcBridge extends Context.Tag(IPC_BRIDGE_ID)<
+	IpcBridge,
+	{
+		readonly send: (command: AppCommand) => void;
+		readonly subscribe: (handler: (command: AppCommand) => void) => () => void;
 	}
 >() {}
 

@@ -45,7 +45,7 @@ Within `domain.*.*` and `ui.*.*`, the second level encodes the hex tier. Second-
 | Tier | Hex role | Visibility | Depends on |
 |------|----------|------------|------------|
 | `ui.feature.*` | Presentation adapter (wires service → component) | INTERNAL | `domain.service.*` + `core.ui` + `core.shared` |
-| `ui.pages` | Composed scenes (fills template slots) — single package | **PUBLIC** | `ui.feature.*` + `core.ui` |
+| `ui.scenes` | Composed scenes (fills template slots) — single package | **PUBLIC** | `ui.feature.*` + `core.ui` |
 
 **core.\* — foundation (always 2-level):**
 
@@ -59,7 +59,7 @@ Within `domain.*.*` and `ui.*.*`, the second level encodes the hex tier. Second-
 Only two tiers are importable from **outside** their namespace:
 
 - **`domain.service.*`** — the public API of all business logic (imported by `ui.feature.*`)
-- **`ui.pages`** — the public API of all UI (imported by `packages/apps/*`)
+- **`ui.scenes`** — the public API of all UI (imported by `packages/apps/*`)
 
 Everything else is internal. GritQL enforces this (see Section 7).
 
@@ -69,7 +69,7 @@ Everything else is internal. GritQL enforces this (see Section 7).
 
 **Inter-namespace imports** use public surfaces only:
 - `ui.*` imports `domain.service.*` only (never `domain.feature.*` or `domain.adapter.*`)
-- `packages/apps/*` imports `ui.pages` only (never `ui.feature.*`)
+- `packages/apps/*` imports `ui.scenes` only (never `ui.feature.*`)
 
 ### 2.4 Core Package Independence
 
@@ -116,7 +116,7 @@ packages/libs/
 │
 ├── ui.feature.sidebar/             Wires BrowsingService → Sidebar
 ├── ui.feature.omnibar/             Wires BrowsingService → AddressBar
-├── ui.pages/                       Composes features into AppShell template
+├── ui.scenes/                       Composes features into AppShell template
 ```
 
 ### 3.2 FSD Internal Segments
@@ -149,7 +149,7 @@ domain.adapter.*            ✓        ✓       ✓
 domain.feature.*            ✓        ✓       ✓
 domain.service.*            ✓        ✓
 ui.feature.*                ✓        ✓               ✓
-ui.pages                                             ✓
+ui.scenes                                             ✓
 ```
 
 ### 3.3 Concrete Package Structures
@@ -239,7 +239,7 @@ src/
 └── index.ts
 ```
 
-**ui.pages:**
+**ui.scenes:**
 ```
 src/
 ├── ui/
@@ -684,7 +684,7 @@ export function SidebarFeature() {
 | Custom queries (beyond CRUD) | **yes** | Only non-standard queries |
 | Custom business rules | **yes** | The actual logic |
 | Complex service orchestration | **yes** | Only `domain.service.*` with real composition |
-| UI layout/composition | **yes** | `ui.pages` arranging features |
+| UI layout/composition | **yes** | `ui.scenes` arranging features |
 | Component design | **yes** | `core.ui` atoms/molecules/organisms/templates |
 | TypeScript types | **yes** | Manually defined in `core.shared`, validated against Drizzle via `satisfies` |
 | CRUD repository | **no** | `makeRepository` factory |
@@ -709,10 +709,10 @@ export function SidebarFeature() {
   $filename <: within `ui.`
 } => error("ui.* can only import domain.service.*")
 
-// app can only import ui.pages
+// app can only import ui.scenes
 `import { $_ } from "@ctrl/ui.feature.$_"` where {
   $filename <: within `apps/`
-} => error("apps can only import ui.pages")
+} => error("apps can only import ui.scenes")
 
 // domain.feature.* cannot import domain.service.*
 `import { $_ } from "@ctrl/domain.service.$_"` where {
@@ -773,7 +773,7 @@ Packages within the same tier cannot import each other. Each package is independ
   $filename <: within `ui.feature.`
 } => error("ui.feature.* packages are atomic — no cross-feature imports")
 
-// ui.pages is a single package — no peer isolation rule needed
+// ui.scenes is a single package — no peer isolation rule needed
 ```
 
 **The rule:** no package imports a peer at the same tier. Composition happens one level up — features compose in services, UI features compose in pages, pages compose in the app.
@@ -1111,7 +1111,7 @@ With Claude Max (Opus 4.6, 1M context), steps 1–6 can be completed in a single
 | `domain.feature.*` | `effect` (+ `core.shared` ports) |
 | `domain.service.*` | `effect` (+ `domain.feature.*`) |
 | `ui.feature.*` | `solid-js`, `@ctrl/core.ui`, `@ctrl/domain.service.*` |
-| `ui.pages` | `solid-js`, `@ctrl/core.ui`, `@ctrl/ui.feature.*` |
+| `ui.scenes` | `solid-js`, `@ctrl/core.ui`, `@ctrl/ui.feature.*` |
 
 **Test dependencies (devDependencies):**
 - `vitest` — test runner
@@ -1148,7 +1148,7 @@ This architecture must be documented and enforced:
 | `core.db` | `domain.adapter.db` (Drizzle schemas, repositories, migrations, DB client) |
 | `core.shared` | `core.shared` (add ports, keep types) |
 | `core.ui` | `core.ui` (add `useStream`, `useService`, templates) |
-| `feature.sidebar-tabs` | Split into: `domain.feature.tab` + `domain.service.browsing` + `ui.feature.sidebar` + `ui.pages` |
+| `feature.sidebar-tabs` | Split into: `domain.feature.tab` + `domain.service.browsing` + `ui.feature.sidebar` + `ui.scenes` |
 | `core.otel` (new) | `domain.adapter.otel` |
 | RPC in `apps/desktop` | Extract to `domain.adapter.rpc` |
 

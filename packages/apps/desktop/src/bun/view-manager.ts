@@ -1,7 +1,7 @@
 import { DEFAULT_TAB_URL } from "@ctrl/core.shared";
 import { BrowserView, type BrowserWindow } from "electrobun/bun";
 
-const CHROME_HEIGHT = 44; // 8px drag spacer + 36px address bar
+const CHROME_HEIGHT = 0;
 const RAIL_WIDTH = 48; // Sidebar rail width when collapsed
 const DEFAULT_SIDEBAR_WIDTH = 240; // Sidebar component default width (includes rail)
 
@@ -57,6 +57,26 @@ export class ViewManager {
 		if (this.contentView) {
 			this.contentView.remove();
 			this.contentView = null;
+		}
+	}
+
+	/** Temporarily hide content view by recreating at offscreen position. */
+	setContentViewVisible(visible: boolean) {
+		if (!this.contentView) return;
+		if (visible) {
+			const currentUrl = this.contentView.url ?? DEFAULT_TAB_URL;
+			this.createContentView(currentUrl);
+		} else {
+			// Recreate offscreen to hide — preserves URL for restoration
+			const url = this.contentView.url ?? DEFAULT_TAB_URL;
+			this.contentView.remove();
+			this.contentView = new BrowserView({
+				url: url === DEFAULT_TAB_URL ? null : url,
+				html: url === DEFAULT_TAB_URL ? "<html><body></body></html>" : null,
+				frame: { x: -9999, y: -9999, width: 1, height: 1 },
+				windowId: this.windowId,
+				sandbox: true,
+			});
 		}
 	}
 

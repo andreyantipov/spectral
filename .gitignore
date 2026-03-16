@@ -10,3 +10,9 @@ styled-system
 packages/infra/ci/sdk
 .worktrees
 *.tsbuildinfo
+
+# tsgo build artifacts emitted into src/
+**/*.d.ts.map
+**/src/**/*.d.ts
+**/src/**/*.js
+**/src/**/*.js.map

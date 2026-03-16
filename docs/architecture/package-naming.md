@@ -30,16 +30,16 @@ Alphabetical `a → f → s` matches dependency direction within `domain`.
 
 `domain.adapter.rpc` is a **generic Electrobun IPC tunnel** — it has no knowledge of sessions, browsing, or any other domain concept. It exports `ElectrobunServerProtocol` (Bun/main-process side) and `ElectrobunClientProtocol` (webview side), each implementing the corresponding `@effect/rpc` protocol interface. The domain contract (`BrowsingRpcs`) lives in `domain.service.browsing` and is separate from the transport layer.
 
-## UI Tiers (`f → p`)
+## UI Tiers (`f → s`)
 
 The second level of `ui.*.*` encodes the presentation layer:
 
 | Tier | Package format | Role | Depends on |
 |------|---------------|------|------------|
 | feature | `ui.feature.<name>` | Wires a domain service to a component | `domain.service.*` + `core.ui` |
-| pages | `ui.pages` | Single package containing all page compositions | `ui.feature.*` + `core.ui` |
+| scenes | `ui.scenes` | Single package containing all scene compositions | `ui.feature.*` + `core.ui` |
 
-Pages are thin compositions (~20 lines each) and don't need package isolation. All pages live in a single `ui.pages` package. Alphabetical `f → p` matches dependency direction within `ui`.
+Scenes are thin compositions (~20 lines each) and don't need package isolation. All scenes live in a single `ui.scenes` package. Alphabetical `f → s` matches dependency direction within `ui`.
 
 ## Core Packages (always 2-level)
 
@@ -55,7 +55,7 @@ Pages are thin compositions (~20 lines each) and don't need package isolation. A
 Only two tiers are importable from outside their own namespace:
 
 - **`domain.service.*`** — the public API of all business logic (imported by `ui.feature.*`)
-- **`ui.pages`** — the public API of all UI (imported by `packages/apps/*`)
+- **`ui.scenes`** — the public API of all UI (imported by `packages/apps/*`)
 
 Everything else is internal. GritQL enforces this — see `docs/architecture/dependency-matrix.md`.
 
@@ -69,6 +69,6 @@ Everything else is internal. GritQL enforces this — see `docs/architecture/dep
 Examples:
 - A new DB-backed repository for bookmarks → `domain.adapter.bookmark` → `@ctrl/domain.adapter.bookmark`
 - Atomic business logic for bookmarks → `domain.feature.bookmark` → `@ctrl/domain.feature.bookmark`
-- A new page composed from features → add it to `ui.pages` → `@ctrl/ui.pages`
+- A new page composed from features → add it to `ui.scenes` → `@ctrl/ui.scenes`
 
 For deep details see `docs/superpowers/specs/2026-03-14-domain-architecture-design.md` (Sections 2–3).

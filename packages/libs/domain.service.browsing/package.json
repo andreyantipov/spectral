@@ -13,6 +13,8 @@
 	},
 	"dependencies": {
 		"@ctrl/core.shared": "workspace:*",
+		"@ctrl/domain.feature.bookmark": "workspace:*",
+		"@ctrl/domain.feature.history": "workspace:*",
 		"@ctrl/domain.feature.session": "workspace:*",
 		"@ctrl/domain.adapter.otel": "workspace:*"
 	}

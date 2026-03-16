@@ -1,11 +1,26 @@
-import { DEFAULT_TAB_URL, type Page, type Session, SessionRepository } from "@ctrl/core.shared";
+import {
+	type Bookmark,
+	BookmarkRepository,
+	DEFAULT_TAB_URL,
+	type HistoryEntry,
+	HistoryRepository,
+	type Page,
+	type Session,
+	SessionRepository,
+} from "@ctrl/core.shared";
 import { type TestSpanExporter, TestSpanExporterLive } from "@ctrl/domain.adapter.otel";
+import { BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
+import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
 import { SessionFeatureLive } from "@ctrl/domain.feature.session";
 import { BrowsingHandlersLive, type BrowsingRpcs } from "@ctrl/domain.service.browsing";
 import { Effect, Layer } from "effect";
 
 let nextId = 0;
 let sessions: Session[] = [];
+let bookmarkNextId = 0;
+let storedBookmarks: Bookmark[] = [];
+let historyNextId = 0;
+let storedHistory: HistoryEntry[] = [];
 
 const makeSession = (mode: "visual"): Session => {
 	const id = String(++nextId);
@@ -45,13 +60,60 @@ export const MockSessionRepositoryLive = Layer.succeed(SessionRepository, {
 	updatePageTitle: (_sessionId: string, _pageIndex: number, _title: string) => Effect.void,
 });
 
+export const MockBookmarkRepositoryLive = Layer.succeed(BookmarkRepository, {
+	getAll: () => Effect.succeed(storedBookmarks),
+	create: (url: string, title: string | null) =>
+		Effect.sync(() => {
+			const bookmark: Bookmark = {
+				id: String(++bookmarkNextId),
+				url,
+				title,
+				createdAt: new Date().toISOString(),
+			};
+			storedBookmarks = [...storedBookmarks, bookmark];
+			return bookmark;
+		}),
+	remove: (id: string) =>
+		Effect.sync(() => {
+			storedBookmarks = storedBookmarks.filter((b) => b.id !== id);
+		}),
+	findByUrl: (url: string) => Effect.succeed(storedBookmarks.find((b) => b.url === url)),
+});
+
+export const MockHistoryRepositoryLive = Layer.succeed(HistoryRepository, {
+	getAll: () => Effect.succeed(storedHistory),
+	record: (url: string, title: string | null) =>
+		Effect.sync(() => {
+			const entry: HistoryEntry = {
+				id: String(++historyNextId),
+				url,
+				title,
+				visitedAt: new Date().toISOString(),
+			};
+			storedHistory = [...storedHistory, entry];
+			return entry;
+		}),
+	clear: () =>
+		Effect.sync(() => {
+			storedHistory = [];
+		}),
+});
+
 export const resetMockSessions = () => {
 	sessions = [];
 	nextId = 0;
+	storedBookmarks = [];
+	bookmarkNextId = 0;
+	storedHistory = [];
+	historyNextId = 0;
 };
 
 export const PipelineTestLayer = BrowsingHandlersLive.pipe(
 	Layer.provide(SessionFeatureLive),
+	Layer.provide(BookmarkFeatureLive),
+	Layer.provide(HistoryFeatureLive),
 	Layer.provide(MockSessionRepositoryLive),
+	Layer.provide(MockBookmarkRepositoryLive),
+	Layer.provide(MockHistoryRepositoryLive),
 	Layer.provideMerge(TestSpanExporterLive),
 ) as Layer.Layer<BrowsingRpcs | TestSpanExporter>;

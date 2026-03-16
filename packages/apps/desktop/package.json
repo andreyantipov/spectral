@@ -7,11 +7,14 @@
 		"@ctrl/core.shared": "workspace:*",
 		"@ctrl/core.ui": "workspace:*",
 		"@ctrl/domain.adapter.db": "workspace:*",
+		"@ctrl/domain.adapter.electrobun": "workspace:*",
 		"@ctrl/domain.adapter.otel": "workspace:*",
 		"@ctrl/domain.adapter.rpc": "workspace:*",
+		"@ctrl/domain.feature.bookmark": "workspace:*",
+		"@ctrl/domain.feature.history": "workspace:*",
 		"@ctrl/domain.feature.session": "workspace:*",
 		"@ctrl/domain.service.browsing": "workspace:*",
-		"@ctrl/ui.pages": "workspace:*",
+		"@ctrl/ui.scenes": "workspace:*",
 		"electrobun": "1.15.1"
 	},
 	"scripts": {

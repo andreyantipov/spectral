@@ -4,7 +4,7 @@
 
 **Goal:** Establish hexagonal architecture with `core / domain / ui` namespaces, Effect.ts services, PubSub reactivity, OTEL telemetry, and factory-based codegen — validated via vertical slice (tabs feature).
 
-**Architecture:** Three namespaces (`core.*`, `domain.*.*`, `ui.*.*`) with alphabetical sort = dependency direction. FSD segments (`model/`, `api/`, `lib/`, `ui/`) internally. Two public surfaces: `domain.service.*` and `ui.pages`. Reactivity via Effect PubSub → Stream → SolidJS signal bridge.
+**Architecture:** Three namespaces (`core.*`, `domain.*.*`, `ui.*.*`) with alphabetical sort = dependency direction. FSD segments (`model/`, `api/`, `lib/`, `ui/`) internally. Two public surfaces: `domain.service.*` and `ui.scenes`. Reactivity via Effect PubSub → Stream → SolidJS signal bridge.
 
 **Tech Stack:** Effect.ts, @effect/sql-drizzle, @effect/opentelemetry, @effect/rpc, Drizzle ORM, SolidJS, Panda CSS, Vitest, Storybook
 
@@ -44,9 +44,9 @@
 - Create: `packages/libs/ui.feature.sidebar/package.json`
 - Create: `packages/libs/ui.feature.sidebar/tsconfig.json`
 - Create: `packages/libs/ui.feature.sidebar/src/index.ts`
-- Create: `packages/libs/ui.pages/package.json`
-- Create: `packages/libs/ui.pages/tsconfig.json`
-- Create: `packages/libs/ui.pages/src/index.ts`
+- Create: `packages/libs/ui.scenes/package.json`
+- Create: `packages/libs/ui.scenes/tsconfig.json`
+- Create: `packages/libs/ui.scenes/src/index.ts`
 
 - [ ] **Step 1: Create domain.adapter.db package shell**
 
@@ -135,10 +135,10 @@ Same pattern with:
 - `dependencies`: `@ctrl/core.shared`, `@ctrl/core.ui`, `@ctrl/domain.service.browsing`, `effect`, `solid-js`
 - `references`: `core.shared`, `core.ui`, `domain.service.browsing`
 
-- [ ] **Step 7: Create ui.pages package shell**
+- [ ] **Step 7: Create ui.scenes package shell**
 
 Same pattern with:
-- `name`: `@ctrl/ui.pages`
+- `name`: `@ctrl/ui.scenes`
 - `dependencies`: `@ctrl/core.ui`, `@ctrl/ui.feature.sidebar`, `solid-js`
 - `references`: `core.ui`, `ui.feature.sidebar`
 
@@ -174,7 +174,7 @@ git commit -m "chore: scaffold domain and ui packages for hex architecture"
 
 Create `.grit/patterns/domain_boundary_rules.md` with all rules from spec Section 7.1:
 - `ui.*` cannot import `domain.feature.*` or `domain.adapter.*`
-- `apps` can only import `ui.pages`
+- `apps` can only import `ui.scenes`
 - `domain.feature.*` cannot import `domain.service.*` or `domain.adapter.*`
 - `domain.service.*` cannot import `domain.adapter.*`
 - `domain.adapter.*` cannot import `domain.feature.*` or `domain.service.*`
@@ -187,7 +187,7 @@ Create `.grit/patterns/domain_peer_isolation.md` with rules from spec Section 7.
 - No cross-service imports within `domain.service.*`
 - No cross-adapter imports within `domain.adapter.*`
 - No cross-feature imports within `ui.feature.*`
-- `ui.pages` is a single package (no peer isolation rule needed)
+- `ui.scenes` is a single package (no peer isolation rule needed)
 
 - [ ] **Step 3: Write FSD segment rules**
 
@@ -731,15 +731,15 @@ git commit -m "feat(ui.feature.sidebar): implement sidebar feature with domain s
 
 ---
 
-### Task 11: Implement ui.pages
+### Task 11: Implement ui.scenes
 
 **Files:**
-- Create: `packages/libs/ui.pages/src/ui/MainPage.tsx`
-- Modify: `packages/libs/ui.pages/src/index.ts`
+- Create: `packages/libs/ui.scenes/src/ui/MainPage.tsx`
+- Modify: `packages/libs/ui.scenes/src/index.ts`
 
 - [ ] **Step 1: Write the MainPage component**
 
-Create `packages/libs/ui.pages/src/ui/MainPage.tsx`:
+Create `packages/libs/ui.scenes/src/ui/MainPage.tsx`:
 
 ```tsx
 import { SidebarFeature } from "@ctrl/ui.feature.sidebar"
@@ -762,14 +762,14 @@ export { MainPage } from "./ui/MainPage"
 
 - [ ] **Step 3: Verify compilation**
 
-Run: `cd packages/libs/ui.pages && bun run check`
+Run: `cd packages/libs/ui.scenes && bun run check`
 Expected: PASS
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add packages/libs/ui.pages/
-git commit -m "feat(ui.pages): implement main page composing sidebar feature"
+git add packages/libs/ui.scenes/
+git commit -m "feat(ui.scenes): implement main page composing sidebar feature"
 ```
 
 ---
@@ -831,11 +831,11 @@ export const DesktopLive = BrowsingServiceLive.pipe(
 )
 ```
 
-- [ ] **Step 2: Update main-ui/App.tsx to use RuntimeProvider + ui.pages**
+- [ ] **Step 2: Update main-ui/App.tsx to use RuntimeProvider + ui.scenes**
 
 ```tsx
 import { RuntimeProvider } from "@ctrl/core.ui"
-import { MainPage } from "@ctrl/ui.pages"
+import { MainPage } from "@ctrl/ui.scenes"
 
 export function App(props: { runtime: ManagedRuntime<any> }) {
   return (
