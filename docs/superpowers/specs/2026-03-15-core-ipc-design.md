@@ -10,29 +10,27 @@
 
 Bun and webview need to exchange app-level commands (toggle command center, show notification, etc.). The current approach uses `executeJavascript` with hardcoded global functions — untyped, fragile, doesn't follow hex architecture.
 
-The existing `domain.adapter.rpc` handles Effect RPC (domain service calls) over Electrobun's IPC. App commands need a separate, typed channel on the same transport.
+The existing `@ctrl/domain.adapter.electrobun` layer handles Effect RPC (domain service calls) over Electrobun's IPC. App commands need a separate, typed channel on the same transport.
 
 ## 2. Architecture
 
 ```
-core.ipc                    Typed command definitions + bridge port (pure TS, no deps)
-  ├── AppCommand type        Union of all commands
-  ├── IpcBridge port         send() + subscribe() interface
-  └── channel constant       "app-commands"
+@ctrl/core.shared                 Typed IPC command definitions (pure TS, no deps)
+  └── model/commands.ts           AppCommand union (all app-level commands)
 
-core.ui                     SolidJS integration
-  └── useIpcBridge()         Hook to access bridge from components
+core.ui (planned)                 SolidJS integration
+  └── useIpcBridge()              Hook to access bridge from components
 
-domain.adapter.rpc          Concrete implementation
-  └── ElectrobunIpcBridge    Implements IpcBridge over ElectrobunRpcHandle
+@ctrl/domain.adapter.electrobun   Concrete IPC bridge implementation
+  └── createIpcBridge             Implements IpcBridge over ElectrobunRpcHandle
 ```
 
-**Dependency flow:** `core.ipc` ← `core.ui` (hook only) ← `domain.adapter.rpc` (implementation)
+**Dependency flow:** `@ctrl/core.shared` ← `core.ui` (hook only, planned) ← `@ctrl/domain.adapter.electrobun` (implementation)
 
 ## 3. Command Types
 
 ```typescript
-// core.ipc/src/model/commands.ts
+// @ctrl/core.shared/src/model/commands.ts
 
 type ToggleCommandCenter = { readonly type: "toggle-command-center" }
 
@@ -52,7 +50,7 @@ type AppCommand =
 ## 4. Bridge Port
 
 ```typescript
-// core.ipc/src/model/bridge.ts
+// @ctrl/domain.adapter.electrobun/src/createIpcBridge.ts (planned extraction to a reusable bridge module)
 
 type IpcBridge = {
   readonly send: (command: AppCommand) => void
