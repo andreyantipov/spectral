@@ -88,6 +88,7 @@ export const MockHistoryRepositoryLive = Layer.succeed(HistoryRepository, {
 				id: String(++historyNextId),
 				url,
 				title,
+				query: null,
 				visitedAt: new Date().toISOString(),
 			};
 			storedHistory = [...storedHistory, entry];

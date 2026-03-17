@@ -9,6 +9,7 @@ const makeEntry = (url: string, title: string | null): HistoryEntry => ({
 	id: String(++nextId),
 	url,
 	title,
+	query: null,
 	visitedAt: new Date().toISOString(),
 });
 

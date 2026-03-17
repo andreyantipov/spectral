@@ -21,6 +21,7 @@ export const HistoryRepositoryLive = Layer.effect(
 			id: row.id,
 			url: row.url,
 			title: row.title,
+			query: row.query ?? null,
 			visitedAt: row.visitedAt,
 		});
 
@@ -43,7 +44,7 @@ export const HistoryRepositoryLive = Layer.effect(
 				Effect.gen(function* () {
 					const id = genId();
 					const visitedAt = now();
-					const values = { id, url, title, visitedAt };
+					const values = { id, url, title, query: null, visitedAt };
 					yield* db.insert(historyTable).values(values);
 					return toHistoryEntry(values);
 				}).pipe(
