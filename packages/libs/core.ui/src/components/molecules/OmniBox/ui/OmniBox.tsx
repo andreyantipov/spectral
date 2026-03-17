@@ -128,13 +128,8 @@ export function OmniBox(props: OmniBoxProps) {
 				}
 				break;
 			case "Tab":
-				if (props.autocompleteHint && !e.shiftKey) {
-					e.preventDefault();
-					const completed = query() + props.autocompleteHint;
-					setQuery(completed);
-					setSelectedIndex(-1);
-					props.onInput?.(completed);
-				}
+				e.preventDefault();
+				handleSubmit(selectedIndex() >= 0 ? suggestions()[selectedIndex()] : undefined);
 				break;
 		}
 	};
