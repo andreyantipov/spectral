@@ -1,7 +1,7 @@
 import { type HistoryEntry, HistoryRepository } from "@ctrl/core.shared";
 import { Chunk, type Context, Duration, Effect, Fiber, Layer, Stream } from "effect";
 import { describe, expect, it } from "vitest";
-import { HistoryFeature, HistoryFeatureLive } from "./history.service";
+import { HistoryFeature, HistoryFeatureLive } from "./history.feature";
 
 let nextId = 0;
 

@@ -1,2 +1,2 @@
-export { HistoryFeature, HistoryFeatureLive } from "./api/history.service";
+export { HistoryFeature, HistoryFeatureLive } from "./api/history.feature";
 export { HISTORY_FEATURE } from "./lib/constants";

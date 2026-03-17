@@ -1,7 +1,7 @@
 import { type Bookmark, BookmarkRepository } from "@ctrl/core.shared";
 import { Chunk, type Context, Duration, Effect, Fiber, Layer, Stream } from "effect";
 import { describe, expect, it } from "vitest";
-import { BookmarkFeature, BookmarkFeatureLive } from "./bookmark.service";
+import { BookmarkFeature, BookmarkFeatureLive } from "./bookmark.feature";
 
 let nextId = 0;
 
