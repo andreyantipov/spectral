@@ -211,9 +211,6 @@ export function OmniBox(props: OmniBoxProps) {
 										<span class={s().suggestionDash}>&mdash;</span>
 										<span class={s().suggestionAction}>{suggestion.action}</span>
 									</Show>
-									<Show when={suggestion.type === "tab"}>
-										<span class={$.suggestionKbd}>Tab</span>
-									</Show>
 								</div>
 							);
 						}}
