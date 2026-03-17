@@ -1,0 +1,498 @@
+{
+  "version": "2.8",
+  "children": [
+    {
+      "type": "frame",
+      "id": "bi8Au",
+      "x": 0,
+      "y": 0,
+      "name": "Frame",
+      "clip": true,
+      "width": 1700,
+      "height": 500,
+      "fill": "#2C2C2E",
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "asfK3",
+          "x": 60,
+          "y": 160,
+          "name": "component/OmniBox/Search",
+          "reusable": true,
+          "width": 780,
+          "fill": "#2C2C2E",
+          "stroke": {
+            "align": "inside",
+            "thickness": 1,
+            "fill": "#48484A"
+          },
+          "effect": {
+            "type": "shadow",
+            "shadowType": "outer",
+            "color": "#00000066",
+            "offset": {
+              "x": 0,
+              "y": 4
+            },
+            "blur": 16
+          },
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "2HbaS",
+              "name": "inputRow",
+              "width": "fill_container",
+              "height": 52,
+              "fill": "#333335",
+              "gap": 10,
+              "padding": [
+                0,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "9dWRw",
+                  "name": "searchIcon",
+                  "width": 20,
+                  "height": 20,
+                  "iconFontName": "search",
+                  "iconFontFamily": "lucide",
+                  "fill": "#8E8E93"
+                },
+                {
+                  "type": "frame",
+                  "id": "pJKk3",
+                  "name": "engineBadge",
+                  "height": 32,
+                  "fill": "#3A5BA0",
+                  "cornerRadius": 10,
+                  "padding": [
+                    6,
+                    14
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "J6bUm",
+                      "name": "badgeText",
+                      "fill": "#FFFFFF",
+                      "content": "Google",
+                      "fontFamily": "Inter",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "GOovv",
+                  "name": "inputText",
+                  "fill": "#FFFFFF",
+                  "content": "ddddaxasd",
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "LK5u3",
+                  "name": "autocompleteHint",
+                  "fill": "#555555",
+                  "content": "it",
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "nq061",
+              "name": "divider",
+              "fill": "#48484A",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "ZI30K",
+              "name": "suggestionRow",
+              "width": "fill_container",
+              "height": 48,
+              "fill": "#3A5BA0",
+              "gap": 10,
+              "padding": [
+                0,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "kdfmk",
+                  "name": "sugIcon",
+                  "width": 18,
+                  "height": 18,
+                  "iconFontName": "search",
+                  "iconFontFamily": "lucide",
+                  "fill": "#FFFFFFCC"
+                },
+                {
+                  "type": "text",
+                  "id": "bBoYW",
+                  "name": "sugText",
+                  "fill": "#FFFFFF",
+                  "content": "ddddaxasd",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "500"
+                },
+                {
+                  "type": "text",
+                  "id": "UI2Ce",
+                  "name": "sugDash",
+                  "fill": "#FFFFFFAA",
+                  "content": "—",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "9c6k8",
+                  "name": "sugAction",
+                  "fill": "#FFFFFFCC",
+                  "content": "Search with Google",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "5Kvql",
+              "name": "suggestionRow2",
+              "width": "fill_container",
+              "height": 44,
+              "fill": "#2C2C2E",
+              "gap": 10,
+              "padding": [
+                0,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "Gewaw",
+                  "name": "historyIcon",
+                  "width": 18,
+                  "height": 18,
+                  "iconFontName": "history",
+                  "iconFontFamily": "lucide",
+                  "fill": "#8E8E93"
+                },
+                {
+                  "type": "text",
+                  "id": "nBgRI",
+                  "name": "sugText2",
+                  "fill": "#CCCCCC",
+                  "content": "ddddaxasd reddit thread",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "VVdj3",
+              "name": "suggestionRow3",
+              "width": "fill_container",
+              "height": 44,
+              "fill": "#2C2C2E",
+              "gap": 10,
+              "padding": [
+                0,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "XkvaH",
+                  "name": "extLinkIcon",
+                  "width": 18,
+                  "height": 18,
+                  "iconFontName": "external-link",
+                  "iconFontFamily": "lucide",
+                  "fill": "#8E8E93"
+                },
+                {
+                  "type": "text",
+                  "id": "Mhp9O",
+                  "name": "sugText3",
+                  "fill": "#CCCCCC",
+                  "content": "Switch to tab — ddddaxasd results",
+                  "fontFamily": "Inter",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "4BcBX",
+          "x": 900,
+          "y": 160,
+          "name": "component/OmniBox/URL",
+          "reusable": true,
+          "width": 780,
+          "fill": "#2C2C2E",
+          "stroke": {
+            "align": "inside",
+            "thickness": 1,
+            "fill": "#48484A"
+          },
+          "effect": {
+            "type": "shadow",
+            "shadowType": "outer",
+            "color": "#00000066",
+            "offset": {
+              "x": 0,
+              "y": 4
+            },
+            "blur": 16
+          },
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "UgAPE",
+              "name": "Input Row",
+              "width": "fill_container",
+              "height": 52,
+              "fill": "#333335",
+              "gap": 10,
+              "padding": [
+                0,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon_font",
+                  "id": "EuKgU",
+                  "name": "globeIcon",
+                  "width": 20,
+                  "height": 20,
+                  "iconFontName": "globe",
+                  "iconFontFamily": "lucide",
+                  "fill": "#8E8E93"
+                },
+                {
+                  "type": "icon_font",
+                  "id": "yyZ3s",
+                  "name": "lockIcon",
+                  "width": 16,
+                  "height": 16,
+                  "iconFontName": "lock",
+                  "iconFontFamily": "lucide",
+                  "fill": "#32D74B"
+                },
+                {
+                  "type": "text",
+                  "id": "HrI0A",
+                  "name": "urlText",
+                  "fill": "#FFFFFF",
+                  "content": "https://github.com/Effect-TS/effect",
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "KuVPs",
+              "name": "Divider",
+              "fill": "#48484A",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "f1zR5",
+              "name": "Suggestions",
+              "width": "fill_container",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "n4Ikf",
+                  "name": "Suggestion Row 1",
+                  "width": "fill_container",
+                  "height": 48,
+                  "fill": "#3A5BA0",
+                  "gap": 10,
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "SBf4o",
+                      "name": "r1icon",
+                      "width": 18,
+                      "height": 18,
+                      "iconFontName": "globe",
+                      "iconFontFamily": "lucide",
+                      "fill": "#FFFFFFCC"
+                    },
+                    {
+                      "type": "text",
+                      "id": "8Pajl",
+                      "name": "r1text",
+                      "fill": "#FFFFFF",
+                      "content": "github.com/Effect-TS/effect",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "bold"
+                    },
+                    {
+                      "type": "text",
+                      "id": "0pKLU",
+                      "name": "r1dash",
+                      "fill": "#FFFFFFAA",
+                      "content": "—",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "8tmjf",
+                      "name": "r1action",
+                      "fill": "#FFFFFFCC",
+                      "content": "Go to URL",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "3m9oj",
+                  "name": "Suggestion Row 2",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#2C2C2E",
+                  "gap": 10,
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "wXhzZ",
+                      "name": "r2icon",
+                      "width": 18,
+                      "height": 18,
+                      "iconFontName": "bookmark",
+                      "iconFontFamily": "lucide",
+                      "fill": "#FF6B35"
+                    },
+                    {
+                      "type": "text",
+                      "id": "pL5Rm",
+                      "name": "r2text",
+                      "fill": "#CCCCCC",
+                      "content": "Effect Documentation",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "i9qsO",
+                  "name": "Suggestion Row 3",
+                  "width": "fill_container",
+                  "height": 44,
+                  "fill": "#2C2C2E",
+                  "gap": 10,
+                  "padding": [
+                    0,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon_font",
+                      "id": "7uuJo",
+                      "name": "r3icon",
+                      "width": 18,
+                      "height": 18,
+                      "iconFontName": "history",
+                      "iconFontFamily": "lucide",
+                      "fill": "#8E8E93"
+                    },
+                    {
+                      "type": "text",
+                      "id": "9UXZi",
+                      "name": "r3text",
+                      "fill": "#CCCCCC",
+                      "content": "github.com/Effect-TS",
+                      "fontFamily": "Inter",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "Nbrg0",
+          "x": 60,
+          "y": 130,
+          "name": "label",
+          "fill": "#8E8E93",
+          "content": "Search Variant",
+          "fontFamily": "Inter",
+          "fontSize": 13,
+          "fontWeight": "600"
+        },
+        {
+          "type": "text",
+          "id": "yrg49",
+          "x": 900,
+          "y": 130,
+          "name": "label",
+          "fill": "#8E8E93",
+          "content": "URL Variant",
+          "fontFamily": "Inter",
+          "fontSize": 13,
+          "fontWeight": "600"
+        }
+      ]
+    }
+  ]
+}
