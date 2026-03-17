@@ -14,6 +14,7 @@ export class HistoryFeature extends Context.Tag(HISTORY_FEATURE)<
 		readonly record: (
 			url: string,
 			title: string | null,
+			query?: string | null,
 		) => Effect.Effect<HistoryEntry, DatabaseError>;
 		readonly clear: () => Effect.Effect<void, DatabaseError>;
 		readonly changes: Stream.Stream<HistoryEntry[]>;
@@ -25,8 +26,8 @@ export const HistoryFeatureLive = makeFeatureService({
 	repoTag: HistoryRepository,
 	name: HISTORY_FEATURE,
 	extend: (repo, notify) => ({
-		record: (url: string, title: string | null) =>
-			repo.record(url, title).pipe(Effect.tap(() => notify())),
+		record: (url: string, title: string | null, query: string | null = null) =>
+			repo.record(url, title, query).pipe(Effect.tap(() => notify())),
 		clear: () => repo.clear().pipe(Effect.tap(() => notify())),
 	}),
 });

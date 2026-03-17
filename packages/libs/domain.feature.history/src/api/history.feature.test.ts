@@ -5,11 +5,15 @@ import { HistoryFeature, HistoryFeatureLive } from "./history.feature";
 
 let nextId = 0;
 
-const makeEntry = (url: string, title: string | null): HistoryEntry => ({
+const makeEntry = (
+	url: string,
+	title: string | null,
+	query: string | null = null,
+): HistoryEntry => ({
 	id: String(++nextId),
 	url,
 	title,
-	query: null,
+	query,
 	visitedAt: new Date().toISOString(),
 });
 
@@ -19,9 +23,9 @@ const makeTestLayer = () => {
 
 	const MockHistoryRepository = Layer.succeed(HistoryRepository, {
 		getAll: () => Effect.succeed(entries),
-		record: (url: string, title: string | null) =>
+		record: (url: string, title: string | null, query: string | null = null) =>
 			Effect.sync(() => {
-				const entry = makeEntry(url, title);
+				const entry = makeEntry(url, title, query);
 				entries = [...entries, entry];
 				return entry;
 			}),
@@ -66,6 +70,20 @@ describe("HistoryFeature", () => {
 				const feature = yield* HistoryFeature;
 				const entry = yield* feature.record("https://example.com", null);
 				expect(entry.title).toBeNull();
+			}),
+		);
+	});
+
+	it("record() with query stores the query", async () => {
+		await runTest(
+			Effect.gen(function* () {
+				const feature = yield* HistoryFeature;
+				const entry = yield* feature.record(
+					"https://www.google.com/search?q=effect",
+					null,
+					"effect",
+				);
+				expect(entry.query).toBe("effect");
 			}),
 		);
 	});
