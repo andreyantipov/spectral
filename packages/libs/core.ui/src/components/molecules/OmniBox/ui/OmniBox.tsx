@@ -1,4 +1,4 @@
-import { createEffect, createMemo, createSignal, For, onCleanup, Show } from "solid-js";
+import { createEffect, createMemo, createSignal, For, onCleanup, onMount, Show } from "solid-js";
 import { omniBox } from "./omni-box.style";
 
 export type OmniBoxSuggestionType = "search" | "url" | "history" | "bookmark" | "tab";
@@ -54,10 +54,9 @@ export function OmniBox(props: OmniBoxProps) {
 	const [selectedIndex, setSelectedIndex] = createSignal(0);
 	let inputRef: HTMLInputElement | undefined;
 
-	createEffect(() => {
-		if (props.value !== undefined) {
-			setInputValue(props.value);
-		}
+	onMount(() => {
+		inputRef?.focus();
+		inputRef?.select();
 	});
 
 	const suggestions = createMemo(() => props.suggestions ?? []);
