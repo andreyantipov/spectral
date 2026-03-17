@@ -10,12 +10,6 @@ const sidebarTabs = [
 	{ id: "history", icon: (<span>{"\u21BB"}</span>) as JSX.Element, label: "History" },
 ];
 
-const looksLikeUrl = (query: string): boolean =>
-	query.includes(".") || query.startsWith("http://") || query.startsWith("https://");
-
-const normalizeUrl = (query: string): string =>
-	query.startsWith("http://") || query.startsWith("https://") ? query : `https://${query}`;
-
 export type SidebarFeatureProps = {
 	children?: JSX.Element;
 };
@@ -35,10 +29,10 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 
 	const activeSession = () => state()?.sessions?.find((s) => s.isActive);
 
-	const navigateActiveSession = (url: string) => {
+	const navigateActiveSession = (input: string) => {
 		const session = activeSession();
 		if (session) {
-			void runtime.runPromise(client.navigate({ id: session.id, input: url }));
+			void runtime.runPromise(client.navigate({ id: session.id, input }));
 		}
 	};
 
@@ -82,13 +76,12 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 			void runtime.runPromise(client.clearHistory());
 			return;
 		}
-		if (looksLikeUrl(id)) navigateActiveSession(normalizeUrl(id));
+		// Unknown ids (e.g. direct URL items from command center) go through omnibox
+		navigateActiveSession(id);
 	};
 
 	const handleSubmitRaw = (query: string) => {
-		if (looksLikeUrl(query)) {
-			navigateActiveSession(normalizeUrl(query));
-		}
+		navigateActiveSession(query);
 	};
 
 	const activeUrl = () => {
