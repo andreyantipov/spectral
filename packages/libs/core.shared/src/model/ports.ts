@@ -33,6 +33,7 @@ export class HistoryRepository extends Context.Tag(HISTORY_REPOSITORY_ID)<
 		readonly record: (
 			url: string,
 			title: string | null,
+			query?: string | null,
 		) => Effect.Effect<HistoryEntry, DatabaseError>;
 		readonly clear: () => Effect.Effect<void, DatabaseError>;
 	}

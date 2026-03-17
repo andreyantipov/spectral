@@ -11,6 +11,7 @@ import {
 import { type TestSpanExporter, TestSpanExporterLive } from "@ctrl/domain.adapter.otel";
 import { BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
+import { OmniboxFeatureLive } from "@ctrl/domain.feature.omnibox";
 import { SessionFeatureLive } from "@ctrl/domain.feature.session";
 import { BrowsingHandlersLive, type BrowsingRpcs } from "@ctrl/domain.service.browsing";
 import { Effect, Layer } from "effect";
@@ -82,12 +83,13 @@ export const MockBookmarkRepositoryLive = Layer.succeed(BookmarkRepository, {
 
 export const MockHistoryRepositoryLive = Layer.succeed(HistoryRepository, {
 	getAll: () => Effect.succeed(storedHistory),
-	record: (url: string, title: string | null) =>
+	record: (url: string, title: string | null, query: string | null = null) =>
 		Effect.sync(() => {
 			const entry: HistoryEntry = {
 				id: String(++historyNextId),
 				url,
 				title,
+				query,
 				visitedAt: new Date().toISOString(),
 			};
 			storedHistory = [...storedHistory, entry];
@@ -112,6 +114,7 @@ export const PipelineTestLayer = BrowsingHandlersLive.pipe(
 	Layer.provide(SessionFeatureLive),
 	Layer.provide(BookmarkFeatureLive),
 	Layer.provide(HistoryFeatureLive),
+	Layer.provide(OmniboxFeatureLive),
 	Layer.provide(MockSessionRepositoryLive),
 	Layer.provide(MockBookmarkRepositoryLive),
 	Layer.provide(MockHistoryRepositoryLive),

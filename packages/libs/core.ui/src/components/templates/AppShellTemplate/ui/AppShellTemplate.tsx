@@ -1,6 +1,6 @@
 import { createEffect, createSignal, type JSX, onCleanup, onMount, Show } from "solid-js";
 import { Dynamic } from "solid-js/web";
-import { CommandCenter, type CommandCenterProps } from "../../../organisms/CommandCenter";
+import { OmniBox, type OmniBoxProps, type OmniBoxSuggestion } from "../../../molecules/OmniBox";
 import { Notifications } from "../../../organisms/Notifications";
 import { Sidebar, type SidebarProps } from "../../../organisms/Sidebar";
 import { appShellTemplate } from "./appShellTemplate.style";
@@ -20,12 +20,16 @@ type IpcBridgeHandle = {
 	subscribe: (handler: (cmd: { type: string }) => void) => () => void;
 };
 
-// Preload script: forwards Cmd+K, Escape from webview tag to host
+// Preload script: forwards Cmd+K, Cmd+L, Escape from webview tag to host
 const SHORTCUT_PRELOAD = `
 document.addEventListener('keydown', function(e) {
   if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
     e.preventDefault();
     window.__electrobunSendToHost({ type: 'shortcut', key: 'cmd+k' });
+  }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'l') {
+    e.preventDefault();
+    window.__electrobunSendToHost({ type: 'shortcut', key: 'cmd+l' });
   }
   if (e.key === 'Escape') {
     window.__electrobunSendToHost({ type: 'shortcut', key: 'escape' });
@@ -35,63 +39,58 @@ document.addEventListener('keydown', function(e) {
 
 export type AppShellTemplateProps = {
 	sidebar: SidebarProps;
-	commandCenter: Omit<CommandCenterProps, "open" | "onClose">;
+	omniBox: Pick<OmniBoxProps, "value" | "suggestions" | "onInput" | "onSubmit">;
 	currentUrl?: string;
 	children?: JSX.Element;
 };
 
 export function AppShellTemplate(props: AppShellTemplateProps) {
 	const $ = appShellTemplate;
-	const [ccOpen, setCcOpen] = createSignal(false);
+	const [omniboxOpen, setOmniboxOpen] = createSignal(false);
 	let webviewRef: WebviewTagElement | undefined;
 	let ipcUnsub: (() => void) | undefined;
 
-	function openCc() {
-		if (ccOpen()) return;
-		setCcOpen(true);
+	function openOmnibox() {
+		if (omniboxOpen()) return;
+		setOmniboxOpen(true);
 	}
 
-	function closeCc() {
-		if (!ccOpen()) return;
-		setCcOpen(false);
+	function closeOmnibox() {
+		if (!omniboxOpen()) return;
+		setOmniboxOpen(false);
 	}
 
-	function toggleCc() {
-		if (ccOpen()) closeCc();
-		else openCc();
+	function toggleOmnibox() {
+		if (omniboxOpen()) closeOmnibox();
+		else openOmnibox();
 	}
 
 	function handleNewTab() {
-		openCc();
+		openOmnibox();
 		props.sidebar.onNewTab?.();
 	}
 
-	function handleCcSelect(id: string) {
-		closeCc();
-		props.commandCenter.onSelect?.(id);
-	}
-
-	function handleCcSubmitRaw(query: string) {
-		closeCc();
-		props.commandCenter.onSubmitRaw?.(query);
+	function handleOmniboxSubmit(value: string, suggestion?: OmniBoxSuggestion) {
+		closeOmnibox();
+		props.omniBox.onSubmit?.(value, suggestion);
 	}
 
 	// Shortcuts forwarded from webview tag via preload + __electrobunSendToHost
 	function handleHostMessage(event: CustomEvent) {
 		const msg = event.detail as { type?: string; key?: string } | undefined;
 		if (msg?.type === "shortcut") {
-			if (msg.key === "cmd+k") toggleCc();
-			else if (msg.key === "escape" && ccOpen()) closeCc();
+			if (msg.key === "cmd+k" || msg.key === "cmd+l") toggleOmnibox();
+			else if (msg.key === "escape" && omniboxOpen()) closeOmnibox();
 		}
 	}
 
-	// Cmd+K from host webview DOM (when sidebar or empty area has focus)
+	// Cmd+K / Cmd+L from host webview DOM (when sidebar or empty area has focus)
 	function handleKeyDown(e: KeyboardEvent) {
-		if (e.metaKey && e.key === "k") {
+		if ((e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "l")) {
 			e.preventDefault();
-			toggleCc();
+			toggleOmnibox();
 		}
-		if (e.key === "Escape" && ccOpen()) closeCc();
+		if (e.key === "Escape" && omniboxOpen()) closeOmnibox();
 	}
 
 	onMount(() => {
@@ -103,7 +102,7 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 			| undefined;
 		if (bridge) {
 			ipcUnsub = bridge.subscribe((cmd) => {
-				if (cmd.type === "toggle-command-center") toggleCc();
+				if (cmd.type === "toggle-command-center") toggleOmnibox();
 			});
 		}
 	});
@@ -111,6 +110,7 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 	onCleanup(() => {
 		document.removeEventListener("keydown", handleKeyDown);
 		ipcUnsub?.();
+		webviewRef?.off("host-message", handleHostMessage);
 	});
 
 	function setupWebview(el: HTMLElement) {
@@ -120,14 +120,14 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 		// props as JS properties, not HTML attributes. The Electrobun custom element
 		// reads masks via getAttribute() which misses property-only values.
 		// addMaskSelector() writes to the internal maskSelectors Set directly.
-		webviewRef.addMaskSelector("[data-command-center-overlay]");
+		webviewRef.addMaskSelector("[data-omnibox]");
 	}
 
-	// Force all webviews to re-sync mask rects when CommandCenter opens/closes.
+	// Force all webviews to re-sync mask rects when OmniBox opens/closes.
 	// The palette DOM element appears/disappears — the native CAShapeLayer must
 	// be recalculated to cut a hole where the palette renders.
 	createEffect(() => {
-		const _open = ccOpen();
+		const _open = omniboxOpen();
 		// Delay to ensure SolidJS <Show> has flushed the DOM update
 		requestAnimationFrame(() => {
 			document.querySelectorAll("electrobun-webview").forEach((el) => {
@@ -155,20 +155,17 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 							ref={setupWebview}
 							src={props.currentUrl}
 							preload={SHORTCUT_PRELOAD}
-							style={`width: 100%; height: 100%; display: block; background: ${ccOpen() ? "transparent" : "#fff"}; border-radius: ${ccOpen() ? "8px" : "0"};`}
+							style={`width: 100%; height: 100%; display: block; background: ${omniboxOpen() ? "transparent" : "#fff"}; border-radius: ${omniboxOpen() ? "8px" : "0"};`}
 						/>
 					</Show>
 					{props.children}
 				</div>
 
-				<CommandCenter
-					{...props.commandCenter}
-					open={ccOpen()}
-					initialQuery={props.currentUrl}
-					onClose={closeCc}
-					onSelect={handleCcSelect}
-					onSubmitRaw={handleCcSubmitRaw}
-				/>
+				<Show when={omniboxOpen()}>
+					<div class={$().omniboxOverlay}>
+						<OmniBox {...props.omniBox} onSubmit={handleOmniboxSubmit} onCancel={closeOmnibox} />
+					</div>
+				</Show>
 			</div>
 
 			<Notifications placement="bottom-end" />

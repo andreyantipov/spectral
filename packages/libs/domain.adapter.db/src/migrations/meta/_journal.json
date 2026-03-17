@@ -15,6 +15,13 @@
 			"when": 1773580157542,
 			"tag": "0001_next_stryfe",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "6",
+			"when": 1773782880940,
+			"tag": "0002_glamorous_redwing",
+			"breakpoints": true
 		}
 	]
 }

@@ -1,7 +1,7 @@
 import { type HistoryEntry, HistoryRepository } from "@ctrl/core.shared";
 import { Chunk, type Context, Duration, Effect, Fiber, Layer, Stream } from "effect";
 import { describe, expect, it } from "vitest";
-import { HistoryFeature, HistoryFeatureLive } from "./history.service";
+import { HistoryFeature, HistoryFeatureLive } from "./history.feature";
 
 let nextId = 0;
 
@@ -70,6 +70,20 @@ describe("HistoryFeature", () => {
 				const feature = yield* HistoryFeature;
 				const entry = yield* feature.record("https://example.com", null);
 				expect(entry.title).toBeNull();
+			}),
+		);
+	});
+
+	it("record() with query stores the query", async () => {
+		await runTest(
+			Effect.gen(function* () {
+				const feature = yield* HistoryFeature;
+				const entry = yield* feature.record(
+					"https://www.google.com/search?q=effect",
+					null,
+					"effect",
+				);
+				expect(entry.query).toBe("effect");
 			}),
 		);
 	});

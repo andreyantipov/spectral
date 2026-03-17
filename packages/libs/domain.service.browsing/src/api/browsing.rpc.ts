@@ -22,7 +22,7 @@ export class BrowsingRpcs extends RpcGroup.make(
 		error: DatabaseError,
 	}),
 	Rpc.make("navigate", {
-		payload: { id: Schema.String, url: Schema.String },
+		payload: { id: Schema.String, input: Schema.String },
 		success: SessionSchema,
 		error: Schema.Union(DatabaseError, ValidationError),
 	}),

@@ -27,6 +27,7 @@ export const HistoryEntrySchema = Schema.Struct({
 	id: Schema.String,
 	url: Schema.String,
 	title: Schema.NullOr(Schema.String),
+	query: Schema.NullOr(Schema.String),
 	visitedAt: Schema.String,
 });
 

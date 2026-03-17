@@ -27,53 +27,11 @@ const sessionItems = [
 	},
 ];
 
-const commandCenterItems = [
-	{
-		id: "yt",
-		icon: <span style={{ color: "#f00", "font-size": "12px" }}>&#9679;</span>,
-		label: "YouTube",
-		secondaryLabel: "— youtube.com",
-		section: "// open_tabs",
-		badge: "Switch to Tab",
-	},
-	{
-		id: "welcome",
-		icon: <span style={{ color: "#f80", "font-size": "12px" }}>&#9679;</span>,
-		label: "Welcome!",
-		section: "// open_tabs",
-	},
-	{
-		id: "gh",
-		icon: <span>&#9734;</span>,
-		label: "GitHub",
-		secondaryLabel: "— github.com",
-		section: "// bookmarks",
-	},
-	{
-		id: "so",
-		icon: <span>&#9734;</span>,
-		label: "Stack Overflow",
-		secondaryLabel: "— stackoverflow.com",
-		section: "// bookmarks",
-	},
-	{
-		id: "new-tab",
-		icon: <span>+</span>,
-		label: "New Tab",
-		section: "// commands",
-	},
-	{
-		id: "bookmark",
-		icon: <span>&#9734;</span>,
-		label: "Bookmark Current Page",
-		section: "// commands",
-	},
-	{
-		id: "clear-history",
-		icon: <span>&#128465;</span>,
-		label: "Clear Browsing History",
-		section: "// commands",
-	},
+const omniboxSuggestions = [
+	{ type: "tab" as const, text: "YouTube", url: "https://youtube.com", action: "Switch" },
+	{ type: "tab" as const, text: "Welcome!", url: "about:blank", action: "Switch" },
+	{ type: "bookmark" as const, text: "GitHub", url: "https://github.com" },
+	{ type: "bookmark" as const, text: "Stack Overflow", url: "https://stackoverflow.com" },
 ];
 
 const meta: Meta<typeof AppShellTemplate> = {
@@ -99,14 +57,14 @@ export const Default: Story = {
 			items: sessionItems,
 			activeItemId: "yt",
 		},
-		commandCenter: {
-			items: commandCenterItems,
+		omniBox: {
+			suggestions: omniboxSuggestions,
 		},
 		children: <span style={{ color: "#555", "font-family": "monospace" }}>Page Content</span>,
 	},
 };
 
-export const WithCommandCenterOpen: Story = {
+export const WithOmniBoxOpen: Story = {
 	render: () => (
 		<div style={{ height: "600px", width: "100%", display: "flex", position: "relative" }}>
 			<AppShellTemplate
@@ -116,13 +74,12 @@ export const WithCommandCenterOpen: Story = {
 					items: sessionItems,
 					activeItemId: "yt",
 				}}
-				commandCenter={{
-					items: commandCenterItems,
-					onSelect: (_id) => {},
+				omniBox={{
+					suggestions: omniboxSuggestions,
 				}}
 			>
 				<span style={{ color: "#555", "font-family": "monospace" }}>
-					Page Content (press Cmd+K to open command center)
+					Page Content (press Cmd+K or Cmd+L to open omnibox)
 				</span>
 			</AppShellTemplate>
 		</div>
@@ -137,8 +94,8 @@ export const CollapsedSidebar: Story = {
 			items: sessionItems,
 			collapsed: true,
 		},
-		commandCenter: {
-			items: commandCenterItems,
+		omniBox: {
+			suggestions: omniboxSuggestions,
 		},
 		children: <span style={{ color: "#555", "font-family": "monospace" }}>Page Content</span>,
 	},

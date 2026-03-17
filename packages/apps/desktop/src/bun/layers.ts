@@ -8,6 +8,7 @@ import {
 } from "@ctrl/domain.adapter.db";
 import { BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
+import { OmniboxFeatureLive } from "@ctrl/domain.feature.omnibox";
 import { SessionFeatureLive } from "@ctrl/domain.feature.session";
 import { BrowsingHandlersLive } from "@ctrl/domain.service.browsing";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
@@ -32,6 +33,7 @@ const BrowsingHandlersLayer = BrowsingHandlersLive.pipe(
 	Layer.provide(SessionFeatureLayer),
 	Layer.provide(BookmarkFeatureLayer),
 	Layer.provide(HistoryFeatureLayer),
+	Layer.provide(OmniboxFeatureLive),
 );
 
 // Compose: expose all layers needed by the app
