@@ -1,8 +1,14 @@
-import { currentPage, currentUrl } from "@ctrl/core.shared";
-import { AppShellTemplate, type SidebarItem as CoreSidebarItem, useRuntime } from "@ctrl/core.ui";
+import { currentUrl } from "@ctrl/core.shared";
+import {
+	AppShellTemplate,
+	type SidebarItem as CoreSidebarItem,
+	type OmniBoxSuggestion,
+	useRuntime,
+} from "@ctrl/core.ui";
 import type { JSX } from "solid-js";
+import { createMemo, createSignal } from "solid-js";
 import { useBrowsingRpc } from "../api/use-sidebar";
-import { buildCommandCenterItems, mapSessionsToSidebarItems } from "../model/sidebar.bindings";
+import { buildOmniBoxSuggestions, mapSessionsToSidebarItems } from "../model/sidebar.bindings";
 
 const sidebarTabs = [
 	{ id: "sessions", icon: (<span>{"\u2630"}</span>) as JSX.Element, label: "Sessions" },
@@ -17,6 +23,7 @@ export type SidebarFeatureProps = {
 export function SidebarFeature(props: SidebarFeatureProps) {
 	const { client, state } = useBrowsingRpc();
 	const runtime = useRuntime();
+	const [omniboxQuery, setOmniboxQuery] = createSignal("");
 
 	const items = (): CoreSidebarItem[] =>
 		mapSessionsToSidebarItems(state()?.sessions).map((item) => ({
@@ -48,45 +55,20 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		void runtime.runPromise(client.removeSession({ id }));
 	};
 
-	const handleSessionSelect = (id: string) => {
-		const sessionId = id.slice("session:".length);
-		void runtime.runPromise(client.setActive({ id: sessionId }));
-	};
-
-	const handleBookmarkSelect = (id: string) => {
-		const bookmark = state()?.bookmarks?.find((b) => b.id === id.slice("bookmark:".length));
-		if (bookmark) navigateActiveSession(bookmark.url);
-	};
-
-	const handleBookmarkCommand = () => {
-		const session = activeSession();
-		if (!session) return;
-		const page = currentPage(session);
-		if (page) {
-			void runtime.runPromise(client.addBookmark({ url: page.url, title: page.title }));
-		}
-	};
-
-	const handleCcSelect = (id: string) => {
-		if (id.startsWith("session:")) return handleSessionSelect(id);
-		if (id.startsWith("bookmark:")) return handleBookmarkSelect(id);
-		if (id === "cmd:new-tab") return handleNewTab();
-		if (id === "cmd:bookmark") return handleBookmarkCommand();
-		if (id === "cmd:clear-history") {
-			void runtime.runPromise(client.clearHistory());
-			return;
-		}
-		// Unknown ids (e.g. direct URL items from command center) go through omnibox
-		navigateActiveSession(id);
-	};
-
-	const handleSubmitRaw = (query: string) => {
-		navigateActiveSession(query);
-	};
-
 	const activeUrl = () => {
 		const session = activeSession();
 		return session ? currentUrl(session) : undefined;
+	};
+
+	const omniboxSuggestions = createMemo(() => buildOmniBoxSuggestions(state(), omniboxQuery()));
+
+	const handleOmniboxInput = (value: string) => {
+		setOmniboxQuery(value);
+	};
+
+	const handleOmniboxSubmit = (value: string, _suggestion?: OmniBoxSuggestion) => {
+		setOmniboxQuery("");
+		navigateActiveSession(value);
 	};
 
 	return (
@@ -100,10 +82,11 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 				onItemClick: handleItemClick,
 				onItemClose: handleItemClose,
 			}}
-			commandCenter={{
-				items: buildCommandCenterItems(state()),
-				onSelect: handleCcSelect,
-				onSubmitRaw: handleSubmitRaw,
+			omniBox={{
+				value: activeUrl(),
+				suggestions: omniboxSuggestions(),
+				onInput: handleOmniboxInput,
+				onSubmit: handleOmniboxSubmit,
 			}}
 			currentUrl={activeUrl()}
 		>

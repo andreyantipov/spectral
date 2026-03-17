@@ -6,6 +6,12 @@ export type { TextProps } from "./components/atoms/Text";
 export { Text } from "./components/atoms/Text";
 export type { AddressBarProps } from "./components/molecules/AddressBar";
 export { AddressBar } from "./components/molecules/AddressBar";
+export {
+	OmniBox,
+	type OmniBoxProps,
+	type OmniBoxSuggestion,
+	type OmniBoxSuggestionType,
+} from "./components/molecules/OmniBox";
 export type { TabBarProps, TabData } from "./components/molecules/TabBar";
 export { TabBar } from "./components/molecules/TabBar";
 export {

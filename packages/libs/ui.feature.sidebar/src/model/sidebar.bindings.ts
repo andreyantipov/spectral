@@ -1,5 +1,5 @@
 import { type BrowsingState, currentPage, type Session } from "@ctrl/core.shared";
-import type { CommandCenterItem } from "@ctrl/core.ui";
+import type { CommandCenterItem, OmniBoxSuggestion } from "@ctrl/core.ui";
 
 export type SidebarItem = {
 	readonly id: string;
@@ -37,6 +37,30 @@ const safeHostname = (url: string): string => {
 	} catch {
 		return url;
 	}
+};
+
+export const buildOmniBoxSuggestions = (
+	state: BrowsingState | undefined,
+	query: string,
+): OmniBoxSuggestion[] => {
+	const q = query.trim().toLowerCase();
+	const suggestions: OmniBoxSuggestion[] = [];
+
+	for (const session of state?.sessions ?? []) {
+		const page = currentPage(session);
+		if (!page) continue;
+		const label = page.title ?? safeHostname(page.url);
+		if (q && !label.toLowerCase().includes(q) && !page.url.toLowerCase().includes(q)) continue;
+		suggestions.push({ type: "tab", text: label, url: page.url, action: "Switch" });
+	}
+
+	for (const bookmark of state?.bookmarks ?? []) {
+		const label = bookmark.title ?? bookmark.url;
+		if (q && !label.toLowerCase().includes(q) && !bookmark.url.toLowerCase().includes(q)) continue;
+		suggestions.push({ type: "bookmark", text: label, url: bookmark.url });
+	}
+
+	return suggestions;
 };
 
 export const buildCommandCenterItems = (state: BrowsingState | undefined): CommandCenterItem[] => {
