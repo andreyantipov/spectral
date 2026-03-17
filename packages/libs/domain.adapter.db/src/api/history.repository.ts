@@ -40,11 +40,11 @@ export const HistoryRepositoryLive = Layer.effect(
 						),
 					),
 
-			record: (url: string, title: string | null) =>
+			record: (url: string, title: string | null, query: string | null = null) =>
 				Effect.gen(function* () {
 					const id = genId();
 					const visitedAt = now();
-					const values = { id, url, title, query: null, visitedAt };
+					const values = { id, url, title, query, visitedAt };
 					yield* db.insert(historyTable).values(values);
 					return toHistoryEntry(values);
 				}).pipe(

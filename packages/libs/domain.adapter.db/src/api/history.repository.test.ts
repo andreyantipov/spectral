@@ -35,13 +35,25 @@ describe("HistoryRepositoryLive", () => {
 		await run(
 			Effect.gen(function* () {
 				const repo = yield* HistoryRepository;
-				const entry = yield* repo.record("https://example.com", "Example");
+				const entry = yield* repo.record("https://example.com", "Example", "example query");
 				expect(entry.url).toBe("https://example.com");
 				expect(entry.title).toBe("Example");
+				expect(entry.query).toBe("example query");
 				expect(entry.id).toBeDefined();
 				expect(entry.visitedAt).toBeDefined();
 				const all = yield* repo.getAll();
 				expect(all).toHaveLength(1);
+				expect(all[0].query).toBe("example query");
+			}),
+		);
+	});
+
+	it("record with no query stores null", async () => {
+		await run(
+			Effect.gen(function* () {
+				const repo = yield* HistoryRepository;
+				const entry = yield* repo.record("https://example.com", null);
+				expect(entry.query).toBeNull();
 			}),
 		);
 	});
