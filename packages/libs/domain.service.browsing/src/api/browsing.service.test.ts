@@ -17,6 +17,7 @@ import {
 } from "@ctrl/domain.adapter.otel";
 import { BOOKMARK_FEATURE, BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
 import { HISTORY_FEATURE, HistoryFeatureLive } from "@ctrl/domain.feature.history";
+import { OmniboxFeatureLive } from "@ctrl/domain.feature.omnibox";
 import { SESSION_FEATURE, SessionFeatureLive } from "@ctrl/domain.feature.session";
 import { Headers } from "@effect/platform";
 import type { ReadableSpan } from "@opentelemetry/sdk-trace-base";
@@ -94,13 +95,13 @@ const MockBookmarkRepository = Layer.succeed(BookmarkRepository, {
 
 const MockHistoryRepository = Layer.succeed(HistoryRepository, {
 	getAll: () => Effect.succeed(storedHistory),
-	record: (url: string, title: string | null) =>
+	record: (url: string, title: string | null, query: string | null = null) =>
 		Effect.sync(() => {
 			const entry: HistoryEntry = {
 				id: String(++historyNextId),
 				url,
 				title,
-				query: null,
+				query,
 				visitedAt: new Date().toISOString(),
 			};
 			storedHistory = [...storedHistory, entry];
@@ -116,6 +117,7 @@ const TestLayer = BrowsingHandlersLive.pipe(
 	Layer.provide(SessionFeatureLive),
 	Layer.provide(BookmarkFeatureLive),
 	Layer.provide(HistoryFeatureLive),
+	Layer.provide(OmniboxFeatureLive),
 	Layer.provide(MockSessionRepository),
 	Layer.provide(MockBookmarkRepository),
 	Layer.provide(MockHistoryRepository),
@@ -259,8 +261,11 @@ describe("BrowsingService traces", () => {
 
 				const navigate = yield* BrowsingRpcs.accessHandler("navigate");
 				yield* (
-					navigate as HandlerFn<{ id: string; url: string }, Effect.Effect<Session, DatabaseError>>
-				)({ id: "1", url: "https://example.com" }, Headers.empty);
+					navigate as HandlerFn<
+						{ id: string; input: string },
+						Effect.Effect<Session, DatabaseError>
+					>
+				)({ id: "1", input: "https://example.com" }, Headers.empty);
 
 				yield* Effect.sleep(Duration.millis(10));
 

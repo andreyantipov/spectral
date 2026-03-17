@@ -38,7 +38,7 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 	const navigateActiveSession = (url: string) => {
 		const session = activeSession();
 		if (session) {
-			void runtime.runPromise(client.navigate({ id: session.id, url }));
+			void runtime.runPromise(client.navigate({ id: session.id, input: url }));
 		}
 	};
 

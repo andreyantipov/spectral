@@ -1,6 +1,7 @@
 import { withTracing } from "@ctrl/core.shared";
 import { BookmarkFeature } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeature } from "@ctrl/domain.feature.history";
+import { OmniboxFeature } from "@ctrl/domain.feature.omnibox";
 import { SessionFeature } from "@ctrl/domain.feature.session";
 import { Effect, Stream } from "effect";
 import { BROWSING_SERVICE } from "../lib/constants";
@@ -12,15 +13,19 @@ export const BrowsingHandlersLive = BrowsingRpcs.toLayer(
 		const sessions = yield* SessionFeature;
 		const bookmarks = yield* BookmarkFeature;
 		const history = yield* HistoryFeature;
+		const omnibox = yield* OmniboxFeature;
 
 		return withTracing(BROWSING_SERVICE, {
 			createSession: ({ mode }: { readonly mode: "visual" }) =>
 				sessions.create(mode).pipe(Effect.tap((s) => sessions.setActive(s.id))),
 			removeSession: ({ id }: { readonly id: string }) => sessions.remove(id),
-			navigate: ({ id, url }: { readonly id: string; readonly url: string }) =>
-				sessions
-					.navigate(id, url)
-					.pipe(Effect.tap(() => history.record(url, null).pipe(Effect.ignore))),
+			navigate: ({ id, input }: { readonly id: string; readonly input: string }) =>
+				Effect.gen(function* () {
+					const { url, query } = yield* omnibox.resolve(input);
+					return yield* sessions
+						.navigate(id, url)
+						.pipe(Effect.tap(() => history.record(url, null, query).pipe(Effect.ignore)));
+				}),
 			goBack: ({ id }: { readonly id: string }) => sessions.goBack(id),
 			goForward: ({ id }: { readonly id: string }) => sessions.goForward(id),
 			getSessions: () => sessions.getAll(),
