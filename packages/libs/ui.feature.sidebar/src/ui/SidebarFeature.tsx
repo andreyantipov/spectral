@@ -25,14 +25,15 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 	const runtime = useRuntime();
 	const [omniboxQuery, setOmniboxQuery] = createSignal("");
 
+	const mappedSessions = createMemo(() => mapSessionsToSidebarItems(state()?.sessions));
+
 	const items = (): CoreSidebarItem[] =>
-		mapSessionsToSidebarItems(state()?.sessions).map((item) => ({
+		mappedSessions().map((item) => ({
 			id: item.id,
 			label: item.label,
 		}));
 
-	const activeItemId = () =>
-		mapSessionsToSidebarItems(state()?.sessions).find((item) => item.active)?.id ?? null;
+	const activeItemId = () => mappedSessions().find((item) => item.active)?.id ?? null;
 
 	const activeSession = () => state()?.sessions?.find((s) => s.isActive);
 

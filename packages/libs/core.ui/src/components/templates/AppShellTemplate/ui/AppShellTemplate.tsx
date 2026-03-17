@@ -86,7 +86,7 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 
 	// Cmd+K / Cmd+L from host webview DOM (when sidebar or empty area has focus)
 	function handleKeyDown(e: KeyboardEvent) {
-		if (e.metaKey && (e.key === "k" || e.key === "l")) {
+		if ((e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "l")) {
 			e.preventDefault();
 			toggleOmnibox();
 		}
@@ -110,6 +110,7 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 	onCleanup(() => {
 		document.removeEventListener("keydown", handleKeyDown);
 		ipcUnsub?.();
+		webviewRef?.off("host-message", handleHostMessage);
 	});
 
 	function setupWebview(el: HTMLElement) {

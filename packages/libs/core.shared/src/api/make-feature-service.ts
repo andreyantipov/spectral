@@ -7,13 +7,14 @@ import { withTracing } from "../lib/with-tracing";
  * Custom methods are added via the `extend` callback.
  */
 export const makeFeatureService = <
+	Item,
 	TagId,
 	TagService extends {
-		readonly getAll: () => Effect.Effect<unknown, unknown>;
-		readonly changes: Stream.Stream<unknown>;
+		readonly getAll: () => Effect.Effect<Item[], unknown>;
+		readonly changes: Stream.Stream<Item[]>;
 	},
 	RepoId,
-	RepoService extends { readonly getAll: () => Effect.Effect<unknown, unknown> },
+	RepoService extends { readonly getAll: () => Effect.Effect<Item[], unknown> },
 	Ext extends Record<string, unknown>,
 >(config: {
 	readonly tag: Context.Tag<TagId, TagService>;
@@ -25,10 +26,10 @@ export const makeFeatureService = <
 		config.tag,
 		Effect.gen(function* () {
 			const repo = yield* config.repoTag;
-			const pubsub = yield* PubSub.unbounded<unknown[]>();
+			const pubsub = yield* PubSub.unbounded<Item[]>();
 
 			const notify = () =>
-				(repo.getAll() as Effect.Effect<unknown[], unknown>).pipe(
+				repo.getAll().pipe(
 					Effect.flatMap((items) => PubSub.publish(pubsub, items)),
 					Effect.ignore,
 				);

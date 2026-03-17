@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { resolveInput } from "./resolve";
 
-const Google = { name: "Google", buildUrl: (q: string) => `https://www.google.com/search?q=${q}` };
+const Google = {
+	name: "Google",
+	buildUrl: (q: string) => `https://www.google.com/search?q=${encodeURIComponent(q)}`,
+};
 
 describe("resolveInput — URLs", () => {
 	it("passes through https:// URLs unchanged", () => {
@@ -37,6 +40,12 @@ describe("resolveInput — URLs", () => {
 	it("trims whitespace before classifying", () => {
 		const r = resolveInput("  google.com  ", Google);
 		expect(r.url).toBe("https://google.com");
+		expect(r.query).toBeNull();
+	});
+
+	it("passes through non-http URLs with explicit schemes unchanged", () => {
+		const r = resolveInput("ftp://files.example.com", Google);
+		expect(r.url).toBe("ftp://files.example.com");
 		expect(r.query).toBeNull();
 	});
 });

@@ -5,7 +5,7 @@ import { OmniboxFeature } from "../model/omnibox.model";
 
 const GoogleEngine: SearchEngine = {
 	name: "Google",
-	buildUrl: (query) => `https://www.google.com/search?q=${query}`,
+	buildUrl: (query) => `https://www.google.com/search?q=${encodeURIComponent(query)}`,
 };
 
 export const OmniboxFeatureLive = Layer.succeed(OmniboxFeature, {

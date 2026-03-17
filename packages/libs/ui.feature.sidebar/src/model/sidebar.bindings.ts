@@ -9,15 +9,19 @@ export type SidebarItem = {
 	readonly hasForward: boolean;
 };
 
+const safeHostname = (url: string): string => {
+	try {
+		return new URL(url).hostname || url;
+	} catch {
+		return url;
+	}
+};
+
 const displayLabel = (session: Session): string => {
 	const page = currentPage(session);
 	if (!page) return "New Tab";
 	if (page.title) return page.title;
-	try {
-		return new URL(page.url).hostname;
-	} catch {
-		return page.url;
-	}
+	return safeHostname(page.url);
 };
 
 export const mapSessionsToSidebarItems = (
@@ -30,14 +34,6 @@ export const mapSessionsToSidebarItems = (
 		hasBack: false,
 		hasForward: false,
 	})) ?? [];
-
-const safeHostname = (url: string): string => {
-	try {
-		return new URL(url).hostname;
-	} catch {
-		return url;
-	}
-};
 
 export const buildOmniBoxSuggestions = (
 	state: BrowsingState | undefined,
