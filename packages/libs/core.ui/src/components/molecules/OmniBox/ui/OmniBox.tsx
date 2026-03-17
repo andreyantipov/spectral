@@ -50,8 +50,9 @@ export function OmniBox(props: OmniBoxProps) {
 	const $ = omniBox();
 	const $h = omniBox({ suggestionHighlighted: true });
 
-	const [inputValue, setInputValue] = createSignal(props.value ?? "");
-	const [selectedIndex, setSelectedIndex] = createSignal(0);
+	const [query, setQuery] = createSignal(props.value ?? "");
+	// -1 = nothing selected (user's typed text shown), 0+ = suggestion highlighted
+	const [selectedIndex, setSelectedIndex] = createSignal(-1);
 	let inputRef: HTMLInputElement | undefined;
 
 	onMount(() => {
@@ -60,27 +61,45 @@ export function OmniBox(props: OmniBoxProps) {
 	});
 
 	const suggestions = createMemo(() => props.suggestions ?? []);
-	const showDropdown = createMemo(() => inputValue().length > 0 && suggestions().length > 0);
-	const inputIsUrl = createMemo(() => isUrlLike(inputValue()));
+	const showDropdown = createMemo(() => query().length > 0 && suggestions().length > 0);
+
+	// What the input field displays: suggestion URL when navigating, typed query otherwise
+	const displayedValue = createMemo(() => {
+		const idx = selectedIndex();
+		if (idx >= 0) {
+			const s = suggestions()[idx];
+			return s ? (s.url ?? s.text) : query();
+		}
+		return query();
+	});
 
 	const handleInput = (e: InputEvent) => {
 		const value = (e.target as HTMLInputElement).value;
-		setInputValue(value);
-		setSelectedIndex(0);
+		setQuery(value);
+		setSelectedIndex(-1);
 		props.onInput?.(value);
 	};
 
 	const handleSubmit = (suggestion?: OmniBoxSuggestion) => {
-		const value = suggestion?.url ?? inputValue();
-		if (!value) return;
-
-		const resolved = inputIsUrl() ? normalizeUrl(value) : value;
+		if (suggestion?.url) {
+			props.onSubmit?.(suggestion.url, suggestion);
+			return;
+		}
+		const raw = query();
+		if (!raw) return;
+		const resolved = isUrlLike(raw) ? normalizeUrl(raw) : raw;
 		props.onSubmit?.(resolved, suggestion);
 	};
 
 	const navigateSuggestions = (dir: 1 | -1) => {
 		const count = suggestions().length;
-		if (count > 0) setSelectedIndex((i) => (i + dir + count) % count);
+		if (count === 0) return;
+		setSelectedIndex((i) => {
+			const next = i + dir;
+			if (next >= count) return -1; // past last → back to no selection
+			if (next < -1) return count - 1; // up from -1 → wrap to last
+			return next;
+		});
 	};
 
 	const handleKeyDown = (e: KeyboardEvent) => {
@@ -95,7 +114,7 @@ export function OmniBox(props: OmniBoxProps) {
 				break;
 			case "Enter":
 				e.preventDefault();
-				handleSubmit(suggestions()[selectedIndex()]);
+				handleSubmit(selectedIndex() >= 0 ? suggestions()[selectedIndex()] : undefined);
 				break;
 			case "Escape":
 				e.preventDefault();
@@ -104,15 +123,16 @@ export function OmniBox(props: OmniBoxProps) {
 			case "Delete":
 				if (e.shiftKey) {
 					e.preventDefault();
-					const sel = suggestions()[selectedIndex()];
+					const sel = selectedIndex() >= 0 ? suggestions()[selectedIndex()] : undefined;
 					if (sel) props.onDeleteSuggestion?.(sel);
 				}
 				break;
 			case "Tab":
 				if (props.autocompleteHint && !e.shiftKey) {
 					e.preventDefault();
-					const completed = inputValue() + props.autocompleteHint;
-					setInputValue(completed);
+					const completed = query() + props.autocompleteHint;
+					setQuery(completed);
+					setSelectedIndex(-1);
 					props.onInput?.(completed);
 				}
 				break;
@@ -160,7 +180,7 @@ export function OmniBox(props: OmniBoxProps) {
 					ref={inputRef}
 					class={$.input}
 					type="text"
-					value={inputValue()}
+					value={displayedValue()}
 					onInput={handleInput}
 					onKeyDown={handleKeyDown}
 					onFocus={handleFocus}
