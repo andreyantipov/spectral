@@ -52,20 +52,8 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 
 	const navigateActiveSession = (input: string) => {
 		const session = activeSession();
-		console.error("[nav] navigateActiveSession called", {
-			input,
-			sessionId: session?.id,
-			hasSession: !!session,
-		});
 		if (session) {
-			void runtime
-				.runPromise(client.navigate({ id: session.id, input }))
-				.then(() => {
-					console.error("[nav] navigate RPC completed", { url: activeUrl() });
-				})
-				.catch((err) => {
-					console.error("[nav] navigate RPC FAILED", err);
-				});
+			void runtime.runPromise(client.navigate({ id: session.id, input }));
 		}
 	};
 

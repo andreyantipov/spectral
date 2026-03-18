@@ -35,7 +35,6 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 	}
 
 	function handleNewSession() {
-		openOmnibox();
 		props.sidebar.onNewSession?.();
 	}
 
