@@ -67,17 +67,21 @@ export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHook
 		const hasRealUrl = url && url !== "about:blank";
 
 		if (isSwitch) {
-			// Hide previous webview
+			// Move previous webview offscreen (preserves page state, unlike toggleHidden)
 			if (activeSessionId) {
 				const prev = webviews.get(activeSessionId);
-				if (prev) prev.toggleHidden(true);
+				if (prev) {
+					(prev as unknown as HTMLElement).style.top = "-20000px";
+					(prev as unknown as HTMLElement).style.inset = "auto";
+				}
 			}
 			activeSessionId = sessionId;
 
 			const existing = webviews.get(sessionId);
 			if (existing) {
-				// Show existing webview (page state preserved)
-				existing.toggleHidden(false);
+				// Bring back onscreen
+				(existing as unknown as HTMLElement).style.top = "";
+				(existing as unknown as HTMLElement).style.inset = "0";
 			} else if (hasRealUrl) {
 				// Create webview only for real URLs — about:blank shows BlankPage component
 				createAndMount(sessionId, url);
