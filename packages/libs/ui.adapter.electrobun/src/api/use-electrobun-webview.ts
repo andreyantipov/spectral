@@ -55,24 +55,38 @@ export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHook
 	}
 
 	let cleanupEvents: (() => void) | undefined;
+	let currentSessionId: string | undefined;
 
-	// React to session/URL changes
+	// React to session changes
 	createEffect(() => {
 		const { sessionId, url } = props();
-		if (!containerEl) return;
+		if (!containerEl || !sessionId) return;
 
-		cleanupEvents?.();
-		pool.hideAll();
+		const isNewSession = sessionId !== currentSessionId;
+		currentSessionId = sessionId;
 
-		const entry = pool.getOrCreate(sessionId, url);
+		if (isNewSession) {
+			cleanupEvents?.();
+			pool.hideAll();
+		}
+
+		const entry = pool.getOrCreate(sessionId);
 		const el = entry.el as unknown as HTMLElement;
 
+		// Add to DOM BEFORE loadURL — Electrobun custom element needs to be connected
 		if (!el.parentElement) {
 			containerEl.appendChild(el);
 		}
 		pool.show(sessionId);
 
-		cleanupEvents = attachEvents(entry.el, sessionId);
+		// Only load URL on first visit to this session (new webview)
+		if (isNewSession && url && url !== "about:blank") {
+			entry.el.loadURL(url);
+		}
+
+		if (isNewSession) {
+			cleanupEvents = attachEvents(entry.el, sessionId);
+		}
 	});
 
 	// React to mask selector changes

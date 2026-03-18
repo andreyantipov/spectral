@@ -87,36 +87,38 @@ export function Sidebar(props: SidebarProps) {
 				width: collapsed() ? undefined : `${width()}px`,
 			}}
 		>
-			{/* Icon rail */}
-			<div class={$().rail}>
-				<div class={$().railTabs}>
-					<For each={props.tabs}>
-						{(tab) => {
-							const s = () => (tab.id === props.activeTabId ? $activeTab() : $());
-							return (
-								<button
-									type="button"
-									class={s().railTab}
-									onClick={() => {
-										if (tab.id === props.activeTabId && !collapsed()) {
-											props.onCollapseChange?.(true);
-										} else {
-											props.onCollapseChange?.(false);
-											props.onTabClick?.(tab.id);
-										}
-									}}
-									title={tab.label}
-								>
-									<span class={s().railTabIcon}>{tab.icon}</span>
-									<Show when={tab.badge}>
-										<span class={s().railTabBadge}>{tab.badge}</span>
-									</Show>
-								</button>
-							);
-						}}
-					</For>
+			{/* Icon rail — only shown when there are multiple tabs */}
+			<Show when={props.tabs.length > 0}>
+				<div class={$().rail}>
+					<div class={$().railTabs}>
+						<For each={props.tabs}>
+							{(tab) => {
+								const s = () => (tab.id === props.activeTabId ? $activeTab() : $());
+								return (
+									<button
+										type="button"
+										class={s().railTab}
+										onClick={() => {
+											if (tab.id === props.activeTabId && !collapsed()) {
+												props.onCollapseChange?.(true);
+											} else {
+												props.onCollapseChange?.(false);
+												props.onTabClick?.(tab.id);
+											}
+										}}
+										title={tab.label}
+									>
+										<span class={s().railTabIcon}>{tab.icon}</span>
+										<Show when={tab.badge}>
+											<span class={s().railTabBadge}>{tab.badge}</span>
+										</Show>
+									</button>
+								);
+							}}
+						</For>
+					</div>
 				</div>
-			</div>
+			</Show>
 
 			{/* Expandable panel */}
 			<Show when={!collapsed()}>

@@ -9,12 +9,18 @@ import { createMemo, createSignal, type JSX } from "solid-js";
 import { useBrowsingRpc } from "../api/use-sidebar";
 import { buildOmniBoxSuggestions, mapSessionsToSidebarItems } from "../model/sidebar.bindings";
 
-const sidebarTabs = [
-	{ id: "sessions", icon: (<span>{"\u2630"}</span>) as JSX.Element, label: "Sessions" },
-];
+// No tabs = no rail. Sessions is the only section, rail serves no purpose.
+const sidebarTabs: { id: string; icon: JSX.Element; label: string }[] = [];
+
+export type WebviewBindings = {
+	readonly activeSessionId: () => string;
+	readonly activeUrl: () => string | undefined;
+	readonly onNavigate: (url: string) => void;
+	readonly onTitleChange: (title: string) => void;
+};
 
 export type SidebarFeatureProps = {
-	children?: JSX.Element;
+	children?: JSX.Element | ((bindings: WebviewBindings) => JSX.Element);
 };
 
 export function SidebarFeature(props: SidebarFeatureProps) {
@@ -69,39 +75,62 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		navigateActiveSession(value);
 	};
 
-	const [headerFocused, setHeaderFocused] = createSignal(false);
-
 	const headerInput = () => (
-		<input
-			type="text"
-			value={headerFocused() ? omniboxQuery() : (activeUrl() ?? "")}
-			placeholder="Search or enter URL..."
-			onFocus={() => setHeaderFocused(true)}
-			onBlur={() => {
-				setHeaderFocused(false);
-				setOmniboxQuery("");
-			}}
-			onInput={(e) => handleOmniboxInput(e.currentTarget.value)}
-			onKeyDown={(e) => {
-				if (e.key === "Enter") {
-					e.currentTarget.blur();
-					handleOmniboxSubmit(e.currentTarget.value);
-				}
-				if (e.key === "Escape") {
-					e.currentTarget.blur();
-				}
+		<button
+			type="button"
+			onClick={() => {
+				// Toggle the omnibox overlay (Cmd+K behavior)
+				const event = new KeyboardEvent("keydown", {
+					key: "k",
+					metaKey: true,
+					bubbles: true,
+				});
+				document.dispatchEvent(event);
 			}}
 			style={{
 				flex: "1",
-				background: "transparent",
-				border: "none",
-				color: "inherit",
-				"font-size": "inherit",
-				outline: "none",
+				background: "rgba(255,255,255,0.06)",
+				border: "1px solid rgba(255,255,255,0.1)",
+				"border-radius": "6px",
+				color: "rgba(255,255,255,0.5)",
+				"font-size": "12px",
+				padding: "4px 8px",
+				cursor: "pointer",
+				"text-align": "left",
 				"min-width": "0",
+				overflow: "hidden",
+				"text-overflow": "ellipsis",
+				"white-space": "nowrap",
 			}}
-		/>
+			title="Search or enter URL (⌘K)"
+		>
+			{activeUrl() ?? "Search or enter URL..."}
+		</button>
 	);
+
+	const webviewBindings: WebviewBindings = {
+		activeSessionId: () => activeSession()?.id ?? "",
+		activeUrl,
+		onNavigate: (url: string) => {
+			const session = activeSession();
+			if (session) {
+				void runtime.runPromise(client.reportNavigation({ id: session.id, url }));
+			}
+		},
+		onTitleChange: (title: string) => {
+			const session = activeSession();
+			if (session) {
+				void runtime.runPromise(client.updateTitle({ id: session.id, title }));
+			}
+		},
+	};
+
+	const content = () => {
+		const c = props.children;
+		return typeof c === "function"
+			? (c as (bindings: WebviewBindings) => JSX.Element)(webviewBindings)
+			: c;
+	};
 
 	return (
 		<AppShellTemplate
@@ -122,7 +151,7 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 				onSubmit: handleOmniboxSubmit,
 			}}
 		>
-			{props.children}
+			{content()}
 		</AppShellTemplate>
 	);
 }

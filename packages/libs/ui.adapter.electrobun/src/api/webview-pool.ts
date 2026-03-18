@@ -10,14 +10,13 @@ type PoolEntry = {
 export function createWebviewPool() {
 	const pool = new Map<string, PoolEntry>();
 
-	function createWebview(_sessionId: string, url: string): WebviewTagElement {
+	function createWebview(_sessionId: string): WebviewTagElement {
 		const el = document.createElement("electrobun-webview") as unknown as WebviewTagElement;
 		(el as unknown as HTMLElement).setAttribute("preload", SHORTCUT_PRELOAD);
 		(el as unknown as HTMLElement).style.cssText =
 			"width: 100%; height: 100%; display: block; background: #fff;";
-		if (url && url !== "about:blank") {
-			el.loadURL(url);
-		}
+		// NOTE: Do NOT call loadURL here — element must be in the DOM first.
+		// The caller is responsible for appending to DOM, then calling loadURL.
 		return el;
 	}
 
@@ -45,11 +44,11 @@ export function createWebviewPool() {
 			return pool.get(sessionId);
 		},
 
-		getOrCreate(sessionId: string, url: string): PoolEntry {
+		getOrCreate(sessionId: string): PoolEntry {
 			let entry = pool.get(sessionId);
 			if (!entry) {
 				evictLRU();
-				const el = createWebview(sessionId, url);
+				const el = createWebview(sessionId);
 				entry = { el, sessionId, lastActive: Date.now() };
 				pool.set(sessionId, entry);
 			} else {
