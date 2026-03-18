@@ -4,41 +4,39 @@ import type { WebviewHookProps, WebviewHookResult, WebviewTagElement } from "../
 
 export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHookResult {
 	let containerEl: HTMLDivElement | undefined;
-	// One webview per session — preserves page state across tab switches
 	const webviews = new Map<string, WebviewTagElement>();
-	// Track the last URL each webview loaded (to avoid reloading on webview-reported changes)
 	const loadedUrls = new Map<string, string>();
 	let activeSessionId: string | undefined;
 
-	function createWebview(sessionId: string): WebviewTagElement {
+	function createAndMount(sessionId: string, url: string): WebviewTagElement {
 		const el = document.createElement("electrobun-webview") as unknown as WebviewTagElement;
 		(el as unknown as HTMLElement).setAttribute("preload", SHORTCUT_PRELOAD);
-		(el as unknown as HTMLElement).setAttribute("html", "<html><body></body></html>");
 		(el as unknown as HTMLElement).style.cssText =
 			"width: 100%; height: 100%; position: absolute; inset: 0;";
+
+		// Append to DOM FIRST — Electrobun needs element connected before API calls
+		containerEl?.appendChild(el);
+
+		// Now safe to call Electrobun API methods
 		el.addMaskSelector("[data-omnibox]");
-		// Start hidden — will be shown when this session becomes active
-		el.toggleHidden(true);
-		return el;
-	}
+		el.loadURL(url);
+		loadedUrls.set(sessionId, url);
 
-	function setupEvents(el: WebviewTagElement, sid: string) {
+		// Events
 		el.on("did-navigate", (event: CustomEvent) => {
-			const url = (event as CustomEvent<string>).detail;
-			if (url) {
-				loadedUrls.set(sid, url);
-				props().onNavigate(url);
+			const u = (event as CustomEvent<string>).detail;
+			if (u) {
+				loadedUrls.set(sessionId, u);
+				props().onNavigate(u);
 			}
 		});
-
 		el.on("did-navigate-in-page", (event: CustomEvent) => {
-			const url = (event as CustomEvent<string>).detail;
-			if (url) {
-				loadedUrls.set(sid, url);
-				props().onNavigate(url);
+			const u = (event as CustomEvent<string>).detail;
+			if (u) {
+				loadedUrls.set(sessionId, u);
+				props().onNavigate(u);
 			}
 		});
-
 		el.on("dom-ready", () => {
 			props().onDomReady();
 			el.executeJavascript("document.title")
@@ -47,11 +45,8 @@ export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHook
 						props().onTitleChange(title);
 					}
 				})
-				.catch(() => {
-					// Title extraction failed silently
-				});
+				.catch(() => {});
 		});
-
 		el.on("host-message", (event: CustomEvent) => {
 			document.dispatchEvent(
 				new CustomEvent("webview-host-message", {
@@ -59,54 +54,56 @@ export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHook
 				}),
 			);
 		});
+
+		webviews.set(sessionId, el);
+		return el;
 	}
 
-	// React to session switches and URL changes
 	createEffect(() => {
 		const { sessionId, url } = props();
 		if (!containerEl || !sessionId) return;
 
 		const isSwitch = sessionId !== activeSessionId;
+		const hasRealUrl = url && url !== "about:blank";
 
 		if (isSwitch) {
-			// Hide the previously active webview
+			// Hide previous webview
 			if (activeSessionId) {
 				const prev = webviews.get(activeSessionId);
 				if (prev) prev.toggleHidden(true);
 			}
 			activeSessionId = sessionId;
 
-			// Get or create the webview for this session
-			let el = webviews.get(sessionId);
-			if (!el) {
-				el = createWebview(sessionId);
-				setupEvents(el, sessionId);
-				containerEl.appendChild(el);
-				webviews.set(sessionId, el);
-
-				// Load URL for new webviews
-				if (url && url !== "about:blank") {
-					el.loadURL(url);
-				}
+			const existing = webviews.get(sessionId);
+			if (existing) {
+				// Show existing webview (page state preserved)
+				existing.toggleHidden(false);
+			} else if (hasRealUrl) {
+				// Create webview only for real URLs — about:blank shows BlankPage component
+				createAndMount(sessionId, url);
 			}
-
-			// Show this session's webview
-			el.toggleHidden(false);
+			// If about:blank and no existing webview: do nothing — BlankPage DOM shows through
+			return;
 		}
-		// URL change within the same session (omnibox navigation)
-		if (!isSwitch && url && url !== "about:blank") {
-			const el = webviews.get(sessionId);
+
+		// URL change within same session (omnibox navigation)
+		if (hasRealUrl) {
+			const existing = webviews.get(sessionId);
 			const lastLoaded = loadedUrls.get(sessionId);
-			if (el && url !== lastLoaded) {
-				loadedUrls.set(sessionId, url);
-				el.loadURL(url);
+			if (existing) {
+				// Existing webview — load new URL if different from what webview reported
+				if (url !== lastLoaded) {
+					loadedUrls.set(sessionId, url);
+					existing.loadURL(url);
+				}
+			} else {
+				// First real URL for this session — create webview now
+				createAndMount(sessionId, url);
 			}
 		}
 	});
 
-	onCleanup(() => {
-		// Webviews die with the container
-	});
+	onCleanup(() => {});
 
 	return {
 		containerRef: (el: HTMLDivElement) => {
