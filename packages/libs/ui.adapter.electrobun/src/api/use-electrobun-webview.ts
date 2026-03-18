@@ -14,13 +14,15 @@ export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHook
 		(el as unknown as HTMLElement).style.cssText =
 			"width: 100%; height: 100%; position: absolute; inset: 0;";
 
-		// Append to DOM FIRST — Electrobun needs element connected before API calls
+		// Set URL via src attribute BEFORE appending — this is how the original code worked
+		(el as unknown as HTMLElement).setAttribute("src", url);
+		loadedUrls.set(sessionId, url);
+
+		// Append to DOM
 		containerEl?.appendChild(el);
 
-		// Now safe to call Electrobun API methods
+		// Mask selector after DOM connection
 		el.addMaskSelector("[data-omnibox]");
-		el.loadURL(url);
-		loadedUrls.set(sessionId, url);
 
 		// Events
 		el.on("did-navigate", (event: CustomEvent) => {
@@ -67,21 +69,19 @@ export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHook
 		const hasRealUrl = url && url !== "about:blank";
 
 		if (isSwitch) {
-			// Move previous webview offscreen (preserves page state, unlike toggleHidden)
+			// Remove previous webview from DOM (native view disappears)
 			if (activeSessionId) {
 				const prev = webviews.get(activeSessionId);
 				if (prev) {
-					(prev as unknown as HTMLElement).style.top = "-20000px";
-					(prev as unknown as HTMLElement).style.inset = "auto";
+					(prev as unknown as HTMLElement).remove();
 				}
 			}
 			activeSessionId = sessionId;
 
 			const existing = webviews.get(sessionId);
 			if (existing) {
-				// Bring back onscreen
-				(existing as unknown as HTMLElement).style.top = "";
-				(existing as unknown as HTMLElement).style.inset = "0";
+				// Re-append existing webview (native view reappears, state may be preserved)
+				containerEl?.appendChild(existing);
 			} else if (hasRealUrl) {
 				// Create webview only for real URLs — about:blank shows BlankPage component
 				createAndMount(sessionId, url);
