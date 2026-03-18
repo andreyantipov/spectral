@@ -124,7 +124,7 @@ export function Sidebar(props: SidebarProps) {
 			{/* Expandable panel */}
 			<Show when={!collapsed()}>
 				<div class={$().panel}>
-					<div class={$().panelHeader}>
+					<div class={$().panelHeader} style={{ gap: "6px" }}>
 						<Show
 							when={props.headerContent}
 							fallback={
@@ -151,28 +151,27 @@ export function Sidebar(props: SidebarProps) {
 								{props.headerContent}
 							</button>
 						</Show>
-						<div class={$().panelActions}>
-							{props.panelActions}
-							<Show when={props.onNewSession}>
-								<button
-									type="button"
-									onClick={() => props.onNewSession?.()}
-									title="New session"
-									style={{
-										background: "rgba(255,255,255,0.06)",
-										border: "1px solid rgba(255,255,255,0.1)",
-										"border-radius": "6px",
-										color: "rgba(255,255,255,0.5)",
-										"font-size": "12px",
-										padding: "4px 8px",
-										cursor: "pointer",
-										"line-height": "1",
-									}}
-								>
-									+
-								</button>
-							</Show>
-						</div>
+						{props.panelActions}
+						<Show when={props.onNewSession}>
+							<button
+								type="button"
+								onClick={() => props.onNewSession?.()}
+								title="New session"
+								style={{
+									background: "rgba(255,255,255,0.06)",
+									border: "1px solid rgba(255,255,255,0.1)",
+									"border-radius": "6px",
+									color: "rgba(255,255,255,0.5)",
+									"font-size": "12px",
+									padding: "4px 8px",
+									cursor: "pointer",
+									"line-height": "1",
+									"flex-shrink": "0",
+								}}
+							>
+								+
+							</button>
+						</Show>
 					</div>
 
 					<div class={$().panelContent}>
