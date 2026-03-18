@@ -4,39 +4,38 @@ import type { WebviewHookProps, WebviewHookResult, WebviewTagElement } from "../
 
 export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHookResult {
 	let containerEl: HTMLDivElement | undefined;
-	const webviews = new Map<string, WebviewTagElement>();
-	const loadedUrls = new Map<string, string>();
-	let activeSessionId: string | undefined;
+	let webviewEl: WebviewTagElement | undefined;
+	let currentUrl: string | undefined;
+	let webviewReportedUrl = false;
 
-	function createAndMount(sessionId: string, url: string): WebviewTagElement {
+	function ensureWebview(): WebviewTagElement {
+		if (webviewEl) return webviewEl;
 		const el = document.createElement("electrobun-webview") as unknown as WebviewTagElement;
 		(el as unknown as HTMLElement).setAttribute("preload", SHORTCUT_PRELOAD);
+		(el as unknown as HTMLElement).setAttribute(
+			"html",
+			"<html><body style='background:#0a0a0a'></body></html>",
+		);
 		(el as unknown as HTMLElement).style.cssText =
 			"width: 100%; height: 100%; position: absolute; inset: 0;";
-
-		// Set URL via src attribute BEFORE appending — this is how the original code worked
-		(el as unknown as HTMLElement).setAttribute("src", url);
-		loadedUrls.set(sessionId, url);
-
-		// Append to DOM
 		containerEl?.appendChild(el);
-
-		// Mask selector after DOM connection
 		el.addMaskSelector("[data-omnibox]");
+		webviewEl = el;
 
-		// Events
 		el.on("did-navigate", (event: CustomEvent) => {
-			const u = (event as CustomEvent<string>).detail;
-			if (u) {
-				loadedUrls.set(sessionId, u);
-				props().onNavigate(u);
+			const url = (event as CustomEvent<string>).detail;
+			if (url) {
+				webviewReportedUrl = true;
+				currentUrl = url;
+				props().onNavigate(url);
 			}
 		});
 		el.on("did-navigate-in-page", (event: CustomEvent) => {
-			const u = (event as CustomEvent<string>).detail;
-			if (u) {
-				loadedUrls.set(sessionId, u);
-				props().onNavigate(u);
+			const url = (event as CustomEvent<string>).detail;
+			if (url) {
+				webviewReportedUrl = true;
+				currentUrl = url;
+				props().onNavigate(url);
 			}
 		});
 		el.on("dom-ready", () => {
@@ -50,60 +49,36 @@ export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHook
 				.catch(() => {});
 		});
 		el.on("host-message", (event: CustomEvent) => {
-			document.dispatchEvent(
-				new CustomEvent("webview-host-message", {
-					detail: event.detail,
-				}),
-			);
+			document.dispatchEvent(new CustomEvent("webview-host-message", { detail: event.detail }));
 		});
 
-		webviews.set(sessionId, el);
 		return el;
 	}
 
 	createEffect(() => {
-		const { sessionId, url } = props();
-		if (!containerEl || !sessionId) return;
-
-		const isSwitch = sessionId !== activeSessionId;
-		const hasRealUrl = url && url !== "about:blank";
-
-		if (isSwitch) {
-			// Remove previous webview from DOM (native view disappears)
-			if (activeSessionId) {
-				const prev = webviews.get(activeSessionId);
-				if (prev) {
-					(prev as unknown as HTMLElement).remove();
-				}
+		const { url } = props();
+		if (!containerEl) return;
+		if (!url || url === "about:blank") {
+			// Hide webview for blank pages so BlankPage component shows
+			if (webviewEl) {
+				(webviewEl as unknown as HTMLElement).remove();
+				webviewEl = undefined;
+				currentUrl = undefined;
 			}
-			activeSessionId = sessionId;
-
-			const existing = webviews.get(sessionId);
-			if (existing) {
-				// Re-append existing webview (native view reappears, state may be preserved)
-				containerEl?.appendChild(existing);
-			} else if (hasRealUrl) {
-				// Create webview only for real URLs — about:blank shows BlankPage component
-				createAndMount(sessionId, url);
-			}
-			// If about:blank and no existing webview: do nothing — BlankPage DOM shows through
 			return;
 		}
 
-		// URL change within same session (omnibox navigation)
-		if (hasRealUrl) {
-			const existing = webviews.get(sessionId);
-			const lastLoaded = loadedUrls.get(sessionId);
-			if (existing) {
-				// Existing webview — load new URL if different from what webview reported
-				if (url !== lastLoaded) {
-					loadedUrls.set(sessionId, url);
-					existing.loadURL(url);
-				}
-			} else {
-				// First real URL for this session — create webview now
-				createAndMount(sessionId, url);
-			}
+		// Skip if webview itself reported this URL
+		if (webviewReportedUrl) {
+			webviewReportedUrl = false;
+			return;
+		}
+
+		// Load URL if changed
+		if (url !== currentUrl) {
+			const el = ensureWebview();
+			currentUrl = url;
+			el.loadURL(url);
 		}
 	});
 
