@@ -50,6 +50,11 @@ export class BrowsingRpcs extends RpcGroup.make(
 		success: SessionSchema,
 		error: Schema.Union(DatabaseError, ValidationError),
 	}),
+	Rpc.make("reportNavigation", {
+		payload: { id: Schema.String, url: Schema.String },
+		success: SessionSchema,
+		error: Schema.Union(DatabaseError, ValidationError),
+	}),
 	// Bookmark RPCs
 	Rpc.make("getBookmarks", {
 		success: Schema.Array(BookmarkSchema),

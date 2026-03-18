@@ -32,6 +32,12 @@ export const BrowsingHandlersLive = BrowsingRpcs.toLayer(
 			setActive: ({ id }: { readonly id: string }) => sessions.setActive(id),
 			updateTitle: ({ id, title }: { readonly id: string; readonly title: string }) =>
 				sessions.updateTitle(id, title),
+			reportNavigation: ({ id, url }: { readonly id: string; readonly url: string }) =>
+				Effect.gen(function* () {
+					const session = yield* sessions.updateUrl(id, url);
+					yield* history.record(url, null, null).pipe(Effect.ignore);
+					return session;
+				}),
 			// Bookmark handlers
 			getBookmarks: () => bookmarks.getAll(),
 			addBookmark: ({ url, title }: { readonly url: string; readonly title: string | null }) =>
