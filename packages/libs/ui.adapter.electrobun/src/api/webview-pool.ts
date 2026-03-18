@@ -15,8 +15,9 @@ export function createWebviewPool() {
 		(el as unknown as HTMLElement).setAttribute("preload", SHORTCUT_PRELOAD);
 		(el as unknown as HTMLElement).style.cssText =
 			"width: 100%; height: 100%; display: block; background: #fff;";
-		// NOTE: Do NOT call loadURL here — element must be in the DOM first.
-		// The caller is responsible for appending to DOM, then calling loadURL.
+		// Cut a hole in the native view where the OmniBox overlay renders.
+		// Without this, the native view covers the DOM-rendered omnibox.
+		el.addMaskSelector("[data-omnibox]");
 		return el;
 	}
 

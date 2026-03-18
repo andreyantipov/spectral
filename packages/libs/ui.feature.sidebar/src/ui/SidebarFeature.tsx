@@ -75,27 +75,7 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		navigateActiveSession(value);
 	};
 
-	const headerInput = () => (
-		<span
-			style={{
-				flex: "1",
-				background: "rgba(255,255,255,0.06)",
-				border: "1px solid rgba(255,255,255,0.1)",
-				"border-radius": "6px",
-				color: "rgba(255,255,255,0.5)",
-				"font-size": "12px",
-				padding: "4px 8px",
-				cursor: "pointer",
-				"text-align": "left",
-				"min-width": "0",
-				overflow: "hidden",
-				"text-overflow": "ellipsis",
-				"white-space": "nowrap",
-			}}
-		>
-			{activeUrl() ?? "Search or enter URL..."}
-		</span>
-	);
+	const headerInput = () => activeUrl() ?? "Search or enter URL...";
 
 	const webviewBindings: WebviewBindings = {
 		activeSessionId: () => activeSession()?.id ?? "",
