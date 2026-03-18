@@ -30,16 +30,17 @@ Alphabetical `a → f → s` matches dependency direction within `domain`.
 
 `domain.adapter.rpc` is a **generic Electrobun IPC tunnel** — it has no knowledge of sessions, browsing, or any other domain concept. It exports `ElectrobunServerProtocol` (Bun/main-process side) and `ElectrobunClientProtocol` (webview side), each implementing the corresponding `@effect/rpc` protocol interface. The domain contract (`BrowsingRpcs`) lives in `domain.service.browsing` and is separate from the transport layer.
 
-## UI Tiers (`f → s`)
+## UI Tiers (`a → f → s`)
 
 The second level of `ui.*.*` encodes the presentation layer:
 
 | Tier | Package format | Role | Depends on |
 |------|---------------|------|------------|
-| feature | `ui.feature.<name>` | Wires a domain service to a component | `domain.service.*` + `core.ui` |
-| scenes | `ui.scenes` | Single package containing all scene compositions | `ui.feature.*` + `core.ui` |
+| adapter | `ui.adapter.<name>` | Driven adapter (platform integration, e.g. Electrobun) | `core.shared` + external |
+| feature | `ui.feature.<name>` | Wires a domain service to a component | `domain.service.*` + `core.ui` + `core.shared` |
+| scenes | `ui.scenes` | Single package containing all scene compositions | `ui.feature.*` + `ui.adapter.*` + `core.ui` |
 
-Scenes are thin compositions (~20 lines each) and don't need package isolation. All scenes live in a single `ui.scenes` package. Alphabetical `f → s` matches dependency direction within `ui`.
+Scenes are thin compositions (~20 lines each) and don't need package isolation. All scenes live in a single `ui.scenes` package. Alphabetical `a → f → s` matches dependency direction within `ui`.
 
 ## Core Packages (always 2-level)
 

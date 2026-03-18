@@ -29,6 +29,7 @@ core.ui                     ✓                ✓       ✓
 domain.adapter.*            ✓        ✓       ✓
 domain.feature.*            ✓        ✓       ✓
 domain.service.*            ✓        ✓
+ui.adapter.*                         ✓       ✓
 ui.feature.*                ✓        ✓               ✓
 ui.scenes                                             ✓
 ```
@@ -39,7 +40,7 @@ ui.scenes                                             ✓
 - Domain types (`Tab`, `Bookmark`) in `core.shared/src/model/types.ts`
 - Ports (`Context.Tag` definitions) in `core.shared/src/model/ports.ts`
 - Drizzle table schemas in `domain.adapter.db/src/model/tabs.schema.ts`
-- PubSub + Stream type definitions in `domain.feature.tab/src/model/tab.events.ts`
+- PubSub + Stream type definitions in `domain.feature.session/src/model/session.events.ts`
 - Component prop mappings in `ui.feature.sidebar/src/model/sidebar.bindings.ts`
 
 **`api/`**
@@ -52,7 +53,7 @@ ui.scenes                                             ✓
 - `withTracing` utility in `core.shared/src/lib/with-tracing.ts`
 - `spanName` helper in `core.shared/src/lib/span-name.ts`
 - `makeRepository` factory in `domain.adapter.db/src/lib/make-repository.ts`
-- Constants (`TAB_FEATURE`, `BROWSING_SERVICE`) in each package's `lib/constants.ts`
+- Constants (`SESSION_FEATURE`, `BROWSING_SERVICE`) in each package's `lib/constants.ts`
 
 **`ui/`**
 - Component atoms/molecules/organisms in `core.ui/src/ui/`
