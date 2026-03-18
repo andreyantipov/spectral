@@ -28,10 +28,12 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 	const runtime = useRuntime();
 	const [omniboxQuery, setOmniboxQuery] = createSignal("");
 
-	// Auto-create first session if none exist
+	// Auto-create first session if none exist (guard prevents multiple creates)
+	let autoCreated = false;
 	createEffect(() => {
 		const s = state();
-		if (s && s.sessions.length === 0) {
+		if (s && s.sessions.length === 0 && !autoCreated) {
+			autoCreated = true;
 			void runtime.runPromise(client.createSession({ mode: "visual" }));
 		}
 	});
@@ -50,8 +52,20 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 
 	const navigateActiveSession = (input: string) => {
 		const session = activeSession();
+		console.error("[nav] navigateActiveSession called", {
+			input,
+			sessionId: session?.id,
+			hasSession: !!session,
+		});
 		if (session) {
-			void runtime.runPromise(client.navigate({ id: session.id, input }));
+			void runtime
+				.runPromise(client.navigate({ id: session.id, input }))
+				.then(() => {
+					console.error("[nav] navigate RPC completed", { url: activeUrl() });
+				})
+				.catch((err) => {
+					console.error("[nav] navigate RPC FAILED", err);
+				});
 		}
 	};
 
