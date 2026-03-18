@@ -1,33 +1,38 @@
 import { createEffect, onCleanup } from "solid-js";
+import { SHORTCUT_PRELOAD } from "../lib/constants";
 import type { WebviewHookProps, WebviewHookResult, WebviewTagElement } from "../lib/types";
-import { createWebviewPool } from "./webview-pool";
 
 export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHookResult {
-	const pool = createWebviewPool();
 	let containerEl: HTMLDivElement | undefined;
+	let webviewEl: WebviewTagElement | undefined;
+	let lastLoadedUrl: string | undefined;
+	let webviewReportedUrl = false;
 
-	function attachEvents(el: WebviewTagElement, _sessionId: string) {
-		const handleNavigate = (event: CustomEvent) => {
+	function setupWebview(el: WebviewTagElement) {
+		// Mask selector so omnibox overlay is visible above native view
+		el.addMaskSelector("[data-omnibox]");
+
+		// Navigation events from the webview
+		el.on("did-navigate", (event: CustomEvent) => {
 			const url = (event as CustomEvent<string>).detail;
 			if (url) {
-				skipNextUrlLoad = true;
+				webviewReportedUrl = true;
 				lastLoadedUrl = url;
 				props().onNavigate(url);
 			}
-		};
+		});
 
-		const handleNavigateInPage = (event: CustomEvent) => {
+		el.on("did-navigate-in-page", (event: CustomEvent) => {
 			const url = (event as CustomEvent<string>).detail;
 			if (url) {
-				skipNextUrlLoad = true;
+				webviewReportedUrl = true;
 				lastLoadedUrl = url;
 				props().onNavigate(url);
 			}
-		};
+		});
 
-		const handleDomReady = () => {
+		el.on("dom-ready", () => {
 			props().onDomReady();
-			// Extract title after DOM is ready
 			el.executeJavascript("document.title")
 				.then((title) => {
 					if (typeof title === "string" && title.length > 0) {
@@ -35,87 +40,59 @@ export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHook
 					}
 				})
 				.catch(() => {
-					// Title extraction failed — skip silently, fallback to URL hostname
+					// Title extraction failed silently
 				});
-		};
+		});
 
-		const handleHostMessage = (event: CustomEvent) => {
-			// Forward host messages to document for shortcut handling
+		el.on("host-message", (event: CustomEvent) => {
 			document.dispatchEvent(new CustomEvent("webview-host-message", { detail: event.detail }));
-		};
-
-		el.on("did-navigate", handleNavigate);
-		el.on("did-navigate-in-page", handleNavigateInPage);
-		el.on("dom-ready", handleDomReady);
-		el.on("host-message", handleHostMessage);
-
-		return () => {
-			el.off("did-navigate", handleNavigate);
-			el.off("did-navigate-in-page", handleNavigateInPage);
-			el.off("dom-ready", handleDomReady);
-			el.off("host-message", handleHostMessage);
-		};
+		});
 	}
 
-	let cleanupEvents: (() => void) | undefined;
-	let currentSessionId: string | undefined;
-	let lastLoadedUrl: string | undefined;
-	// Set when webview reports navigation — prevents re-loading the same URL
-	let skipNextUrlLoad = false;
-
-	// React to session and URL changes
+	// React to URL changes — load new URLs in the webview
 	createEffect(() => {
-		const { sessionId, url } = props();
-		if (!containerEl || !sessionId) return;
+		const { url } = props();
+		if (!webviewEl || !url || url === "about:blank") return;
 
-		const isNewSession = sessionId !== currentSessionId;
-		currentSessionId = sessionId;
-
-		if (isNewSession) {
-			cleanupEvents?.();
-			pool.hideAll();
-			lastLoadedUrl = undefined;
+		// Skip if this URL change came from the webview itself
+		if (webviewReportedUrl) {
+			webviewReportedUrl = false;
+			return;
 		}
 
-		const entry = pool.getOrCreate(sessionId);
-		const el = entry.el as unknown as HTMLElement;
-
-		// Add to DOM BEFORE loadURL — Electrobun custom element needs to be connected
-		if (!el.parentElement) {
-			containerEl.appendChild(el);
-		}
-		pool.show(sessionId);
-
-		// Load URL if it changed and wasn't triggered by the webview itself
-		if (url && url !== "about:blank" && url !== lastLoadedUrl) {
-			if (skipNextUrlLoad) {
-				skipNextUrlLoad = false;
-			} else {
-				entry.el.loadURL(url);
-			}
+		// Only load if URL actually changed
+		if (url !== lastLoadedUrl) {
 			lastLoadedUrl = url;
-		}
-
-		if (isNewSession) {
-			cleanupEvents = attachEvents(entry.el, sessionId);
+			webviewEl.loadURL(url);
 		}
 	});
 
-	// React to mask selector changes
+	// Sync mask dimensions when omnibox opens/closes
 	createEffect(() => {
 		const masks = props().maskSelectors ?? [];
-		if (masks.length > 0) {
-			pool.syncMasks(masks);
+		if (webviewEl && masks.length > 0) {
+			for (const sel of masks) {
+				webviewEl.addMaskSelector(sel);
+			}
+			webviewEl.syncDimensions(true);
 		}
 	});
 
 	onCleanup(() => {
-		cleanupEvents?.();
+		// Events are attached to the element — they die with it
 	});
 
 	return {
 		containerRef: (el: HTMLDivElement) => {
 			containerEl = el;
+			// Create the webview element once, append to container
+			const wv = document.createElement("electrobun-webview") as unknown as WebviewTagElement;
+			(wv as unknown as HTMLElement).setAttribute("preload", SHORTCUT_PRELOAD);
+			(wv as unknown as HTMLElement).style.cssText =
+				"width: 100%; height: 100%; display: block; background: #fff;";
+			containerEl.appendChild(wv);
+			webviewEl = wv;
+			setupWebview(wv);
 		},
 	};
 }
