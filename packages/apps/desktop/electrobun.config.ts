@@ -21,10 +21,12 @@ export default {
       "build/main-ui/styles.css": "views/main-ui/styles.css",
       "build/bun-deps/node_modules": "bun/node_modules",
       "../../libs/domain.adapter.db/src/migrations": "bun/migrations",
+      "assets/icon.icns": "assets/icon.icns",
     },
     watch: ["build/main-ui"],
     mac: {
       defaultRenderer: "native",
+      icon: "assets/icon.icns",
     },
     linux: {
       bundleCEF: true,
