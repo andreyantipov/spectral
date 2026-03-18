@@ -26,6 +26,10 @@ export class SessionFeature extends Context.Tag(SESSION_FEATURE)<
 			id: string,
 			title: string,
 		) => Effect.Effect<Session, DatabaseError | ValidationError>;
+		readonly updateUrl: (
+			id: string,
+			url: string,
+		) => Effect.Effect<Session, DatabaseError | ValidationError>;
 		readonly changes: Stream.Stream<Session[]>;
 	}
 >() {}
@@ -101,6 +105,14 @@ export const SessionFeatureLive = Layer.effect(
 				Effect.gen(function* () {
 					const session = yield* getSessionOrFail(id);
 					yield* repo.updatePageTitle(id, session.currentIndex, title);
+					yield* notify().pipe(Effect.ignore);
+					return yield* getSessionOrFail(id);
+				}),
+
+			updateUrl: (id: string, url: string) =>
+				Effect.gen(function* () {
+					const session = yield* getSessionOrFail(id);
+					yield* repo.updatePageUrl(id, session.currentIndex, url);
 					yield* notify().pipe(Effect.ignore);
 					return yield* getSessionOrFail(id);
 				}),
