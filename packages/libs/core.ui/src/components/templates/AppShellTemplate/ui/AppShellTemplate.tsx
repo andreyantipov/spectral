@@ -65,9 +65,9 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 		else openOmnibox();
 	}
 
-	function handleNewTab() {
+	function handleNewSession() {
 		openOmnibox();
-		props.sidebar.onNewTab?.();
+		props.sidebar.onNewSession?.();
 	}
 
 	function handleOmniboxSubmit(value: string, suggestion?: OmniBoxSuggestion) {
@@ -145,7 +145,7 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 
 	return (
 		<div class={$().root}>
-			<Sidebar {...props.sidebar} onNewTab={handleNewTab} />
+			<Sidebar {...props.sidebar} onNewSession={handleNewSession} />
 
 			<div class={$().content}>
 				<div class={$().page}>

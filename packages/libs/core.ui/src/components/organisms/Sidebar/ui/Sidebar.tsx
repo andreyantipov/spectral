@@ -30,10 +30,11 @@ export type SidebarProps = {
 	onTabClick?: (id: string) => void;
 	onItemClick?: (id: string) => void;
 	onItemClose?: (id: string) => void;
-	onNewTab?: () => void;
+	onNewSession?: () => void;
 	onWidthChange?: (width: number) => void;
 	onCollapseChange?: (collapsed: boolean) => void;
 	panelActions?: JSX.Element;
+	headerContent?: JSX.Element;
 	children?: JSX.Element;
 };
 
@@ -121,17 +122,24 @@ export function Sidebar(props: SidebarProps) {
 			<Show when={!collapsed()}>
 				<div class={$().panel}>
 					<div class={$().panelHeader}>
-						<span class={$().panelTitle}>
-							{props.tabs.find((t) => t.id === props.activeTabId)?.label ?? ""}
-						</span>
+						<Show
+							when={props.headerContent}
+							fallback={
+								<span class={$().panelTitle}>
+									{props.tabs.find((t) => t.id === props.activeTabId)?.label ?? ""}
+								</span>
+							}
+						>
+							{props.headerContent}
+						</Show>
 						<div class={$().panelActions}>
 							{props.panelActions}
-							<Show when={props.onNewTab}>
+							<Show when={props.onNewSession}>
 								<button
 									type="button"
 									class={$().panelAction}
-									onClick={() => props.onNewTab?.()}
-									title="New tab"
+									onClick={() => props.onNewSession?.()}
+									title="New session"
 								>
 									+
 								</button>

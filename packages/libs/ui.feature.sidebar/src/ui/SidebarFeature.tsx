@@ -12,8 +12,6 @@ import { buildOmniBoxSuggestions, mapSessionsToSidebarItems } from "../model/sid
 
 const sidebarTabs = [
 	{ id: "sessions", icon: (<span>{"\u2630"}</span>) as JSX.Element, label: "Sessions" },
-	{ id: "bookmarks", icon: (<span>{"\u2606"}</span>) as JSX.Element, label: "Bookmarks" },
-	{ id: "history", icon: (<span>{"\u21BB"}</span>) as JSX.Element, label: "History" },
 ];
 
 export type SidebarFeatureProps = {
@@ -44,7 +42,7 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		}
 	};
 
-	const handleNewTab = () => {
+	const handleNewSession = () => {
 		void runtime.runPromise(client.createSession({ mode: "visual" }));
 	};
 
@@ -79,7 +77,7 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 				activeTabId: "sessions",
 				items: items(),
 				activeItemId: activeItemId(),
-				onNewTab: handleNewTab,
+				onNewSession: handleNewSession,
 				onItemClick: handleItemClick,
 				onItemClose: handleItemClose,
 			}}
