@@ -26,4 +26,5 @@ export type WebviewHookProps = {
 
 export type WebviewHookResult = {
 	readonly containerRef: (el: HTMLDivElement) => void;
+	readonly navigate: (url: string) => void;
 };

@@ -89,5 +89,11 @@ export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHook
 			containerEl = el;
 			(el as HTMLDivElement).style.position = "relative";
 		},
+		navigate: (url: string) => {
+			if (!containerEl || !url || url === "about:blank") return;
+			const el = ensureWebview();
+			currentUrl = url;
+			el.loadURL(url);
+		},
 	};
 }

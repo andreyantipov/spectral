@@ -17,6 +17,7 @@ export type WebviewBindings = {
 	readonly activeUrl: () => string | undefined;
 	readonly onNavigate: (url: string) => void;
 	readonly onTitleChange: (title: string) => void;
+	readonly setNavigateFn: (fn: (url: string) => void) => void;
 };
 
 export type SidebarFeatureProps = {
@@ -50,10 +51,19 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 
 	const activeSession = () => state()?.sessions?.find((s) => s.isActive);
 
+	// Direct webview navigate function — set by MainScene after hook creation
+	let webviewNavigate: ((url: string) => void) | undefined;
+
 	const navigateActiveSession = (input: string) => {
 		const session = activeSession();
 		if (session) {
-			void runtime.runPromise(client.navigate({ id: session.id, input }));
+			runtime.runPromise(client.navigate({ id: session.id, input })).then((result) => {
+				// After RPC succeeds, directly tell the webview to load the URL
+				const page = result.pages[result.currentIndex];
+				if (page && webviewNavigate) {
+					webviewNavigate(page.url);
+				}
+			});
 		}
 	};
 
@@ -101,6 +111,9 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 			if (session) {
 				void runtime.runPromise(client.updateTitle({ id: session.id, title }));
 			}
+		},
+		setNavigateFn: (fn: (url: string) => void) => {
+			webviewNavigate = fn;
 		},
 	};
 

@@ -15,6 +15,9 @@ export function MainScene() {
 					onDomReady: () => {},
 				}));
 
+				// Wire direct navigate so SidebarFeature can load URLs immediately after RPC
+				bindings.setNavigateFn(webview.navigate);
+
 				const isBlank = () => {
 					const url = bindings.activeUrl();
 					return !url || url === "about:blank";
