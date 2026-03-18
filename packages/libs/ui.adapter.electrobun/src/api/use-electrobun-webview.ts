@@ -88,6 +88,8 @@ export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHook
 			// Create the webview element once, append to container
 			const wv = document.createElement("electrobun-webview") as unknown as WebviewTagElement;
 			(wv as unknown as HTMLElement).setAttribute("preload", SHORTCUT_PRELOAD);
+			// Set src to blank HTML to prevent Electrobun loading its default homepage
+			(wv as unknown as HTMLElement).setAttribute("html", "<html><body></body></html>");
 			(wv as unknown as HTMLElement).style.cssText =
 				"width: 100%; height: 100%; display: block; background: #fff;";
 			containerEl.appendChild(wv);
