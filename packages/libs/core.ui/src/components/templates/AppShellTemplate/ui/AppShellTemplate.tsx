@@ -98,7 +98,7 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 
 	return (
 		<div class={$().root}>
-			<Sidebar {...props.sidebar} onNewSession={handleNewSession} />
+			<Sidebar {...props.sidebar} onNewSession={handleNewSession} onHeaderClick={toggleOmnibox} />
 
 			<div class={$().content}>
 				<div class={$().page}>{props.children}</div>

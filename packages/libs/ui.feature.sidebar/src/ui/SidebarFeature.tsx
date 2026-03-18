@@ -76,17 +76,7 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 	};
 
 	const headerInput = () => (
-		<button
-			type="button"
-			onClick={() => {
-				// Toggle the omnibox overlay (Cmd+K behavior)
-				const event = new KeyboardEvent("keydown", {
-					key: "k",
-					metaKey: true,
-					bubbles: true,
-				});
-				document.dispatchEvent(event);
-			}}
+		<span
 			style={{
 				flex: "1",
 				background: "rgba(255,255,255,0.06)",
@@ -102,10 +92,9 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 				"text-overflow": "ellipsis",
 				"white-space": "nowrap",
 			}}
-			title="Search or enter URL (⌘K)"
 		>
 			{activeUrl() ?? "Search or enter URL..."}
-		</button>
+		</span>
 	);
 
 	const webviewBindings: WebviewBindings = {

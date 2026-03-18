@@ -31,6 +31,7 @@ export type SidebarProps = {
 	onItemClick?: (id: string) => void;
 	onItemClose?: (id: string) => void;
 	onNewSession?: () => void;
+	onHeaderClick?: () => void;
 	onWidthChange?: (width: number) => void;
 	onCollapseChange?: (collapsed: boolean) => void;
 	panelActions?: JSX.Element;
@@ -132,7 +133,23 @@ export function Sidebar(props: SidebarProps) {
 								</span>
 							}
 						>
-							{props.headerContent}
+							<button
+								type="button"
+								onClick={() => props.onHeaderClick?.()}
+								style={{
+									flex: "1",
+									cursor: "pointer",
+									"min-width": "0",
+									background: "none",
+									border: "none",
+									padding: "0",
+									color: "inherit",
+									font: "inherit",
+									"text-align": "left",
+								}}
+							>
+								{props.headerContent}
+							</button>
 						</Show>
 						<div class={$().panelActions}>
 							{props.panelActions}
