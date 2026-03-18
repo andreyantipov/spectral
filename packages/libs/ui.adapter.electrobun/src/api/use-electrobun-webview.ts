@@ -32,13 +32,8 @@ export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHook
 		};
 
 		const handleHostMessage = (event: CustomEvent) => {
-			// Forward host messages for shortcut handling
-			const container = containerEl?.closest("[data-app-shell]");
-			if (container) {
-				container.dispatchEvent(
-					new CustomEvent("webview-host-message", { detail: event.detail, bubbles: true }),
-				);
-			}
+			// Forward host messages to document for shortcut handling
+			document.dispatchEvent(new CustomEvent("webview-host-message", { detail: event.detail }));
 		};
 
 		el.on("did-navigate", handleNavigate);
