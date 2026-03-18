@@ -30,6 +30,8 @@ A new UI adapter tier, mirroring `domain.adapter.*` on the domain side.
 
 **Purpose:** Encapsulate all Electrobun webview rendering, event wiring, and lifecycle management behind a hook-based API.
 
+**FSD segments:** `api/` (the hook export), `lib/` (constants, preload script strings). No `model/` or `ui/` segments — the hook manages DOM imperatively, not via components.
+
 **Exports:**
 - `useElectrobunWebview(props)` — SolidJS hook that:
   - Creates and manages `<electrobun-webview>` elements internally
@@ -39,41 +41,41 @@ A new UI adapter tier, mirroring `domain.adapter.*` on the domain side.
 
 **Props (typed contract):**
 ```typescript
+// Plain TypeScript type — this is a UI hook contract, not a domain type,
+// so Effect Schema is not required here.
 type WebviewHookProps = {
   readonly sessionId: string;
   readonly url: string;
   readonly onNavigate: (url: string) => void;
   readonly onTitleChange: (title: string) => void;
   readonly onDomReady: () => void;
+  readonly maskSelectors?: readonly string[];
 };
 ```
 
 **Dependency rules:**
 | | |
 |---|---|
-| Can import | `core.shared`, `core.ui`, external (`electrobun`) |
+| Can import | `core.shared`, external (`electrobun`). `core.ui` only if specific utilities are needed (e.g., shared tokens); otherwise no dependency. |
 | Imported by | `ui.scenes` only (composition root for UI) |
 | Never imported by | `ui.feature.*`, `domain.*`, `core.*` |
 
 The hook is called in `ui.scenes`. Results (ref, control methods) are passed as props to `ui.feature.*` components.
 
-### 4.2 Port: `WebviewPort` in `core.shared`
+### 4.2 No `WebviewPort` Needed
 
-A `Context.Tag` in `core.shared/model/ports.ts` defining the webview event/control contract:
+The webview adapter communicates with the domain layer purely through existing RPCs. No push-based port in `core.shared` is needed. The flow is:
 
-```typescript
-export class WebviewPort extends Context.Tag("WebviewPort")<
-  WebviewPort,
-  {
-    readonly onNavigate: (handler: (sessionId: string, url: string) => void) => () => void;
-    readonly onTitleChange: (handler: (sessionId: string, title: string) => void) => () => void;
-  }
->() {}
-```
+1. `useElectrobunWebview` hook captures webview DOM events
+2. Calls `props.onNavigate(url)` / `props.onTitleChange(title)` callbacks
+3. `ui.scenes` handler calls `BrowsingRpcs.reportNavigation` / `BrowsingRpcs.updateTitle`
+4. Domain service handles it via existing request-response RPC pattern
 
-This port is consumed by `domain.service.browsing` to subscribe to webview navigation events and update session state. The `ui.adapter.electrobun` hook provides the implementation, wired at the composition root (`apps/desktop`).
+This avoids polluting `core.shared` with a UI-specific port and stays consistent with the existing RPC-based architecture.
 
 ### 4.3 Updated Dependency Matrix
+
+The UI tier ordering becomes `a → f → s` (alphabetical = dependency direction), mirroring the domain's `a → f → s`.
 
 ```
 ui.adapter.*   → core.shared + core.ui + external
@@ -90,13 +92,24 @@ New GritQL rules needed:
 
 ```
 <electrobun-webview> fires "did-navigate" / "did-navigate-in-page"
-  → useElectrobunWebview hook captures event
-    → calls props.onNavigate(url) and props.onTitleChange(title)
-      → ui.scenes handler calls BrowsingRpcs.reportNavigation / updateTitle
-        → domain.service.browsing handler updates session via SessionFeature
-          → SessionRepository persists new URL/title
+  → useElectrobunWebview hook captures DOM event
+    → calls props.onNavigate(url)
+      → ui.scenes handler calls BrowsingRpcs.reportNavigation({ id, url })
+        → domain.service.browsing handler calls sessions.updateUrl(id, url)
+          → SessionRepository.updatePageUrl persists new URL
             → PubSub notifies → Stream emits → UI re-renders
 ```
+
+Title updates follow the same path:
+```
+<electrobun-webview> fires "dom-ready"
+  → hook extracts document.title via executeJavascript("document.title")
+    → calls props.onTitleChange(title)
+      → ui.scenes handler calls BrowsingRpcs.updateTitle({ id, title })
+        → persists via SessionRepository.updatePageTitle
+```
+
+Note: Electrobun may not fire a dedicated `page-title-updated` event. Title extraction happens on `dom-ready` via `executeJavascript`. If a dedicated title event is available, prefer that. This needs verification during implementation.
 
 ### 4.5 Session Switching Without Destruction
 
@@ -108,11 +121,24 @@ The `useElectrobunWebview` hook maintains an internal map of `sessionId → webv
 
 This map lives inside the hook. The consumer only sees the current session's `ref`.
 
+**Pool size limit:** `MAX_LIVE_WEBVIEWS = 10` (constant in `lib/`). When exceeded, the least recently used inactive webview is destroyed. On next switch to that session, a fresh webview is created and navigated to the session's current URL.
+
+### 4.6 Mask Selector Management
+
+Currently `AppShellTemplate.tsx` manages `[data-omnibox]` mask selectors and `syncDimensions` calls for the webview. After extraction:
+
+- The `useElectrobunWebview` hook owns all mask management internally
+- The hook accepts an optional `maskSelectors: string[]` prop for dynamic masks (e.g., when OmniBox overlay opens)
+- `syncDimensions` is called internally when masks change
+- The scene coordinates mask changes by updating the prop when OmniBox opens/closes
+
 ## 5. Sidebar Changes
 
 ### 5.1 Remove Bookmarks/History Tabs
 
 In `SidebarFeature.tsx`, remove the "bookmarks" and "history" tab definitions from the rail. Only the "sessions" tab (hamburger icon) remains.
+
+Also rename `onNewTab` → `onNewSession` in `SidebarProps` and `AppShellTemplate` while touching these files.
 
 ### 5.2 Omnibox Input in Header
 
@@ -120,11 +146,11 @@ Replace the "SESSIONS" text in the sidebar header with an input field:
 
 - **Layout:** `[hamburger] [url/search input] [+]`
 - **Default state:** Shows current page URL or title (truncated)
-- **Focused state:** Opens OmniBox dropdown with suggestions (reuses existing `buildOmniBoxSuggestions` logic)
+- **Focused state:** Opens OmniBox dropdown as an overlay anchored to the input, floating over the sidebar panel and content area. The dropdown uses the existing `buildOmniBoxSuggestions` logic.
 - **On submit:** Navigates active session via `client.navigate(id, input)`
-- **On blur/escape:** Reverts to showing current URL
+- **On blur/escape:** Reverts to showing current URL, closes dropdown
 
-This reuses the existing `OmniBox` component — it's relocated from wherever it currently appears into the sidebar header.
+The OmniBox dropdown renders as a positioned overlay (not inline within the sidebar), similar to Arc/Zen browser address bars. This requires the webview mask selector to include the dropdown area while open.
 
 ## 6. Title/URL Tracking Fix
 
@@ -132,29 +158,50 @@ This reuses the existing `OmniBox` component — it's relocated from wherever it
 
 Add to `BrowsingRpcs`:
 ```typescript
-reportNavigation: Rpc.make({
-  input: Schema.Struct({ id: Schema.String, url: Schema.String }),
-  output: Schema.Void,
+Rpc.make("reportNavigation", {
+  payload: { id: Schema.String, url: Schema.String },
+  success: SessionSchema,
+  error: Schema.Union(DatabaseError, ValidationError),
 })
 ```
 
-Handler implementation:
-1. Update the current page's URL in the session (new `SessionRepository.updatePageUrl` method)
-2. Record in history
-3. Notify via PubSub
+**Semantic difference from `navigate`:**
+- `navigate` = user-initiated from omnibox. Resolves input, **pushes a new page** onto the session stack, clears forward history, records in history.
+- `reportNavigation` = webview-reported. The webview itself navigated (link click, redirect, JS navigation). **Updates the current page's URL in-place**, records in history. Does NOT push a new page onto the stack.
+
+**In-page navigation (`did-navigate-in-page`):** Hash changes and `pushState` navigations are treated the same as `did-navigate` — they call `reportNavigation` which updates the current page URL. This is a simplification; real browser-style history stack tracking within a session page is deferred to the multi-window/tile manager spec.
+
+Handler implementation (goes through the feature layer, not repository directly):
+1. Call `sessions.updateUrl(id, url)` — feature method that reads `currentIndex`, calls `SessionRepository.updatePageUrl(id, currentIndex, url)`, and triggers PubSub notification
+2. Record in history via `history.record(url, null, null)`
+
+**`SessionFeature.updateUrl` semantics:**
+- Reads the session's `currentIndex`
+- Calls `SessionRepository.updatePageUrl(id, currentIndex, url)` to update the current page's URL in-place
+- Does NOT push a new page onto the stack (unlike `navigate`)
+- Triggers PubSub notification
+
+**`SessionRepository.updatePageUrl` port signature** (to add to `core.shared/src/model/ports.ts`):
+```typescript
+readonly updatePageUrl: (
+  sessionId: string,
+  pageIndex: number,
+  url: string,
+) => Effect.Effect<void, DatabaseError>;
+```
 
 ### 6.2 Existing RPC: `updateTitle`
 
-Already exists. Will now be called from the webview adapter when `<electrobun-webview>` fires title change events.
+Already exists. Will now be called from the webview adapter when title is extracted after `dom-ready`.
 
 ### 6.3 Electrobun Webview Events to Listen
 
-Per the Electrobun API (`BrowserView.on()`):
-- `did-navigate` — full page navigation (new URL)
-- `did-navigate-in-page` — hash/pushState navigation (URL change without reload)
-- `dom-ready` — page loaded, safe to extract title
+Per the Electrobun webview tag API:
+- `did-navigate` — full page navigation, event detail contains URL
+- `did-navigate-in-page` — hash/pushState navigation, event detail contains URL
+- `dom-ready` — page loaded, safe to extract title via `executeJavascript("document.title")`
 
-The `<electrobun-webview>` custom element fires these as DOM events. The `useElectrobunWebview` hook listens for them and calls the corresponding props.
+The `useElectrobunWebview` hook listens for these DOM events and calls the corresponding props callbacks. Errors from `executeJavascript("document.title")` are caught internally by the hook — on failure, the title update is skipped (falls back to URL hostname as display title).
 
 ## 7. App Icon
 
@@ -186,19 +233,20 @@ Add to `build.copy`:
 - `packages/apps/desktop/assets/icon.icns` — macOS app icon (user-provided)
 
 ### Modified
-- `packages/libs/core.shared/src/model/ports.ts` — add `WebviewPort`
-- `packages/libs/core.ui/src/components/templates/AppShellTemplate/ui/AppShellTemplate.tsx` — remove `<electrobun-webview>` tag, use content slot
-- `packages/libs/core.ui/src/components/organisms/Sidebar/ui/Sidebar.tsx` — header input, remove tab definitions
-- `packages/libs/ui.feature.sidebar/src/ui/SidebarFeature.tsx` — remove bookmarks/history tabs, wire omnibox input in header
+- `packages/libs/core.shared/src/model/ports.ts` — add `updatePageUrl` to `SessionRepository` port (see Section 6.1 for signature)
+- `packages/libs/core.ui/src/components/templates/AppShellTemplate/ui/AppShellTemplate.tsx` — remove `<electrobun-webview>` tag, use content slot (`props.children`), rename `onNewTab` → `onNewSession`
+- `packages/libs/core.ui/src/components/organisms/Sidebar/ui/Sidebar.tsx` — header omnibox input, remove bookmarks/history tab definitions
+- `packages/libs/ui.feature.sidebar/src/ui/SidebarFeature.tsx` — remove bookmarks/history tabs, wire omnibox input in header, rename `onNewTab` → `onNewSession`
 - `packages/libs/ui.feature.sidebar/src/model/sidebar.bindings.ts` — update bindings for header input
 - `packages/libs/domain.service.browsing/src/api/browsing.rpc.ts` — add `reportNavigation` RPC
-- `packages/libs/domain.service.browsing/src/api/browsing.handlers.ts` — implement `reportNavigation`, subscribe to `WebviewPort`
+- `packages/libs/domain.service.browsing/src/api/browsing.handlers.ts` — implement `reportNavigation` handler
 - `packages/libs/domain.adapter.db/src/api/session.repository.ts` — add `updatePageUrl` method
 - `packages/libs/domain.feature.session/src/api/session.feature.ts` — add `updateUrl` method
-- `packages/libs/ui.scenes/` — wire `useElectrobunWebview`, pass props to features
-- `packages/apps/desktop/electrobun.config.ts` — add icon config
-- `docs/architecture/package-naming.md` — document `ui.adapter.*` tier
+- `packages/libs/ui.scenes/` — wire `useElectrobunWebview`, pass props and callbacks to features
+- `packages/apps/desktop/electrobun.config.ts` — add icon config and build copy
+- `docs/architecture/package-naming.md` — document `ui.adapter.*` tier, update UI tier ordering to `a → f → s`
 - `docs/architecture/dependency-matrix.md` — add `ui.adapter.*` rules
+- `docs/architecture/fsd-segments.md` — add `ui.adapter.*` segment definitions, fix stale `TAB_FEATURE` reference to `SESSION_FEATURE`
 
 ### Removed
 - Preload script / mask logic from `AppShellTemplate.tsx` (moves to `ui.adapter.electrobun`)
@@ -208,5 +256,7 @@ Add to `build.copy`:
 | Risk | Mitigation |
 |---|---|
 | Electrobun webview tag event API undocumented/unstable | Verify events fire correctly in dev before committing to the pattern |
-| Webview pool memory usage (one per session) | Limit pool size, destroy oldest inactive webviews if threshold exceeded |
+| Webview pool memory usage (one per session) | `MAX_LIVE_WEBVIEWS = 10` constant, LRU eviction of inactive views |
 | Omnibox in narrow sidebar header may feel cramped | Design in Pencil first, validate layout before implementing |
+| Title extraction via `executeJavascript` may fail in some contexts | Fallback to URL hostname as display title if extraction fails |
+| `did-navigate-in-page` simplification loses pushState history | Acceptable for now; full history stack deferred to tile manager spec |
