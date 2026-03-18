@@ -5,9 +5,10 @@ import { APP_NAME, APP_VERSION } from "@ctrl/core.shared";
 import { ensureSchema } from "@ctrl/domain.adapter.db";
 import { createIpcBridge, type ElectrobunHandle } from "@ctrl/domain.adapter.electrobun";
 import { type ElectrobunRpcHandle, ElectrobunServerProtocol } from "@ctrl/domain.adapter.rpc";
+import { SessionFeature } from "@ctrl/domain.feature.session";
 import { BrowsingRpcs } from "@ctrl/domain.service.browsing";
 import { RpcSerialization, RpcServer } from "@effect/rpc";
-import { Layer, ManagedRuntime, Runtime } from "effect";
+import { Effect, Layer, ManagedRuntime, Runtime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
 import { type AppLayer, DesktopLive } from "./layers";
 import { createMainRPC } from "./rpc";
@@ -107,5 +108,17 @@ ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
 		ipcBridge.send({ type: "toggle-command-center" });
 	}
 });
+
+// Ensure at least one session exists on startup
+await Runtime.runPromise(rt)(
+	Effect.gen(function* () {
+		const sessions = yield* SessionFeature;
+		const all = yield* sessions.getAll();
+		if (all.length === 0) {
+			const s = yield* sessions.create("visual");
+			yield* sessions.setActive(s.id);
+		}
+	}),
+);
 
 console.info(`[bun] ${APP_NAME} v${APP_VERSION} started`);
