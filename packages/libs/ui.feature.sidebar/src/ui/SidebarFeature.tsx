@@ -121,7 +121,6 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 				onInput: handleOmniboxInput,
 				onSubmit: handleOmniboxSubmit,
 			}}
-			currentUrl={activeUrl()}
 		>
 			{props.children}
 		</AppShellTemplate>
