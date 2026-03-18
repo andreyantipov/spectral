@@ -5,7 +5,7 @@ import {
 	type OmniBoxSuggestion,
 	useRuntime,
 } from "@ctrl/core.ui";
-import { createMemo, createSignal, type JSX } from "solid-js";
+import { createEffect, createMemo, createSignal, type JSX } from "solid-js";
 import { useBrowsingRpc } from "../api/use-sidebar";
 import { buildOmniBoxSuggestions, mapSessionsToSidebarItems } from "../model/sidebar.bindings";
 
@@ -27,6 +27,14 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 	const { client, state } = useBrowsingRpc();
 	const runtime = useRuntime();
 	const [omniboxQuery, setOmniboxQuery] = createSignal("");
+
+	// Auto-create first session if none exist
+	createEffect(() => {
+		const s = state();
+		if (s && s.sessions.length === 0) {
+			void runtime.runPromise(client.createSession({ mode: "visual" }));
+		}
+	});
 
 	const mappedSessions = createMemo(() => mapSessionsToSidebarItems(state()?.sessions));
 

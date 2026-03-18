@@ -9,12 +9,20 @@ export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHook
 	function attachEvents(el: WebviewTagElement, _sessionId: string) {
 		const handleNavigate = (event: CustomEvent) => {
 			const url = (event as CustomEvent<string>).detail;
-			if (url) props().onNavigate(url);
+			if (url) {
+				skipNextUrlLoad = true;
+				lastLoadedUrl = url;
+				props().onNavigate(url);
+			}
 		};
 
 		const handleNavigateInPage = (event: CustomEvent) => {
 			const url = (event as CustomEvent<string>).detail;
-			if (url) props().onNavigate(url);
+			if (url) {
+				skipNextUrlLoad = true;
+				lastLoadedUrl = url;
+				props().onNavigate(url);
+			}
 		};
 
 		const handleDomReady = () => {
@@ -51,8 +59,11 @@ export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHook
 
 	let cleanupEvents: (() => void) | undefined;
 	let currentSessionId: string | undefined;
+	let lastLoadedUrl: string | undefined;
+	// Set when webview reports navigation — prevents re-loading the same URL
+	let skipNextUrlLoad = false;
 
-	// React to session changes
+	// React to session and URL changes
 	createEffect(() => {
 		const { sessionId, url } = props();
 		if (!containerEl || !sessionId) return;
@@ -63,6 +74,7 @@ export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHook
 		if (isNewSession) {
 			cleanupEvents?.();
 			pool.hideAll();
+			lastLoadedUrl = undefined;
 		}
 
 		const entry = pool.getOrCreate(sessionId);
@@ -74,9 +86,14 @@ export function useElectrobunWebview(props: () => WebviewHookProps): WebviewHook
 		}
 		pool.show(sessionId);
 
-		// Only load URL on first visit to this session (new webview)
-		if (isNewSession && url && url !== "about:blank") {
-			entry.el.loadURL(url);
+		// Load URL if it changed and wasn't triggered by the webview itself
+		if (url && url !== "about:blank" && url !== lastLoadedUrl) {
+			if (skipNextUrlLoad) {
+				skipNextUrlLoad = false;
+			} else {
+				entry.el.loadURL(url);
+			}
+			lastLoadedUrl = url;
 		}
 
 		if (isNewSession) {
