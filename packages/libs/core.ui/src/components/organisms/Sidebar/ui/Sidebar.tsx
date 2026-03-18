@@ -169,7 +169,6 @@ export function Sidebar(props: SidebarProps) {
 									"font-size": "12px",
 									padding: "4px 8px",
 									cursor: "pointer",
-									"line-height": "1",
 									"flex-shrink": "0",
 								}}
 							>

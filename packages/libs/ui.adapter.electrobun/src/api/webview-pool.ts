@@ -60,14 +60,14 @@ export function createWebviewPool() {
 
 		hideAll() {
 			for (const entry of pool.values()) {
-				(entry.el as unknown as HTMLElement).style.display = "none";
+				entry.el.toggleHidden(true);
 			}
 		},
 
 		show(sessionId: string) {
 			const entry = pool.get(sessionId);
 			if (entry) {
-				(entry.el as unknown as HTMLElement).style.display = "block";
+				entry.el.toggleHidden(false);
 			}
 		},
 
