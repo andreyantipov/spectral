@@ -5,8 +5,7 @@ import {
 	type OmniBoxSuggestion,
 	useRuntime,
 } from "@ctrl/core.ui";
-import type { JSX } from "solid-js";
-import { createMemo, createSignal } from "solid-js";
+import { createMemo, createSignal, type JSX } from "solid-js";
 import { useBrowsingRpc } from "../api/use-sidebar";
 import { buildOmniBoxSuggestions, mapSessionsToSidebarItems } from "../model/sidebar.bindings";
 
@@ -70,11 +69,46 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		navigateActiveSession(value);
 	};
 
+	const [headerFocused, setHeaderFocused] = createSignal(false);
+
+	const headerInput = () => (
+		<input
+			type="text"
+			value={headerFocused() ? omniboxQuery() : (activeUrl() ?? "")}
+			placeholder="Search or enter URL..."
+			onFocus={() => setHeaderFocused(true)}
+			onBlur={() => {
+				setHeaderFocused(false);
+				setOmniboxQuery("");
+			}}
+			onInput={(e) => handleOmniboxInput(e.currentTarget.value)}
+			onKeyDown={(e) => {
+				if (e.key === "Enter") {
+					e.currentTarget.blur();
+					handleOmniboxSubmit(e.currentTarget.value);
+				}
+				if (e.key === "Escape") {
+					e.currentTarget.blur();
+				}
+			}}
+			style={{
+				flex: "1",
+				background: "transparent",
+				border: "none",
+				color: "inherit",
+				"font-size": "inherit",
+				outline: "none",
+				"min-width": "0",
+			}}
+		/>
+	);
+
 	return (
 		<AppShellTemplate
 			sidebar={{
 				tabs: sidebarTabs,
 				activeTabId: "sessions",
+				headerContent: headerInput(),
 				items: items(),
 				activeItemId: activeItemId(),
 				onNewSession: handleNewSession,
