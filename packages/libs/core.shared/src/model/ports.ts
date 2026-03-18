@@ -74,5 +74,10 @@ export class SessionRepository extends Context.Tag(SESSION_REPOSITORY_ID)<
 			pageIndex: number,
 			title: string,
 		) => Effect.Effect<void, DatabaseError>;
+		readonly updatePageUrl: (
+			sessionId: string,
+			pageIndex: number,
+			url: string,
+		) => Effect.Effect<void, DatabaseError>;
 	}
 >() {}
