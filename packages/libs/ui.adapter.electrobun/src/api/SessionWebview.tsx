@@ -19,7 +19,9 @@ export function SessionWebview(props: SessionWebviewProps) {
 	function reportUrlIfChanged(url: string) {
 		if (url && url !== "about:blank") {
 			currentLoadedUrl = url;
-			if (url !== lastReportedUrl) {
+			// Only report navigations for the active webview to prevent
+			// background webview redirects from contaminating other sessions
+			if (url !== lastReportedUrl && props.isActive) {
 				lastReportedUrl = url;
 				props.onNavigate(url);
 			}
@@ -45,23 +47,11 @@ export function SessionWebview(props: SessionWebviewProps) {
 
 		el.on("did-navigate", (event: CustomEvent) => {
 			const navUrl = (event as CustomEvent<string>).detail;
-			if (navUrl && navUrl !== "about:blank") {
-				currentLoadedUrl = navUrl;
-				if (navUrl !== lastReportedUrl) {
-					lastReportedUrl = navUrl;
-					props.onNavigate(navUrl);
-				}
-			}
+			reportUrlIfChanged(navUrl);
 		});
 		el.on("did-navigate-in-page", (event: CustomEvent) => {
 			const navUrl = (event as CustomEvent<string>).detail;
-			if (navUrl && navUrl !== "about:blank") {
-				currentLoadedUrl = navUrl;
-				if (navUrl !== lastReportedUrl) {
-					lastReportedUrl = navUrl;
-					props.onNavigate(navUrl);
-				}
-			}
+			reportUrlIfChanged(navUrl);
 		});
 		el.on("dom-ready", () => {
 			el.executeJavascript("document.title")

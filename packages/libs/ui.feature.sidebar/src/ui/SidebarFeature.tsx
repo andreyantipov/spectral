@@ -71,9 +71,7 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 				void runtime.runPromise(client.navigate({ id: session.id, input }));
 			}
 		},
-		createSession: () => {
-			void runtime.runPromise(client.createSession({ mode: "visual" }));
-		},
+		createSession: () => runtime.runPromise(client.createSession({ mode: "visual" })),
 		switchSession: (id: string) => {
 			void runtime.runPromise(client.setActive({ id }));
 		},
