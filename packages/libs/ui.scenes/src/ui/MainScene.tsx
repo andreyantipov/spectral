@@ -8,14 +8,9 @@ export function MainScene() {
 	return (
 		<SidebarFeature>
 			{(bindings: WebviewBindings) => {
-				const sessionIds = createMemo(
-					() => bindings.sessions().map((s) => s.id),
-					undefined,
-					{
-						equals: (a, b) =>
-							a.length === b.length && a.every((id, i) => id === b[i]),
-					},
-				);
+				const sessionIds = createMemo(() => bindings.sessions().map((s) => s.id), undefined, {
+					equals: (a, b) => a.length === b.length && a.every((id, i) => id === b[i]),
+				});
 
 				const getSession = (id: string): Session | undefined =>
 					bindings.sessions().find((s) => s.id === id);

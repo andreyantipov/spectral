@@ -4,7 +4,5 @@
 		"jsx": "react-jsx",
 		"jsxImportSource": "solid-js"
 	},
-	"include": [
-		"src"
-	]
+	"include": ["src"]
 }
