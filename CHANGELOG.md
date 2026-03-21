@@ -1,3 +1,10 @@
+# [0.7.0](https://github.com/andreyantipov/ctrl.page/compare/v0.6.0...v0.7.0) (2026-03-17)
+
+
+### Features
+
+* add omnibox URL/search resolution with query history tracking ([#6](https://github.com/andreyantipov/ctrl.page/issues/6)) ([8a52242](https://github.com/andreyantipov/ctrl.page/commit/8a52242a32f508b871c856205d54dda521425e35)), closes [#fff](https://github.com/andreyantipov/ctrl.page/issues/fff)
+
 # [0.6.0](https://github.com/andreyantipov/ctrl.page/compare/v0.5.0...v0.6.0) (2026-03-16)
 
 
