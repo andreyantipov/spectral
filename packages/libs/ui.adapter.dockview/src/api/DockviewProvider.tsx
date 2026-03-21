@@ -42,5 +42,6 @@ export function DockviewProvider(props: DockviewProviderProps): JSX.Element {
 		onCleanup(() => dockview.dispose());
 	});
 
-	return <div ref={container} class={props.class} style={{ height: "100%", width: "100%" }} />;
+	const cls = () => `dockview-theme-dark${props.class ? ` ${props.class}` : ""}`;
+	return <div ref={container} class={cls()} style={{ height: "100%", width: "100%" }} />;
 }
