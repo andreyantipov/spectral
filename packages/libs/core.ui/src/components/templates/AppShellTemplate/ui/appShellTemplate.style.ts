@@ -8,7 +8,7 @@ export const appShellTemplate = sva({
 			flexDirection: "row",
 			height: "100%",
 			width: "100%",
-			bg: "bg.primary",
+			bg: "#111111",
 			overflow: "hidden",
 			position: "relative",
 		},
@@ -18,7 +18,7 @@ export const appShellTemplate = sva({
 			flex: 1,
 			minWidth: 0,
 			height: "100%",
-			bg: "bg.primary",
+			bg: "#111111",
 			position: "relative",
 		},
 		page: {
