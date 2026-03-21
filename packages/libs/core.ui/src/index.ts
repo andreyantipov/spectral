@@ -21,6 +21,11 @@ export {
 	type CommandCenterProps,
 } from "./components/organisms/CommandCenter";
 export {
+	ContextMenu,
+	type ContextMenuItem,
+	type ContextMenuProps,
+} from "./components/organisms/ContextMenu";
+export {
 	Notifications,
 	type NotificationsProps,
 	notify,
