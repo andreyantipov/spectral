@@ -1,0 +1,18 @@
+{
+	"name": "@ctrl/domain.service.workspace",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check": "tsgo --noEmit",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@ctrl/core.shared": "workspace:*",
+		"@ctrl/domain.feature.layout": "workspace:*",
+		"@ctrl/domain.feature.panel": "workspace:*"
+	}
+}
