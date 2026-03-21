@@ -7,8 +7,10 @@
 		".": "./src/index.ts"
 	},
 	"scripts": {
-		"build": "tsgo --build",
 		"check": "tsgo --noEmit",
 		"test": "vitest run"
+	},
+	"dependencies": {
+		"@ctrl/core.shared": "workspace:*"
 	}
 }

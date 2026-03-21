@@ -11,6 +11,10 @@
 			"persistent": true,
 			"cache": false
 		},
+		"dev:tui": {
+			"persistent": true,
+			"cache": false
+		},
 		"dev:watch-ui": {
 			"dependsOn": ["^build"],
 			"persistent": true,

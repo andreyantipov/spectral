@@ -1,0 +1,67 @@
+import { sva } from "@styled-system/css";
+
+export const sessionWebview = sva({
+	slots: ["root", "urlBar", "urlBarBtn", "urlInput", "webviewContainer"],
+	base: {
+		root: {
+			display: "flex",
+			flexDirection: "column",
+			height: "100%",
+			width: "100%",
+		},
+		urlBar: {
+			display: "flex",
+			alignItems: "center",
+			gap: "4px",
+			height: "36px",
+			px: "8px",
+			flexShrink: 0,
+			bg: "bg.primary",
+		},
+		urlBarBtn: {
+			display: "flex",
+			alignItems: "center",
+			justifyContent: "center",
+			width: "28px",
+			height: "28px",
+			borderRadius: "md",
+			fontSize: "14px",
+			color: "fg.muted",
+			bg: "transparent",
+			border: "1px solid transparent",
+			cursor: "pointer",
+			flexShrink: 0,
+			transition: "all 0.15s ease",
+			_hover: {
+				bg: "bg.secondary",
+				borderColor: "fg.muted",
+				color: "fg.primary",
+			},
+			_disabled: {
+				opacity: 0.3,
+				cursor: "default",
+				_hover: { bg: "transparent", borderColor: "transparent", color: "fg.muted" },
+			},
+		},
+		urlInput: {
+			flex: 1,
+			minWidth: 0,
+			bg: "bg.secondary",
+			border: "1px solid transparent",
+			borderRadius: "md",
+			color: "fg.secondary",
+			fontSize: "12px",
+			fontFamily: "body",
+			padding: "5px 10px",
+			outline: "none",
+			transition: "all 0.15s ease",
+			_hover: { borderColor: "fg.muted" },
+			_focus: { borderColor: "accent", color: "fg.primary" },
+		},
+		webviewContainer: {
+			flex: 1,
+			position: "relative",
+			overflow: "hidden",
+		},
+	},
+});

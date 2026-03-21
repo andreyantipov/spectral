@@ -1,0 +1,9 @@
+{
+	"name": "@ctrl/infra.otel",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"dev": "lsof -ti :4317 :4318 2>/dev/null | xargs kill -9 2>/dev/null; rm -f /tmp/ctrl-page-telemetry.jsonl && otelcol-contrib --config=otel-collector.yaml",
+		"dev:tui": "otel-tui --http 4319 --grpc 4316 --disable-internal-metrics"
+	}
+}

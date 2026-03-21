@@ -1,4 +1,4 @@
-import { currentUrl } from "@ctrl/core.shared";
+import { currentUrl, type Session, withWebTracing } from "@ctrl/core.shared";
 import {
 	AppShellTemplate,
 	type SidebarItem as CoreSidebarItem,
@@ -7,17 +7,18 @@ import {
 } from "@ctrl/core.ui";
 import { createEffect, createMemo, createSignal, type JSX } from "solid-js";
 import { useBrowsingRpc } from "../api/use-sidebar";
+import { SIDEBAR_FEATURE } from "../lib/constants";
 import { buildOmniBoxSuggestions, mapSessionsToSidebarItems } from "../model/sidebar.bindings";
 
 // No tabs = no rail. Sessions is the only section, rail serves no purpose.
 const sidebarTabs: { id: string; icon: JSX.Element; label: string }[] = [];
 
 export type WebviewBindings = {
+	readonly sessions: () => readonly Session[];
 	readonly activeSessionId: () => string;
 	readonly activeUrl: () => string | undefined;
-	readonly onNavigate: (url: string) => void;
-	readonly onTitleChange: (title: string) => void;
-	readonly setNavigateFn: (fn: (url: string) => void) => void;
+	readonly onNavigate: (sessionId: string, url: string) => void;
+	readonly onTitleChange: (sessionId: string, title: string) => void;
 };
 
 export type SidebarFeatureProps = {
@@ -35,7 +36,7 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		const s = state();
 		if (s && s.sessions.length === 0 && !autoCreated) {
 			autoCreated = true;
-			void runtime.runPromise(client.createSession({ mode: "visual" }));
+			ops.createSession();
 		}
 	});
 
@@ -45,76 +46,70 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		mappedSessions().map((item) => ({
 			id: item.id,
 			label: item.label,
+			icon: item.faviconUrl ? (
+				<img
+					src={item.faviconUrl}
+					alt=""
+					width={16}
+					height={16}
+					style={{ "border-radius": "2px" }}
+					onError={(e) => {
+						(e.currentTarget as HTMLImageElement).style.display = "none";
+					}}
+				/>
+			) : undefined,
 		}));
 
 	const activeItemId = () => mappedSessions().find((item) => item.active)?.id ?? null;
 
 	const activeSession = () => state()?.sessions?.find((s) => s.isActive);
 
-	// Direct webview navigate function — set by MainScene after hook creation
-	let webviewNavigate: ((url: string) => void) | undefined;
-
-	const navigateActiveSession = (input: string) => {
-		const session = activeSession();
-		if (session) {
-			runtime.runPromise(client.navigate({ id: session.id, input })).then((result) => {
-				// After RPC succeeds, directly tell the webview to load the URL
-				const page = result.pages[result.currentIndex];
-				if (page && webviewNavigate) {
-					webviewNavigate(page.url);
-				}
-			});
-		}
-	};
-
-	const handleNewSession = () => {
-		void runtime.runPromise(client.createSession({ mode: "visual" }));
-	};
-
-	const handleItemClick = (id: string) => {
-		void runtime.runPromise(client.setActive({ id }));
-	};
-
-	const handleItemClose = (id: string) => {
-		void runtime.runPromise(client.removeSession({ id }));
-	};
+	const ops = withWebTracing(SIDEBAR_FEATURE, {
+		navigate: (input: string) => {
+			const session = activeSession();
+			if (session) {
+				void runtime.runPromise(client.navigate({ id: session.id, input }));
+			}
+		},
+		createSession: () => {
+			void runtime.runPromise(client.createSession({ mode: "visual" }));
+		},
+		switchSession: (id: string) => {
+			void runtime.runPromise(client.setActive({ id }));
+		},
+		closeSession: (id: string) => {
+			void runtime.runPromise(client.removeSession({ id }));
+		},
+		reportNavigation: (sessionId: string, url: string) => {
+			void runtime.runPromise(client.reportNavigation({ id: sessionId, url }));
+		},
+		updateTitle: (sessionId: string, title: string) => {
+			void runtime.runPromise(client.updateTitle({ id: sessionId, title }));
+		},
+	});
 
 	const activeUrl = () => {
 		const session = activeSession();
-		return session ? currentUrl(session) : undefined;
+		if (!session) return undefined;
+		const url = currentUrl(session);
+		return url && url !== "about:blank" ? url : undefined;
 	};
 
 	const omniboxSuggestions = createMemo(() => buildOmniBoxSuggestions(state(), omniboxQuery()));
 
-	const handleOmniboxInput = (value: string) => {
-		setOmniboxQuery(value);
-	};
-
 	const handleOmniboxSubmit = (value: string, _suggestion?: OmniBoxSuggestion) => {
 		setOmniboxQuery("");
-		navigateActiveSession(value);
+		ops.navigate(value);
 	};
 
 	const headerInput = () => activeUrl() ?? "Search or enter URL...";
 
 	const webviewBindings: WebviewBindings = {
+		sessions: () => state()?.sessions ?? [],
 		activeSessionId: () => activeSession()?.id ?? "",
 		activeUrl,
-		onNavigate: (url: string) => {
-			const session = activeSession();
-			if (session) {
-				void runtime.runPromise(client.reportNavigation({ id: session.id, url }));
-			}
-		},
-		onTitleChange: (title: string) => {
-			const session = activeSession();
-			if (session) {
-				void runtime.runPromise(client.updateTitle({ id: session.id, title }));
-			}
-		},
-		setNavigateFn: (fn: (url: string) => void) => {
-			webviewNavigate = fn;
-		},
+		onNavigate: (sessionId: string, url: string) => ops.reportNavigation(sessionId, url),
+		onTitleChange: (sessionId: string, title: string) => ops.updateTitle(sessionId, title),
 	};
 
 	const content = () => {
@@ -132,14 +127,14 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 				headerContent: headerInput(),
 				items: items(),
 				activeItemId: activeItemId(),
-				onNewSession: handleNewSession,
-				onItemClick: handleItemClick,
-				onItemClose: handleItemClose,
+				onNewSession: ops.createSession,
+				onItemClick: ops.switchSession,
+				onItemClose: ops.closeSession,
 			}}
 			omniBox={{
 				value: activeUrl(),
 				suggestions: omniboxSuggestions(),
-				onInput: handleOmniboxInput,
+				onInput: setOmniboxQuery,
 				onSubmit: handleOmniboxSubmit,
 			}}
 		>

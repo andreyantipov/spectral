@@ -6,6 +6,7 @@ import {
 	makeDbClient,
 	SessionRepositoryLive,
 } from "@ctrl/domain.adapter.db";
+import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/domain.adapter.otel";
 import { BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
 import { OmniboxFeatureLive } from "@ctrl/domain.feature.omnibox";
@@ -36,9 +37,14 @@ const BrowsingHandlersLayer = BrowsingHandlersLive.pipe(
 	Layer.provide(OmniboxFeatureLive),
 );
 
+// OTEL: must be provided to handlers so Effect.withSpan() picks up the tracer
+const OtelLayer = OtelLive(OTEL_SERVICE_NAMES.main);
+
+const TracedHandlersLayer = BrowsingHandlersLayer.pipe(Layer.provide(OtelLayer));
+
 // Compose: expose all layers needed by the app
 // - DbClientLive: for migrations (LibsqlClient)
-// - BrowsingHandlersLayer: Effect RPC handler implementations
-export const DesktopLive = Layer.mergeAll(DbClientLive, BrowsingHandlersLayer);
+// - TracedHandlersLayer: RPC handlers with OTEL tracing active
+export const DesktopLive = Layer.mergeAll(DbClientLive, TracedHandlersLayer);
 
 export type AppLayer = Layer.Layer.Success<typeof DesktopLive>;

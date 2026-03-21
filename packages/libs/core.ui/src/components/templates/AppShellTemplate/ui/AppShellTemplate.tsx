@@ -36,6 +36,8 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 
 	function handleNewSession() {
 		props.sidebar.onNewSession?.();
+		// Auto-open omnibox so user can type a URL for the new tab
+		requestAnimationFrame(() => openOmnibox());
 	}
 
 	function handleOmniboxSubmit(value: string, suggestion?: OmniBoxSuggestion) {

@@ -6,6 +6,7 @@ export type WebviewTagElement = HTMLElement & {
 	canGoBack: () => boolean;
 	canGoForward: () => boolean;
 	toggleHidden: (hidden?: boolean) => void;
+	toggleTransparent: (transparent?: boolean) => void;
 	togglePassthrough: (passthrough?: boolean) => void;
 	syncDimensions: (force?: boolean) => void;
 	addMaskSelector: (selector: string) => void;

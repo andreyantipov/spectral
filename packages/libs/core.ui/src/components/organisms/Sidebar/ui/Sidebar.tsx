@@ -124,7 +124,7 @@ export function Sidebar(props: SidebarProps) {
 			{/* Expandable panel */}
 			<Show when={!collapsed()}>
 				<div class={$().panel}>
-					<div class={$().panelHeader} style={{ gap: "6px", "justify-content": "initial" }}>
+					<div class={$().panelHeader}>
 						<Show
 							when={props.headerContent}
 							fallback={
@@ -135,22 +135,8 @@ export function Sidebar(props: SidebarProps) {
 						>
 							<button
 								type="button"
+								class={$().panelHeaderInput}
 								onClick={() => props.onHeaderClick?.()}
-								style={{
-									flex: "1",
-									cursor: "pointer",
-									"min-width": "0",
-									background: "rgba(255,255,255,0.06)",
-									border: "1px solid rgba(255,255,255,0.1)",
-									"border-radius": "6px",
-									color: "rgba(255,255,255,0.5)",
-									"font-size": "12px",
-									padding: "4px 8px",
-									"text-align": "left",
-									overflow: "hidden",
-									"text-overflow": "ellipsis",
-									"white-space": "nowrap",
-								}}
 							>
 								{props.headerContent}
 							</button>
@@ -159,18 +145,9 @@ export function Sidebar(props: SidebarProps) {
 						<Show when={props.onNewSession}>
 							<button
 								type="button"
+								class={$().panelHeaderNewButton}
 								onClick={() => props.onNewSession?.()}
 								title="New session"
-								style={{
-									background: "rgba(255,255,255,0.06)",
-									border: "1px solid rgba(255,255,255,0.1)",
-									"border-radius": "6px",
-									color: "rgba(255,255,255,0.5)",
-									"font-size": "12px",
-									padding: "4px 8px",
-									cursor: "pointer",
-									"flex-shrink": "0",
-								}}
 							>
 								+
 							</button>
@@ -186,9 +163,6 @@ export function Sidebar(props: SidebarProps) {
 										<button
 											type="button"
 											class={s().panelItem}
-											style={{
-												"padding-left": `${8 + (item.indent ?? 0) * 12}px`,
-											}}
 											onClick={() => props.onItemClick?.(item.id)}
 										>
 											<Show when={item.icon}>

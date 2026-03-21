@@ -7,6 +7,7 @@ export type SidebarItem = {
 	readonly active: boolean;
 	readonly hasBack: boolean;
 	readonly hasForward: boolean;
+	readonly faviconUrl: string | null;
 };
 
 const safeHostname = (url: string): string => {
@@ -19,9 +20,20 @@ const safeHostname = (url: string): string => {
 
 const displayLabel = (session: Session): string => {
 	const page = currentPage(session);
-	if (!page) return "New Tab";
+	if (!page || page.url === "about:blank") return "New Tab";
 	if (page.title) return page.title;
 	return safeHostname(page.url);
+};
+
+const faviconUrl = (session: Session): string | null => {
+	const page = currentPage(session);
+	if (!page || page.url === "about:blank") return null;
+	try {
+		const origin = new URL(page.url).origin;
+		return `${origin}/favicon.ico`;
+	} catch {
+		return null;
+	}
 };
 
 export const mapSessionsToSidebarItems = (
@@ -33,6 +45,7 @@ export const mapSessionsToSidebarItems = (
 		active: session.isActive,
 		hasBack: false,
 		hasForward: false,
+		faviconUrl: faviconUrl(session),
 	})) ?? [];
 
 export const buildOmniBoxSuggestions = (
