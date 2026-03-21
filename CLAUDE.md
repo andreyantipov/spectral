@@ -11,6 +11,21 @@ ctrl.page is a project managed with Claude Code assistance.
 - Use meaningful variable and function names
 - Add comments only where logic is not self-evident
 
+## PR Types
+
+Every PR title must be prefixed with a type. This enables filtering git history by intent.
+
+| Prefix | Meaning | Review expectation |
+|--------|---------|-------------------|
+| `feat:` | Production-ready feature | Full review, tests required |
+| `fix:` | Bug fix | Focused review on the fix |
+| `proto:` | Fast prototyping / proof of concept | Minimal review, rough edges expected, follow-up cleanup PR needed |
+| `arch:` | Architecture shift / refactor | Deep review, no behavior change |
+| `infra:` | CI/CD, tooling, dev environment | Light review |
+| `docs:` | Documentation only | Skim |
+
+PRs must pass CI (green checks) before merge — no exceptions including `proto:`.
+
 ## Ollama
 
 A local Ollama instance is available via MCP tools (`ollama_chat`, `ollama_generate`, etc.). Use it to offload work that doesn't require Claude-level reasoning — code generation from simple prompts, boilerplate, format conversions, summaries — to save API tokens and reduce latency when appropriate.
