@@ -84,6 +84,7 @@ export function Sidebar(props: SidebarProps) {
 	return (
 		<div
 			class={$().root}
+			data-sidebar
 			style={{
 				width: collapsed() ? undefined : `${width()}px`,
 			}}
