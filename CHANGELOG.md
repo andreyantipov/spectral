@@ -1,3 +1,10 @@
+## [0.8.1](https://github.com/andreyantipov/ctrl.page/compare/v0.8.0...v0.8.1) (2026-03-21)
+
+
+### Bug Fixes
+
+* configure app icon and stable build environment ([#8](https://github.com/andreyantipov/ctrl.page/issues/8)) ([f043a8f](https://github.com/andreyantipov/ctrl.page/commit/f043a8f5a5580b6e16604d20265a7b152e86ecf5))
+
 # [0.8.0](https://github.com/andreyantipov/ctrl.page/compare/v0.7.0...v0.8.0) (2026-03-21)
 
 
