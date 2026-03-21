@@ -7,6 +7,7 @@ export const DATABASE_SERVICE_ID = "DatabaseService" as const;
 export const SESSION_REPOSITORY_ID = "SessionRepository" as const;
 export const BOOKMARK_REPOSITORY_ID = "BookmarkRepository" as const;
 export const HISTORY_REPOSITORY_ID = "HistoryRepository" as const;
+export const LAYOUT_REPOSITORY_ID = "LayoutRepository" as const;
 
 export class DatabaseService extends Context.Tag(DATABASE_SERVICE_ID)<
 	DatabaseService,
@@ -46,6 +47,20 @@ export class IpcBridge extends Context.Tag(IPC_BRIDGE_ID)<
 	{
 		readonly send: (command: AppCommand) => void;
 		readonly subscribe: (handler: (command: AppCommand) => void) => () => void;
+	}
+>() {}
+
+export class LayoutRepository extends Context.Tag(LAYOUT_REPOSITORY_ID)<
+	LayoutRepository,
+	{
+		readonly getLayout: () => Effect.Effect<
+			{ version: number; dockviewState: unknown } | null,
+			DatabaseError
+		>;
+		readonly saveLayout: (layout: {
+			version: number;
+			dockviewState: unknown;
+		}) => Effect.Effect<void, DatabaseError>;
 	}
 >() {}
 
