@@ -2,14 +2,9 @@
 	"extends": "../../../tsconfig.json",
 	"compilerOptions": {
 		"jsx": "react-jsx",
-		"jsxImportSource": "solid-js",
-		"outDir": "dist",
-		"rootDir": "src"
+		"jsxImportSource": "solid-js"
 	},
-	"include": ["src"],
-	"references": [
-		{ "path": "../core.ui" },
-		{ "path": "../ui.adapter.electrobun" },
-		{ "path": "../ui.feature.sidebar" }
+	"include": [
+		"src"
 	]
 }

@@ -1,5 +1,6 @@
 {
 	"extends": "../../../tsconfig.json",
-	"include": ["src"],
-	"references": [{ "path": "../core.shared" }]
+	"include": [
+		"src"
+	]
 }

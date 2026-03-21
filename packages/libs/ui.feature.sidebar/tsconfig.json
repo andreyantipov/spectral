@@ -2,15 +2,9 @@
 	"extends": "../../../tsconfig.json",
 	"compilerOptions": {
 		"jsx": "react-jsx",
-		"jsxImportSource": "solid-js",
-		"outDir": "dist",
-		"rootDir": "src"
+		"jsxImportSource": "solid-js"
 	},
-	"include": ["src"],
-	"references": [
-		{ "path": "../core.shared" },
-		{ "path": "../core.ui" },
-		{ "path": "../domain.feature.session" },
-		{ "path": "../domain.service.browsing" }
+	"include": [
+		"src"
 	]
 }

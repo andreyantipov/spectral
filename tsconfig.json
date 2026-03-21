@@ -8,10 +8,6 @@
 		"skipLibCheck": true,
 		"resolveJsonModule": true,
 		"isolatedModules": true,
-		"declaration": true,
-		"declarationMap": true,
-		"sourceMap": true,
-		"composite": true,
 		"paths": {
 			"@ctrl/*": ["./packages/libs/*/src"],
 			"@ctrl/apps/*": ["./packages/apps/*/src"],
