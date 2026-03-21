@@ -20,12 +20,15 @@ export const appShellTemplate = sva({
 			height: "100%",
 			bg: "#111111",
 			position: "relative",
+			padding: "6px 6px 6px 0",
 		},
 		page: {
 			display: "flex",
 			flex: 1,
 			overflow: "hidden",
 			position: "relative",
+			borderRadius: "10px",
+			bg: "#1e1e1e",
 		},
 		omniboxOverlay: {
 			position: "absolute",

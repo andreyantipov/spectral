@@ -39,7 +39,8 @@ export function SessionWebview(props: SessionWebviewProps) {
 			htmlEl.setAttribute("transparent", "");
 			htmlEl.setAttribute("passthrough", "");
 		}
-		htmlEl.style.cssText = "width: 100%; height: 100%; display: block; background: #0a0a0a;";
+		htmlEl.style.cssText =
+			"width: 100%; height: 100%; display: block; background: #1e1e1e; border-radius: 10px;";
 		containerRef.appendChild(htmlEl);
 		el.addMaskSelector("[data-omnibox]");
 		el.addMaskSelector("[data-sidebar]");
