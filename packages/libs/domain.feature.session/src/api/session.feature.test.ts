@@ -79,6 +79,14 @@ const makeTestLayer = () => {
 					return { ...s, pages };
 				});
 			}),
+		updatePageUrl: (sessionId: string, pageIndex: number, url: string) =>
+			Effect.sync(() => {
+				sessions = sessions.map((s) => {
+					if (s.id !== sessionId) return s;
+					const pages = s.pages.map((p, i) => (i === pageIndex ? { ...p, url } : p));
+					return { ...s, pages };
+				});
+			}),
 	} satisfies Context.Tag.Service<typeof SessionRepository>);
 
 	return SessionFeatureLive.pipe(Layer.provide(MockSessionRepository));

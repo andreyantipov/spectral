@@ -8,14 +8,11 @@
 		"skipLibCheck": true,
 		"resolveJsonModule": true,
 		"isolatedModules": true,
-		"declaration": true,
-		"declarationMap": true,
-		"sourceMap": true,
-		"composite": true,
 		"paths": {
 			"@ctrl/*": ["./packages/libs/*/src"],
 			"@ctrl/apps/*": ["./packages/apps/*/src"],
-			"@ctrl/infra/*": ["./packages/infra/*/src"]
+			"@ctrl/infra/*": ["./packages/infra/*/src"],
+			"@styled-system/*": ["./packages/libs/core.ui/styled-system/*"]
 		}
 	},
 	"exclude": ["node_modules", ".bun", "dist"]

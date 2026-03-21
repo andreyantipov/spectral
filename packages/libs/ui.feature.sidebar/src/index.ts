@@ -1,1 +1,5 @@
-export { SidebarFeature, type SidebarFeatureProps } from "./ui/SidebarFeature";
+export {
+	SidebarFeature,
+	type SidebarFeatureProps,
+	type WebviewBindings,
+} from "./ui/SidebarFeature";

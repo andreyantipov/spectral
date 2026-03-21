@@ -9,8 +9,9 @@
 | `domain.adapter.*` | `core.shared` + external infrastructure libs |
 | `domain.feature.*` | `core.shared` (ports via DI — never adapters directly) |
 | `domain.service.*` | `domain.feature.*` + `core.shared` |
+| `ui.adapter.*` | `core.shared` + external platform libs |
 | `ui.feature.*` | `domain.service.*` + `core.ui` + `core.shared` |
-| `ui.scenes` | `ui.feature.*` + `core.ui` |
+| `ui.scenes` | `ui.feature.*` + `ui.adapter.*` + `core.ui` |
 | `packages/apps/*` (UI entry) | `ui.scenes` + `core.ui` only |
 | `packages/apps/*` (composition root) | ALL domain + core packages (this is the ONLY place that wires Layers) |
 
@@ -21,7 +22,9 @@ No package may import a peer at the same tier. Composition happens one level up.
 - `domain.feature.*` packages cannot import each other — features are atomic
 - `domain.service.*` packages cannot import each other — services compose features, not other services
 - `domain.adapter.*` packages cannot import each other — adapters are independent
+- `ui.adapter.*` packages cannot import each other — adapters are independent
 - `ui.feature.*` packages cannot import each other — UI features are atomic
+- `ui.feature.*` may NOT import `ui.adapter.*`
 - `ui.scenes` is a single package, so no peer isolation rule is needed
 
 ## Service Contract: `BrowsingRpcs`

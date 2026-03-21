@@ -1,4 +1,5 @@
 import { createIpcBridge, type ElectrobunHandle } from "@ctrl/domain.adapter.electrobun";
+import { initGlobalWebTracer, OTEL_SERVICE_NAMES } from "@ctrl/domain.adapter.otel/web";
 import type { ElectrobunRpcHandle } from "@ctrl/domain.adapter.rpc";
 import { ManagedRuntime } from "effect";
 import { createWebviewLive } from "./layers";
@@ -9,6 +10,9 @@ initApp();
 async function initApp() {
 	// Wait for electrobun globals to be injected by the native layer
 	await waitForGlobal("__electrobun", 2000);
+
+	// Register global OTEL provider for imperative UI tracing (withWebTracing)
+	initGlobalWebTracer(OTEL_SERVICE_NAMES.webview);
 
 	const { Electroview } = await import("electrobun/view");
 	const { defineRPC } = await import("./rpc-view");

@@ -6,6 +6,7 @@ export type { TextProps } from "./components/atoms/Text";
 export { Text } from "./components/atoms/Text";
 export type { AddressBarProps } from "./components/molecules/AddressBar";
 export { AddressBar } from "./components/molecules/AddressBar";
+export { BlankPage } from "./components/molecules/BlankPage";
 export {
 	OmniBox,
 	type OmniBoxProps,

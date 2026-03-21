@@ -178,6 +178,18 @@ export const SessionRepositoryLive = Layer.effect(
 							Effect.fail(new DatabaseError({ message: "Failed to update page title", cause })),
 						),
 					),
+
+			updatePageUrl: (sessionId: string, pageIndex: number, url: string) =>
+				db
+					.update(pagesTable)
+					.set({ url })
+					.where(and(eq(pagesTable.sessionId, sessionId), eq(pagesTable.pageIndex, pageIndex)))
+					.pipe(
+						Effect.asVoid,
+						Effect.catchAll((cause) =>
+							Effect.fail(new DatabaseError({ message: "Failed to update page url", cause })),
+						),
+					),
 		});
 	}),
 );

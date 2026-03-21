@@ -1,16 +1,4 @@
 {
 	"extends": "../../../tsconfig.json",
-	"compilerOptions": {
-		"outDir": "dist",
-		"rootDir": "src"
-	},
-	"include": ["src"],
-	"references": [
-		{ "path": "../core.shared" },
-		{ "path": "../domain.feature.bookmark" },
-		{ "path": "../domain.feature.history" },
-		{ "path": "../domain.feature.omnibox" },
-		{ "path": "../domain.feature.session" },
-		{ "path": "../domain.adapter.otel" }
-	]
+	"include": ["src"]
 }

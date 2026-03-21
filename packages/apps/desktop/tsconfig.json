@@ -3,23 +3,7 @@
 	"compilerOptions": {
 		"jsx": "react-jsx",
 		"jsxImportSource": "solid-js",
-		"outDir": "dist",
-		"rootDir": "src",
 		"skipLibCheck": true
 	},
-	"include": ["src"],
-	"references": [
-		{ "path": "../../libs/core.shared" },
-		{ "path": "../../libs/core.ui" },
-		{ "path": "../../libs/domain.adapter.db" },
-		{ "path": "../../libs/domain.adapter.electrobun" },
-		{ "path": "../../libs/domain.adapter.otel" },
-		{ "path": "../../libs/domain.adapter.rpc" },
-		{ "path": "../../libs/domain.feature.bookmark" },
-		{ "path": "../../libs/domain.feature.history" },
-		{ "path": "../../libs/domain.feature.session" },
-		{ "path": "../../libs/domain.service.browsing" },
-		{ "path": "../../libs/ui.feature.sidebar" },
-		{ "path": "../../libs/ui.scenes" }
-	]
+	"include": ["src"]
 }

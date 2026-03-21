@@ -1,53 +1,22 @@
 import { createEffect, createSignal, type JSX, onCleanup, onMount, Show } from "solid-js";
-import { Dynamic } from "solid-js/web";
 import { OmniBox, type OmniBoxProps, type OmniBoxSuggestion } from "../../../molecules/OmniBox";
 import { Notifications } from "../../../organisms/Notifications";
 import { Sidebar, type SidebarProps } from "../../../organisms/Sidebar";
 import { appShellTemplate } from "./appShellTemplate.style";
 
-type WebviewTagElement = HTMLElement & {
-	loadURL: (url: string) => void;
-	toggleHidden: (hidden?: boolean) => void;
-	togglePassthrough: (passthrough?: boolean) => void;
-	syncDimensions: (force?: boolean) => void;
-	addMaskSelector: (selector: string) => void;
-	removeMaskSelector: (selector: string) => void;
-	on: (event: string, handler: (event: CustomEvent) => void) => void;
-	off: (event: string, handler: (event: CustomEvent) => void) => void;
-};
-
 type IpcBridgeHandle = {
 	subscribe: (handler: (cmd: { type: string }) => void) => () => void;
 };
 
-// Preload script: forwards Cmd+K, Cmd+L, Escape from webview tag to host
-const SHORTCUT_PRELOAD = `
-document.addEventListener('keydown', function(e) {
-  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-    e.preventDefault();
-    window.__electrobunSendToHost({ type: 'shortcut', key: 'cmd+k' });
-  }
-  if ((e.metaKey || e.ctrlKey) && e.key === 'l') {
-    e.preventDefault();
-    window.__electrobunSendToHost({ type: 'shortcut', key: 'cmd+l' });
-  }
-  if (e.key === 'Escape') {
-    window.__electrobunSendToHost({ type: 'shortcut', key: 'escape' });
-  }
-});
-`;
-
 export type AppShellTemplateProps = {
 	sidebar: SidebarProps;
 	omniBox: Pick<OmniBoxProps, "value" | "suggestions" | "onInput" | "onSubmit">;
-	currentUrl?: string;
 	children?: JSX.Element;
 };
 
 export function AppShellTemplate(props: AppShellTemplateProps) {
 	const $ = appShellTemplate;
 	const [omniboxOpen, setOmniboxOpen] = createSignal(false);
-	let webviewRef: WebviewTagElement | undefined;
 	let ipcUnsub: (() => void) | undefined;
 
 	function openOmnibox() {
@@ -65,9 +34,10 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 		else openOmnibox();
 	}
 
-	function handleNewTab() {
-		openOmnibox();
-		props.sidebar.onNewTab?.();
+	function handleNewSession() {
+		props.sidebar.onNewSession?.();
+		// Auto-open omnibox so user can type a URL for the new tab
+		requestAnimationFrame(() => openOmnibox());
 	}
 
 	function handleOmniboxSubmit(value: string, suggestion?: OmniBoxSuggestion) {
@@ -75,9 +45,9 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 		props.omniBox.onSubmit?.(value, suggestion);
 	}
 
-	// Shortcuts forwarded from webview tag via preload + __electrobunSendToHost
-	function handleHostMessage(event: CustomEvent) {
-		const msg = event.detail as { type?: string; key?: string } | undefined;
+	// Shortcuts forwarded from webview via a bubbling CustomEvent on the root div
+	function handleHostMessage(event: Event) {
+		const msg = (event as CustomEvent).detail as { type?: string; key?: string } | undefined;
 		if (msg?.type === "shortcut") {
 			if (msg.key === "cmd+k" || msg.key === "cmd+l") toggleOmnibox();
 			else if (msg.key === "escape" && omniboxOpen()) closeOmnibox();
@@ -95,6 +65,7 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 
 	onMount(() => {
 		document.addEventListener("keydown", handleKeyDown);
+		document.addEventListener("webview-host-message", handleHostMessage);
 
 		// Subscribe to IPC bridge for Bun process commands (Cmd+K via ApplicationMenu)
 		const bridge = (window as unknown as Record<string, unknown>).__ipcBridge as
@@ -109,19 +80,9 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 
 	onCleanup(() => {
 		document.removeEventListener("keydown", handleKeyDown);
+		document.removeEventListener("webview-host-message", handleHostMessage);
 		ipcUnsub?.();
-		webviewRef?.off("host-message", handleHostMessage);
 	});
-
-	function setupWebview(el: HTMLElement) {
-		webviewRef = el as WebviewTagElement;
-		webviewRef.on("host-message", handleHostMessage);
-		// Register mask selector programmatically — SolidJS sets custom element
-		// props as JS properties, not HTML attributes. The Electrobun custom element
-		// reads masks via getAttribute() which misses property-only values.
-		// addMaskSelector() writes to the internal maskSelectors Set directly.
-		webviewRef.addMaskSelector("[data-omnibox]");
-	}
 
 	// Force all webviews to re-sync mask rects when OmniBox opens/closes.
 	// The palette DOM element appears/disappears — the native CAShapeLayer must
@@ -131,35 +92,17 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 		// Delay to ensure SolidJS <Show> has flushed the DOM update
 		requestAnimationFrame(() => {
 			document.querySelectorAll("electrobun-webview").forEach((el) => {
-				(el as WebviewTagElement).syncDimensions(true);
+				(el as HTMLElement & { syncDimensions: (force?: boolean) => void }).syncDimensions(true);
 			});
 		});
 	});
 
-	createEffect(() => {
-		const url = props.currentUrl;
-		if (webviewRef && url && url !== "about:blank") {
-			webviewRef.loadURL(url);
-		}
-	});
-
 	return (
 		<div class={$().root}>
-			<Sidebar {...props.sidebar} onNewTab={handleNewTab} />
+			<Sidebar {...props.sidebar} onNewSession={handleNewSession} onHeaderClick={toggleOmnibox} />
 
 			<div class={$().content}>
-				<div class={$().page}>
-					<Show when={props.currentUrl && props.currentUrl !== "about:blank"}>
-						<Dynamic
-							component="electrobun-webview"
-							ref={setupWebview}
-							src={props.currentUrl}
-							preload={SHORTCUT_PRELOAD}
-							style={`width: 100%; height: 100%; display: block; background: ${omniboxOpen() ? "transparent" : "#fff"}; border-radius: ${omniboxOpen() ? "8px" : "0"};`}
-						/>
-					</Show>
-					{props.children}
-				</div>
+				<div class={$().page}>{props.children}</div>
 
 				<Show when={omniboxOpen()}>
 					<div class={$().omniboxOverlay}>

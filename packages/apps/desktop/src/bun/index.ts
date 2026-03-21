@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { APP_NAME, APP_VERSION } from "@ctrl/core.shared";
 import { ensureSchema } from "@ctrl/domain.adapter.db";
 import { createIpcBridge, type ElectrobunHandle } from "@ctrl/domain.adapter.electrobun";
+import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/domain.adapter.otel";
 import { type ElectrobunRpcHandle, ElectrobunServerProtocol } from "@ctrl/domain.adapter.rpc";
 import { BrowsingRpcs } from "@ctrl/domain.service.browsing";
 import { RpcSerialization, RpcServer } from "@effect/rpc";
@@ -91,6 +92,7 @@ const HandlersFromRuntime = Layer.succeedContext(rt.context) as Layer.Layer<AppL
 const ServerLive = RpcServer.layer(BrowsingRpcs).pipe(
 	Layer.provide(ServerProtocolLive),
 	Layer.provide(HandlersFromRuntime),
+	Layer.provide(OtelLive(OTEL_SERVICE_NAMES.main)),
 ) as Layer.Layer<never, never, never>;
 
 // Fork the RPC server — runs for the lifetime of the app

@@ -71,6 +71,7 @@ const MockSessionRepository = Layer.succeed(SessionRepository, {
 		} satisfies Page),
 	removePagesAfterIndex: (_sessionId: string, _index: number) => Effect.void,
 	updatePageTitle: (_sessionId: string, _pageIndex: number, _title: string) => Effect.void,
+	updatePageUrl: (_sessionId: string, _pageIndex: number, _url: string) => Effect.void,
 });
 
 const MockBookmarkRepository = Layer.succeed(BookmarkRepository, {

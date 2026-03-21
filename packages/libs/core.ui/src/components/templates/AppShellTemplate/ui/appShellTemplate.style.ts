@@ -1,4 +1,4 @@
-import { sva } from "../../../../../styled-system/css";
+import { sva } from "@styled-system/css";
 
 export const appShellTemplate = sva({
 	slots: ["root", "content", "page", "omniboxOverlay"],
@@ -24,9 +24,8 @@ export const appShellTemplate = sva({
 		page: {
 			display: "flex",
 			flex: 1,
-			alignItems: "center",
-			justifyContent: "center",
-			overflow: "auto",
+			overflow: "hidden",
+			position: "relative",
 		},
 		omniboxOverlay: {
 			position: "absolute",

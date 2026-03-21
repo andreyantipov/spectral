@@ -30,10 +30,12 @@ export type SidebarProps = {
 	onTabClick?: (id: string) => void;
 	onItemClick?: (id: string) => void;
 	onItemClose?: (id: string) => void;
-	onNewTab?: () => void;
+	onNewSession?: () => void;
+	onHeaderClick?: () => void;
 	onWidthChange?: (width: number) => void;
 	onCollapseChange?: (collapsed: boolean) => void;
 	panelActions?: JSX.Element;
+	headerContent?: JSX.Element;
 	children?: JSX.Element;
 };
 
@@ -86,57 +88,70 @@ export function Sidebar(props: SidebarProps) {
 				width: collapsed() ? undefined : `${width()}px`,
 			}}
 		>
-			{/* Icon rail */}
-			<div class={$().rail}>
-				<div class={$().railTabs}>
-					<For each={props.tabs}>
-						{(tab) => {
-							const s = () => (tab.id === props.activeTabId ? $activeTab() : $());
-							return (
-								<button
-									type="button"
-									class={s().railTab}
-									onClick={() => {
-										if (tab.id === props.activeTabId && !collapsed()) {
-											props.onCollapseChange?.(true);
-										} else {
-											props.onCollapseChange?.(false);
-											props.onTabClick?.(tab.id);
-										}
-									}}
-									title={tab.label}
-								>
-									<span class={s().railTabIcon}>{tab.icon}</span>
-									<Show when={tab.badge}>
-										<span class={s().railTabBadge}>{tab.badge}</span>
-									</Show>
-								</button>
-							);
-						}}
-					</For>
+			{/* Icon rail — only shown when there are multiple tabs */}
+			<Show when={props.tabs.length > 0}>
+				<div class={$().rail}>
+					<div class={$().railTabs}>
+						<For each={props.tabs}>
+							{(tab) => {
+								const s = () => (tab.id === props.activeTabId ? $activeTab() : $());
+								return (
+									<button
+										type="button"
+										class={s().railTab}
+										onClick={() => {
+											if (tab.id === props.activeTabId && !collapsed()) {
+												props.onCollapseChange?.(true);
+											} else {
+												props.onCollapseChange?.(false);
+												props.onTabClick?.(tab.id);
+											}
+										}}
+										title={tab.label}
+									>
+										<span class={s().railTabIcon}>{tab.icon}</span>
+										<Show when={tab.badge}>
+											<span class={s().railTabBadge}>{tab.badge}</span>
+										</Show>
+									</button>
+								);
+							}}
+						</For>
+					</div>
 				</div>
-			</div>
+			</Show>
 
 			{/* Expandable panel */}
 			<Show when={!collapsed()}>
 				<div class={$().panel}>
 					<div class={$().panelHeader}>
-						<span class={$().panelTitle}>
-							{props.tabs.find((t) => t.id === props.activeTabId)?.label ?? ""}
-						</span>
-						<div class={$().panelActions}>
-							{props.panelActions}
-							<Show when={props.onNewTab}>
-								<button
-									type="button"
-									class={$().panelAction}
-									onClick={() => props.onNewTab?.()}
-									title="New tab"
-								>
-									+
-								</button>
-							</Show>
-						</div>
+						<Show
+							when={props.headerContent}
+							fallback={
+								<span class={$().panelTitle}>
+									{props.tabs.find((t) => t.id === props.activeTabId)?.label ?? ""}
+								</span>
+							}
+						>
+							<button
+								type="button"
+								class={$().panelHeaderInput}
+								onClick={() => props.onHeaderClick?.()}
+							>
+								{props.headerContent}
+							</button>
+						</Show>
+						{props.panelActions}
+						<Show when={props.onNewSession}>
+							<button
+								type="button"
+								class={$().panelHeaderNewButton}
+								onClick={() => props.onNewSession?.()}
+								title="New session"
+							>
+								+
+							</button>
+						</Show>
 					</div>
 
 					<div class={$().panelContent}>
@@ -148,9 +163,6 @@ export function Sidebar(props: SidebarProps) {
 										<button
 											type="button"
 											class={s().panelItem}
-											style={{
-												"padding-left": `${8 + (item.indent ?? 0) * 12}px`,
-											}}
 											onClick={() => props.onItemClick?.(item.id)}
 										>
 											<Show when={item.icon}>

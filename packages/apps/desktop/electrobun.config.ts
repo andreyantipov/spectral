@@ -25,6 +25,7 @@ export default {
     watch: ["build/main-ui"],
     mac: {
       defaultRenderer: "native",
+      icon: "assets/icon.icns",
     },
     linux: {
       bundleCEF: true,

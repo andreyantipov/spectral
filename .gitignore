@@ -16,3 +16,5 @@ packages/infra/ci/sdk
 **/src/**/*.d.ts
 **/src/**/*.js
 **/src/**/*.js.map
+storybook-static
+test-results
