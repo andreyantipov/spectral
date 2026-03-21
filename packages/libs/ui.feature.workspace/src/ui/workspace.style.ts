@@ -8,6 +8,7 @@ export const workspace = sva({
 			flex: 1,
 			height: "100%",
 			overflow: "hidden",
+			bg: "#111111",
 		},
 		pane: {
 			borderRadius: "10px",
@@ -17,6 +18,9 @@ export const workspace = sva({
 		sash: {
 			bg: "transparent",
 			cursor: "col-resize",
+			width: "2px",
+			transition: "background 0.15s ease",
+			_hover: { bg: "rgba(255,255,255,0.1)" },
 		},
 	},
 });
