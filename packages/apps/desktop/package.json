@@ -20,7 +20,7 @@
 	},
 	"scripts": {
 		"prebundle": "bun run build-view.ts && bun run prepare-native-deps.ts",
-		"build": "bun install && bun run prebundle && electrobun build",
+		"build": "bun install && bun run prebundle && electrobun build --env stable",
 		"start": "bun run build && electrobun dev",
 		"dev": "bun run prebundle && electrobun dev --watch",
 		"dev:watch-ui": "bun run dev-view.ts",
