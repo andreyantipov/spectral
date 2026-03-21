@@ -1,3 +1,10 @@
+# [0.8.0](https://github.com/andreyantipov/ctrl.page/compare/v0.7.0...v0.8.0) (2026-03-21)
+
+
+### Features
+
+* OTEL tracing, tab persistence, sidebar redesign ([#7](https://github.com/andreyantipov/ctrl.page/issues/7)) ([e1b5fd2](https://github.com/andreyantipov/ctrl.page/commit/e1b5fd280a158094dc31a4cb81f14e9ffa066007)), closes [#fff](https://github.com/andreyantipov/ctrl.page/issues/fff)
+
 # [0.7.0](https://github.com/andreyantipov/ctrl.page/compare/v0.6.0...v0.7.0) (2026-03-17)
 
 
