@@ -1,6 +1,8 @@
 import { currentUrl, type Session, withWebTracing } from "@ctrl/core.shared";
 import {
 	AppShellTemplate,
+	ContextMenu,
+	type ContextMenuItem,
 	type SidebarItem as CoreSidebarItem,
 	type OmniBoxSuggestion,
 	useRuntime,
@@ -19,6 +21,8 @@ export type WebviewBindings = {
 	readonly activeUrl: () => string | undefined;
 	readonly onNavigate: (sessionId: string, url: string) => void;
 	readonly onTitleChange: (sessionId: string, title: string) => void;
+	readonly createSession: () => Promise<unknown>;
+	onSplitSession: (sessionId: string, direction: "right" | "down") => void;
 };
 
 export type SidebarFeatureProps = {
@@ -71,9 +75,7 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 				void runtime.runPromise(client.navigate({ id: session.id, input }));
 			}
 		},
-		createSession: () => {
-			void runtime.runPromise(client.createSession({ mode: "visual" }));
-		},
+		createSession: () => runtime.runPromise(client.createSession({ mode: "visual" })),
 		switchSession: (id: string) => {
 			void runtime.runPromise(client.setActive({ id }));
 		},
@@ -104,12 +106,40 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 
 	const headerInput = () => activeUrl() ?? "Search or enter URL...";
 
+	// Context menu for tab right-click
+	const [ctxMenuPos, setCtxMenuPos] = createSignal<{ x: number; y: number } | null>(null);
+	const [ctxMenuTarget, setCtxMenuTarget] = createSignal<string | null>(null);
+
+	// Sync webview masks when context menu opens/closes
+	createEffect(() => {
+		const _pos = ctxMenuPos();
+		requestAnimationFrame(() => {
+			document.querySelectorAll("electrobun-webview").forEach((el) => {
+				(el as HTMLElement & { syncDimensions: (f?: boolean) => void }).syncDimensions(true);
+			});
+		});
+	});
+
+	const ctxMenuItems: ContextMenuItem[] = [
+		{ id: "split-right", label: "Split Right" },
+		{ id: "split-down", label: "Split Down" },
+		{ id: "divider", label: "", divider: true },
+		{ id: "close", label: "Close Tab" },
+	];
+
+	// splitSession callback — set by MainScene via bindings
+	let splitHandler: ((sessionId: string, direction: "right" | "down") => void) | undefined;
+
 	const webviewBindings: WebviewBindings = {
 		sessions: () => state()?.sessions ?? [],
 		activeSessionId: () => activeSession()?.id ?? "",
 		activeUrl,
 		onNavigate: (sessionId: string, url: string) => ops.reportNavigation(sessionId, url),
 		onTitleChange: (sessionId: string, title: string) => ops.updateTitle(sessionId, title),
+		createSession: () => ops.createSession(),
+		onSplitSession: (sessionId: string, direction: "right" | "down") => {
+			splitHandler?.(sessionId, direction);
+		},
 	};
 
 	const content = () => {
@@ -130,6 +160,13 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 				onNewSession: ops.createSession,
 				onItemClick: ops.switchSession,
 				onItemClose: ops.closeSession,
+				onItemContextMenu: (id: string, e: MouseEvent) => {
+					setCtxMenuTarget(id);
+					// Position menu at click Y but push X past sidebar to avoid clipping
+					const sidebarEl = (e.currentTarget as HTMLElement).closest("[data-sidebar]");
+					const sidebarRight = sidebarEl ? sidebarEl.getBoundingClientRect().right : e.clientX;
+					setCtxMenuPos({ x: Math.max(e.clientX, sidebarRight + 4), y: e.clientY });
+				},
 			}}
 			omniBox={{
 				value: activeUrl(),
@@ -139,6 +176,23 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 			}}
 		>
 			{content()}
+			<ContextMenu
+				items={ctxMenuItems}
+				position={ctxMenuPos()}
+				onClose={() => setCtxMenuPos(null)}
+				onSelect={(action) => {
+					const target = ctxMenuTarget();
+					setCtxMenuPos(null);
+					if (!target) return;
+					if (action === "split-right") {
+						webviewBindings.onSplitSession(target, "right");
+					} else if (action === "split-down") {
+						webviewBindings.onSplitSession(target, "down");
+					} else if (action === "close") {
+						ops.closeSession(target);
+					}
+				}}
+			/>
 		</AppShellTemplate>
 	);
 }

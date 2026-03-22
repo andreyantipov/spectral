@@ -35,9 +35,14 @@ export function AppShellTemplate(props: AppShellTemplateProps) {
 	}
 
 	function handleNewSession() {
-		props.sidebar.onNewSession?.();
-		// Auto-open omnibox so user can type a URL for the new tab
-		requestAnimationFrame(() => openOmnibox());
+		// Wait for session creation before opening omnibox so
+		// activeSession() points to the new session when user submits
+		const result = props.sidebar.onNewSession?.();
+		if (result && typeof (result as Promise<unknown>).then === "function") {
+			(result as Promise<unknown>).then(() => requestAnimationFrame(() => openOmnibox()));
+		} else {
+			requestAnimationFrame(() => openOmnibox());
+		}
 	}
 
 	function handleOmniboxSubmit(value: string, suggestion?: OmniBoxSuggestion) {

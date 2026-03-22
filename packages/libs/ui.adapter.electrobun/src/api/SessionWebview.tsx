@@ -19,7 +19,7 @@ export function SessionWebview(props: SessionWebviewProps) {
 	function reportUrlIfChanged(url: string) {
 		if (url && url !== "about:blank") {
 			currentLoadedUrl = url;
-			if (url !== lastReportedUrl) {
+			if (url !== lastReportedUrl && props.isActive) {
 				lastReportedUrl = url;
 				props.onNavigate(url);
 			}
@@ -32,35 +32,23 @@ export function SessionWebview(props: SessionWebviewProps) {
 		const htmlEl = el as unknown as HTMLElement;
 		htmlEl.setAttribute("preload", SHORTCUT_PRELOAD);
 		htmlEl.setAttribute("src", url);
-		// Start transparent+passthrough — the isActive effect will show the active one
 		if (!props.isActive) {
 			htmlEl.setAttribute("transparent", "");
 			htmlEl.setAttribute("passthrough", "");
 		}
-		htmlEl.style.cssText = "width: 100%; height: 100%; display: block; background: #0a0a0a;";
+		htmlEl.style.cssText =
+			"width: 100%; height: 100%; display: block; background: #1e1e1e; border-radius: 10px;";
 		containerRef.appendChild(htmlEl);
 		el.addMaskSelector("[data-omnibox]");
+		el.addMaskSelector("[data-sidebar]");
+		el.addMaskSelector("[data-context-menu]");
 		currentLoadedUrl = url;
 
 		el.on("did-navigate", (event: CustomEvent) => {
-			const navUrl = (event as CustomEvent<string>).detail;
-			if (navUrl && navUrl !== "about:blank") {
-				currentLoadedUrl = navUrl;
-				if (navUrl !== lastReportedUrl) {
-					lastReportedUrl = navUrl;
-					props.onNavigate(navUrl);
-				}
-			}
+			reportUrlIfChanged((event as CustomEvent<string>).detail);
 		});
 		el.on("did-navigate-in-page", (event: CustomEvent) => {
-			const navUrl = (event as CustomEvent<string>).detail;
-			if (navUrl && navUrl !== "about:blank") {
-				currentLoadedUrl = navUrl;
-				if (navUrl !== lastReportedUrl) {
-					lastReportedUrl = navUrl;
-					props.onNavigate(navUrl);
-				}
-			}
+			reportUrlIfChanged((event as CustomEvent<string>).detail);
 		});
 		el.on("dom-ready", () => {
 			el.executeJavascript("document.title")
@@ -83,11 +71,9 @@ export function SessionWebview(props: SessionWebviewProps) {
 		webviewRef = el;
 	}
 
-	// Create webview when URL is set (not blank)
 	createEffect(() => {
 		const url = props.url;
 		if (!containerRef || !url || url === "about:blank") return;
-
 		if (url === currentLoadedUrl) return;
 
 		if (!webviewRef) {
@@ -98,17 +84,14 @@ export function SessionWebview(props: SessionWebviewProps) {
 		}
 	});
 
-	// Toggle visibility when active state changes
 	createEffect(() => {
 		if (!webviewRef) return;
-		if (props.isActive) {
-			webviewRef.toggleTransparent(false);
-			webviewRef.togglePassthrough(false);
-			webviewRef.syncDimensions(true);
-		} else {
-			webviewRef.toggleTransparent(true);
-			webviewRef.togglePassthrough(true);
-		}
+		// All rendered webviews are visible and interactive in split-view.
+		// Dockview only renders panels that are in the layout, so every
+		// webview here should be non-transparent and non-passthrough.
+		webviewRef.toggleTransparent(false);
+		webviewRef.togglePassthrough(false);
+		webviewRef.syncDimensions(true);
 	});
 
 	onCleanup(() => {
@@ -119,13 +102,21 @@ export function SessionWebview(props: SessionWebviewProps) {
 	});
 
 	return (
-		<div style="width: 100%; height: 100%; position: absolute; inset: 0;">
-			<div
-				ref={(el) => {
-					containerRef = el;
-				}}
-				style="width: 100%; height: 100%; position: relative;"
-			/>
-		</div>
+		<div
+			ref={(el) => {
+				containerRef = el;
+			}}
+			style="width: 100%; height: 100%; position: relative; overflow: hidden;"
+		/>
 	);
+}
+
+/**
+ * Force all webviews to re-sync their native view dimensions.
+ * Call after layout changes (splits, resizes) via requestAnimationFrame.
+ */
+export function syncAllWebviewDimensions() {
+	document.querySelectorAll("electrobun-webview").forEach((el) => {
+		(el as HTMLElement & { syncDimensions: (force?: boolean) => void }).syncDimensions(true);
+	});
 }

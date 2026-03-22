@@ -28,7 +28,7 @@ export const sidebar = sva({
 			display: "flex",
 			flexDirection: "row",
 			height: "100%",
-			bg: "bg.primary",
+			bg: "#111111",
 			position: "relative",
 			flexShrink: 0,
 			overflow: "hidden",

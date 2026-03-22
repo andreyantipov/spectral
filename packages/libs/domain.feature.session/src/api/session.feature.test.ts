@@ -276,4 +276,51 @@ describe("SessionFeature", () => {
 			}),
 		);
 	});
+
+	it("navigate in one session does not affect another session", async () => {
+		await runTest(
+			Effect.gen(function* () {
+				const feature = yield* SessionFeature;
+				const s1 = yield* feature.create("visual");
+				const s2 = yield* feature.create("visual");
+
+				yield* feature.navigate(s1.id, "https://youtube.com/watch?v=AAA");
+				yield* feature.navigate(s2.id, "https://youtube.com/watch?v=BBB");
+
+				const all = yield* feature.getAll();
+				const session1 = all.find((s) => s.id === s1.id);
+				const session2 = all.find((s) => s.id === s2.id);
+
+				expect(session1?.pages[1].url).toBe("https://youtube.com/watch?v=AAA");
+				expect(session2?.pages[1].url).toBe("https://youtube.com/watch?v=BBB");
+				expect(session1?.currentIndex).toBe(1);
+				expect(session2?.currentIndex).toBe(1);
+			}),
+		);
+	});
+
+	it("updateUrl on one session does not affect another", async () => {
+		await runTest(
+			Effect.gen(function* () {
+				const feature = yield* SessionFeature;
+				const s1 = yield* feature.create("visual");
+				const s2 = yield* feature.create("visual");
+
+				yield* feature.navigate(s1.id, "https://youtube.com/watch?v=AAA");
+				yield* feature.navigate(s2.id, "https://youtube.com/watch?v=BBB");
+
+				// Simulate redirect: webview reports a different URL for session 1
+				yield* feature.updateUrl(s1.id, "https://youtube.com/watch?v=AAA&redirected=1");
+
+				const all = yield* feature.getAll();
+				const session1 = all.find((s) => s.id === s1.id);
+				const session2 = all.find((s) => s.id === s2.id);
+
+				// Session 1 should have the redirected URL
+				expect(session1?.pages[1].url).toBe("https://youtube.com/watch?v=AAA&redirected=1");
+				// Session 2 should be unaffected
+				expect(session2?.pages[1].url).toBe("https://youtube.com/watch?v=BBB");
+			}),
+		);
+	});
 });

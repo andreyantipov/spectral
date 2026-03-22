@@ -1,0 +1,48 @@
+import { LayoutRepository, withTracing } from "@ctrl/core.shared";
+import { Context, Effect, Layer, PubSub, Stream } from "effect";
+import { LAYOUT_FEATURE } from "../lib/constants";
+import type { LayoutNode, PersistedLayout } from "../model/layout.validators";
+
+const DEFAULT_LAYOUT: LayoutNode = {
+	type: "group",
+	panels: [],
+	activePanel: "",
+};
+
+export class LayoutFeature extends Context.Tag(LAYOUT_FEATURE)<
+	LayoutFeature,
+	{
+		readonly getLayout: () => Effect.Effect<LayoutNode>;
+		readonly getPersistedLayout: () => Effect.Effect<PersistedLayout | null>;
+		readonly updateLayout: (layout: PersistedLayout) => Effect.Effect<void>;
+		readonly changes: Stream.Stream<PersistedLayout>;
+	}
+>() {}
+
+export const LayoutFeatureLive = Layer.effect(
+	LayoutFeature,
+	Effect.gen(function* () {
+		const repo = yield* LayoutRepository;
+		const pubsub = yield* PubSub.unbounded<PersistedLayout>();
+
+		return withTracing(LAYOUT_FEATURE, {
+			getLayout: () =>
+				repo.getLayout().pipe(
+					Effect.map((persisted) =>
+						persisted ? (persisted.dockviewState as LayoutNode) : DEFAULT_LAYOUT,
+					),
+					Effect.catchAll(() => Effect.succeed(DEFAULT_LAYOUT)),
+				),
+
+			getPersistedLayout: () => repo.getLayout().pipe(Effect.catchAll(() => Effect.succeed(null))),
+
+			updateLayout: (layout: PersistedLayout) =>
+				repo.saveLayout(layout).pipe(
+					Effect.tap(() => PubSub.publish(pubsub, layout)),
+					Effect.catchAll(() => Effect.void),
+				),
+
+			changes: Stream.fromPubSub(pubsub),
+		});
+	}),
+);

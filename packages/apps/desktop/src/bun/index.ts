@@ -7,6 +7,7 @@ import { createIpcBridge, type ElectrobunHandle } from "@ctrl/domain.adapter.ele
 import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/domain.adapter.otel";
 import { type ElectrobunRpcHandle, ElectrobunServerProtocol } from "@ctrl/domain.adapter.rpc";
 import { BrowsingRpcs } from "@ctrl/domain.service.browsing";
+import { WorkspaceRpcs } from "@ctrl/domain.service.workspace";
 import { RpcSerialization, RpcServer } from "@effect/rpc";
 import { Layer, ManagedRuntime, Runtime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
@@ -89,7 +90,8 @@ const ServerProtocolLive = Layer.scoped(
 
 const HandlersFromRuntime = Layer.succeedContext(rt.context) as Layer.Layer<AppLayer, never, never>;
 
-const ServerLive = RpcServer.layer(BrowsingRpcs).pipe(
+const AllRpcs = BrowsingRpcs.merge(WorkspaceRpcs);
+const ServerLive = RpcServer.layer(AllRpcs).pipe(
 	Layer.provide(ServerProtocolLive),
 	Layer.provide(HandlersFromRuntime),
 	Layer.provide(OtelLive(OTEL_SERVICE_NAMES.main)),

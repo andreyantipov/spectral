@@ -30,7 +30,8 @@ export type SidebarProps = {
 	onTabClick?: (id: string) => void;
 	onItemClick?: (id: string) => void;
 	onItemClose?: (id: string) => void;
-	onNewSession?: () => void;
+	onItemContextMenu?: (id: string, e: MouseEvent) => void;
+	onNewSession?: () => unknown;
 	onHeaderClick?: () => void;
 	onWidthChange?: (width: number) => void;
 	onCollapseChange?: (collapsed: boolean) => void;
@@ -84,6 +85,7 @@ export function Sidebar(props: SidebarProps) {
 	return (
 		<div
 			class={$().root}
+			data-sidebar
 			style={{
 				width: collapsed() ? undefined : `${width()}px`,
 			}}
@@ -164,6 +166,10 @@ export function Sidebar(props: SidebarProps) {
 											type="button"
 											class={s().panelItem}
 											onClick={() => props.onItemClick?.(item.id)}
+											onContextMenu={(e) => {
+												e.preventDefault();
+												props.onItemContextMenu?.(item.id, e);
+											}}
 										>
 											<Show when={item.icon}>
 												<span class={s().panelItemIcon}>{item.icon}</span>
