@@ -134,18 +134,23 @@ Ports are **atomic packages** — one per concern:
 - `core.ports.event-bus` → EventBus
 - Each adapter imports only the ports it implements
 
-### Transport Layers
-Three nested layers for cross-process communication:
+### Carrier + EventBus
+Two concerns for cross-process communication:
 
 ```
-IPC Transport (Electrobun native ↔ Bun process)
-  └── RPC Transport (Bun process ↔ Webview process)
-        └── EventBus (logical — commands & events routing)
+Carrier (infrastructure):
+  IPC (needed for Electrobun/Bun) + RPC (needed for Effect)
+  Native ←──IPC──→ Bun ←──RPC──→ Webview
+
+EventBus (business logic):
+  ALL commands and events flow here
+  Commands: session.create, nav.navigate, ws.split, ...
+  Events: session.created, nav.navigated, ...
 ```
 
-- **IPC** and **RPC** are transports — they carry bytes across process boundaries
-- **EventBus** is the logical routing layer — commands in, events out, subscribers react
-- The EventBus USES transports to cross process boundaries but doesn't know about them
+- **Carrier** (IPC+RPC) = infrastructure. Serialization, encryption, process boundaries. Invisible to business code.
+- **EventBus** = where ALL business happens. Every command, every event, every subscriber. Features and services never touch the carrier directly — they only speak EventBus.
+- See: `docs/superpowers/specs/2026-03-22-event-driven-architecture-design.md`
 
 ## App Icon
 

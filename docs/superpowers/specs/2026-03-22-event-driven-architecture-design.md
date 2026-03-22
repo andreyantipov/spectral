@@ -16,21 +16,36 @@ This leads to:
 
 ## Solution
 
-Introduce an **EventBus** as the logical routing layer that rides inside existing transports (IPC/RPC). All operations become typed **commands** dispatched through the bus. All state changes become typed **events** broadcast to subscribers.
+Introduce an **EventBus** — the single business logic layer where all commands and events flow. The EventBus rides on top of a **carrier** (IPC+RPC) which handles process boundary crossing.
 
 ## Architecture
 
-### Transport Layers (nested)
+### Carrier + EventBus
 
 ```
-IPC Transport (Electrobun native ↔ Bun process)
-  └── RPC Transport (Bun process ↔ Webview process)
-        └── EventBus (logical — commands & events routing)
+┌──────────────────────────────────────────────────────────────┐
+│  Carrier (infrastructure — process boundary crossing)         │
+│                                                               │
+│  IPC (needed for Electrobun/Bun native process communication) │
+│  RPC (needed for Effect typed serialization + Bun ↔ Webview)  │
+│                                                               │
+│  Native ←──IPC──→ Bun process ←──RPC──→ Webview process      │
+│                                                               │
+│  ┌────────────────────────────────────────────────────────┐   │
+│  │  EventBus (business logic — ALL commands & events)     │   │
+│  │                                                        │   │
+│  │  Commands: session.create, nav.navigate, ws.split, ... │   │
+│  │  Events: session.created, nav.navigated, ...           │   │
+│  │  Subscribers: UI, services, agents, telemetry          │   │
+│  └────────────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-- **IPC** and **RPC** are transports — carry serialized bytes across process boundaries
-- **EventBus** is the logical layer — routes commands to handlers, broadcasts events to subscribers
-- EventBus USES transports but doesn't know about them
+**Carrier** = IPC (needed for Bun) + RPC (needed for Effect). Infrastructure only — serialization, encryption, process boundaries. Not business logic.
+
+**EventBus** = where ALL business happens. Every command and every event flows through here regardless of source (keyboard, agent, UI, system) or direction (Bun→UI, UI→Bun, service→service). Features, services, and UI never touch the carrier directly — they only speak EventBus.
+
+The carrier is invisible to business code. Like TCP is invisible to HTTP.
 
 ### Core Package Levels
 
