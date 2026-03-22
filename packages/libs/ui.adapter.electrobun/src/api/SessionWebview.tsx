@@ -85,12 +85,12 @@ export function SessionWebview(props: SessionWebviewProps) {
 
 	createEffect(() => {
 		if (!webviewRef) return;
+		webviewRef.syncDimensions(true);
 		if (props.isActive) {
 			webviewRef.toggleTransparent(false);
 			webviewRef.togglePassthrough(false);
-			webviewRef.syncDimensions(true);
 		} else {
-			webviewRef.toggleTransparent(true);
+			webviewRef.toggleTransparent(false);
 			webviewRef.togglePassthrough(true);
 		}
 	});
@@ -103,14 +103,12 @@ export function SessionWebview(props: SessionWebviewProps) {
 	});
 
 	return (
-		<div style="width: 100%; height: 100%; position: absolute; inset: 0;">
-			<div
-				ref={(el) => {
-					containerRef = el;
-				}}
-				style="width: 100%; height: 100%; position: relative;"
-			/>
-		</div>
+		<div
+			ref={(el) => {
+				containerRef = el;
+			}}
+			style="width: 100%; height: 100%; position: relative; overflow: hidden;"
+		/>
 	);
 }
 
