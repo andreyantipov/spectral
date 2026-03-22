@@ -29,3 +29,5 @@ export class EventBus extends Context.Tag(EVENT_BUS_ID)<
 		readonly on: (eventName: string) => Stream.Stream<AppEvent>;
 	}
 >() {}
+
+export { EventBusLive } from "./event-bus.live";
