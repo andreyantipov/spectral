@@ -154,33 +154,41 @@ EventBus (business logic):
 
 ## App Icon
 
-Source of truth: `packages/apps/desktop/assets/icon-source.png` (1024x1024 PNG).
-Generated files: `packages/apps/desktop/assets/icon.iconset/` → `icon.icns`.
+All icon assets live in `packages/apps/desktop/assets/`:
+
+```
+assets/
+  icon-source.png          ← 1024x1024 source PNG (replace this to update)
+  icon-exports/            ← all Icon Composer exports (Default, Dark, Tinted, etc.)
+  icon.iconset/            ← generated sizes for macOS
+  icon.icns                ← generated .icns bundle
+  apply-macos-mask.py      ← squircle mask script
+```
 
 ### Updating the icon
 
-1. Replace `packages/apps/desktop/assets/icon-source.png` with new 1024x1024 PNG
-2. Run the generation script:
+1. Replace `assets/icon-source.png` with new 1024x1024 PNG
+2. If from Icon Composer, also update `assets/icon-exports/` with all variants
+3. Generate iconset:
    ```bash
    cd packages/apps/desktop
    python3 assets/apply-macos-mask.py assets/icon-source.png /tmp/icon-masked.png
-   ICONSET="assets/icon.iconset"
-   sips -z 16 16 /tmp/icon-masked.png --out "$ICONSET/icon_16x16.png"
-   sips -z 32 32 /tmp/icon-masked.png --out "$ICONSET/icon_16x16@2x.png"
-   sips -z 32 32 /tmp/icon-masked.png --out "$ICONSET/icon_32x32.png"
-   sips -z 64 64 /tmp/icon-masked.png --out "$ICONSET/icon_32x32@2x.png"
-   sips -z 128 128 /tmp/icon-masked.png --out "$ICONSET/icon_128x128.png"
-   sips -z 256 256 /tmp/icon-masked.png --out "$ICONSET/icon_128x128@2x.png"
-   sips -z 256 256 /tmp/icon-masked.png --out "$ICONSET/icon_256x256.png"
-   sips -z 512 512 /tmp/icon-masked.png --out "$ICONSET/icon_256x256@2x.png"
-   sips -z 512 512 /tmp/icon-masked.png --out "$ICONSET/icon_512x512.png"
-   cp /tmp/icon-masked.png "$ICONSET/icon_512x512@2x.png"
-   iconutil -c icns "$ICONSET" -o assets/icon.icns
+   S="/tmp/icon-masked.png"; I="assets/icon.iconset"
+   sips -z 16 16 $S --out $I/icon_16x16.png
+   sips -z 32 32 $S --out $I/icon_16x16@2x.png
+   sips -z 32 32 $S --out $I/icon_32x32.png
+   sips -z 64 64 $S --out $I/icon_32x32@2x.png
+   sips -z 128 128 $S --out $I/icon_128x128.png
+   sips -z 256 256 $S --out $I/icon_128x128@2x.png
+   sips -z 256 256 $S --out $I/icon_256x256.png
+   sips -z 512 512 $S --out $I/icon_256x256@2x.png
+   sips -z 512 512 $S --out $I/icon_512x512.png
+   cp $S $I/icon_512x512@2x.png
+   iconutil -c icns $I -o assets/icon.icns
    ```
-3. Commit all generated files (`icon.icns` + `icon.iconset/*.png`)
-4. Clear Dock cache after build: `sudo killall Dock`
+4. Commit everything, clear Dock cache: `sudo killall Dock`
 
-The `apply-macos-mask.py` script adds transparent corners for the macOS squircle shape (Electrobun doesn't apply runtime masking).
+The mask script adds transparent squircle corners (Electrobun doesn't apply runtime masking).
 
 ## Notes
 
