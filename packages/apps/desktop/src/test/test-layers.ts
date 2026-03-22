@@ -1,7 +1,7 @@
+import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
 import {
 	type Bookmark,
 	BookmarkRepository,
-	DEFAULT_TAB_URL,
 	type HistoryEntry,
 	HistoryRepository,
 	type Page,

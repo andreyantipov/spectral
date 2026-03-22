@@ -1,8 +1,8 @@
 import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { APP_NAME, APP_VERSION } from "@ctrl/core.base.types";
 import { EventBusRpcs } from "@ctrl/core.port.event-bus";
-import { APP_NAME, APP_VERSION } from "@ctrl/core.shared";
 import { ensureSchema } from "@ctrl/domain.adapter.db";
 import { createIpcBridge, type ElectrobunHandle } from "@ctrl/domain.adapter.electrobun";
 import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/domain.adapter.otel";

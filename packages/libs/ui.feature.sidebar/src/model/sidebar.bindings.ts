@@ -1,4 +1,5 @@
-import { type BrowsingState, currentPage, type Session } from "@ctrl/core.shared";
+import { currentPage } from "@ctrl/core.base.types";
+import type { BrowsingState, Session } from "@ctrl/core.shared";
 import type { CommandCenterItem, OmniBoxSuggestion } from "@ctrl/core.ui";
 
 export type SidebarItem = {

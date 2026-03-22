@@ -1,4 +1,6 @@
-import { currentUrl, type Session, withWebTracing } from "@ctrl/core.shared";
+import { withWebTracing } from "@ctrl/core.base.tracing";
+import { currentUrl } from "@ctrl/core.base.types";
+import type { Session } from "@ctrl/core.shared";
 import {
 	AppShellTemplate,
 	ContextMenu,
