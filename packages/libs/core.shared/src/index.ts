@@ -27,7 +27,6 @@ export { spanName, withTracing, withWebTracing } from "@ctrl/core.base.tracing";
 // ── core.base.types ──────────────────────────────────────────────────
 export {
 	APP_NAME,
-	APP_VERSION,
 	canGoBack,
 	canGoForward,
 	currentPage,

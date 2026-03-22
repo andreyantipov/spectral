@@ -1,7 +1,11 @@
 import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { APP_NAME, APP_VERSION } from "@ctrl/core.base.types";
+import { APP_NAME } from "@ctrl/core.base.types";
+import rootPkg from "../../../../../package.json";
+
+const APP_VERSION = rootPkg.version;
+
 import { EventBusRpcs } from "@ctrl/core.port.event-bus";
 import { ensureSchema } from "@ctrl/domain.adapter.db";
 import { createIpcBridge, type ElectrobunHandle } from "@ctrl/domain.adapter.electrobun";
@@ -19,7 +23,7 @@ import { createMainRPC } from "./rpc";
 console.info(`[bun] ${APP_NAME} starting...`);
 
 // Ensure data directory exists
-mkdirSync(join(homedir(), ".ctrl.page"), { recursive: true });
+mkdirSync(join(homedir(), ".spectral"), { recursive: true });
 
 const runtime = ManagedRuntime.make(DesktopLive);
 

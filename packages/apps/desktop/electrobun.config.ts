@@ -1,10 +1,11 @@
 import type { ElectrobunConfig } from "electrobun";
+import rootPkg from "../../../package.json";
 
 export default {
   app: {
-    name: "ctrl.page",
-    identifier: "page.ctrl.app",
-    version: "0.0.1",
+    name: "Spectral",
+    identifier: "spectral.ctrl.page",
+    version: rootPkg.version,
   },
   runtime: {
     exitOnLastWindowClosed: true,

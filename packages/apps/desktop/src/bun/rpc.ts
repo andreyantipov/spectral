@@ -1,4 +1,8 @@
-import { APP_NAME, APP_VERSION } from "@ctrl/core.base.types";
+import { APP_NAME } from "@ctrl/core.base.types";
+import rootPkg from "../../../../../package.json";
+
+const APP_VERSION = rootPkg.version;
+
 import { GetAppInfoParams, GetAppInfoResponse, type MainRPCSchema } from "@ctrl/core.shared";
 import { Effect, type Runtime } from "effect";
 import { BrowserView } from "electrobun/bun";
