@@ -123,13 +123,13 @@ Rules:
 Three-tier core structure, each level can only import levels above it:
 
 ```
-Level 1: core.ports.*    → pure interfaces (Context.Tag + type signatures), zero deps
-Level 2: core.shared     → schemas, errors, utilities (imports core.ports.*)
-Level 3: core.ui         → components, hooks (imports core.shared + core.ports.*)
+Level 1: core.port.*    → pure interfaces (Context.Tag + type signatures), zero deps
+Level 2: core.shared     → schemas, errors, utilities (imports core.port.*)
+Level 3: core.ui         → components, hooks (imports core.shared + core.port.*)
 ```
 
 Ports are **atomic packages** — one per concern:
-- `core.ports.storage` → SessionRepository, BookmarkRepository, HistoryRepository, LayoutRepository
+- `core.port.storage` → SessionRepository, BookmarkRepository, HistoryRepository, LayoutRepository
 - `core.ports.webview` → WebviewExecutor
 - `core.ports.event-bus` → EventBus
 - Each adapter imports only the ports it implements
