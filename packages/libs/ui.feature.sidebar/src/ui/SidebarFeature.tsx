@@ -23,7 +23,7 @@ export type WebviewBindings = {
 	readonly activeUrl: () => string | undefined;
 	readonly onNavigate: (sessionId: string, url: string) => void;
 	readonly onTitleChange: (sessionId: string, title: string) => void;
-	readonly createSession: () => Promise<unknown>;
+	readonly createSession: () => void;
 	onSplitSession: (sessionId: string, direction: "right" | "down") => void;
 };
 
