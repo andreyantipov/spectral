@@ -1,11 +1,11 @@
 import { currentUrl } from "@ctrl/core.base.types";
 import { BlankPage } from "@ctrl/core.ui";
-import type { PanelProps } from "@ctrl/ui.adapter.dockview";
-import { DockviewProvider } from "@ctrl/ui.adapter.dockview";
-import { SessionWebview, syncAllWebviewDimensions } from "@ctrl/ui.adapter.electrobun";
 import { SidebarFeature, type WebviewBindings } from "@ctrl/ui.feature.sidebar";
+import type { PanelProps } from "@ctrl/ui.feature.workspace";
+import { DockviewProvider } from "@ctrl/ui.feature.workspace";
 import type { DockviewApi } from "dockview-core";
 import { createContext, createEffect, createMemo, Show, untrack, useContext } from "solid-js";
+import { SessionWebview, syncAllWebviewDimensions } from "../lib/SessionWebview";
 import { EmptyPane } from "./EmptyPane";
 
 const BindingsContext = createContext<WebviewBindings>();
