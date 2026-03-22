@@ -7,6 +7,7 @@ export { canGoBack, canGoForward, currentPage, currentUrl } from "./lib/session.
 export { spanName } from "./lib/span-name";
 export { withTracing } from "./lib/with-tracing";
 export { withWebTracing } from "./lib/with-web-tracing";
+export * from "./model/actions";
 export type { AppCommand, ShowNotification, ToggleCommandCenter } from "./model/commands";
 export * from "./model/errors";
 export * from "./model/ports";
