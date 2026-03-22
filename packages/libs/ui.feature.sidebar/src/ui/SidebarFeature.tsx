@@ -10,7 +10,7 @@ import {
 } from "@ctrl/core.ui";
 import { useApi } from "@ctrl/core.ui.api";
 import { createEffect, createMemo, createSignal, type JSX } from "solid-js";
-import { useBrowsingRpc } from "../api/use-sidebar";
+import { useBrowsingState } from "../api/use-browsing-state";
 import { SIDEBAR_FEATURE } from "../lib/constants";
 import { buildOmniBoxSuggestions, mapSessionsToSidebarItems } from "../model/sidebar.bindings";
 
@@ -32,8 +32,8 @@ export type SidebarFeatureProps = {
 };
 
 export function SidebarFeature(props: SidebarFeatureProps) {
-	const { state } = useBrowsingRpc();
 	const api = useApi();
+	const state = useBrowsingState();
 	const [omniboxQuery, setOmniboxQuery] = createSignal("");
 
 	// Auto-create first session if none exist (guard prevents multiple creates)
