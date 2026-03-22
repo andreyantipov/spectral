@@ -1,4 +1,4 @@
-import { type AppCommand, EventBus } from "@ctrl/core.ports.event-bus";
+import { type AppCommand, EventBus } from "@ctrl/core.port.event-bus";
 import {
 	DIAG_PING,
 	EVT_DIAG_PONG,
