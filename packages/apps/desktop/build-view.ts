@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { SolidPlugin } from "@dschz/bun-plugin-solid";
 
 mkdirSync("build/main-ui", { recursive: true });
@@ -21,5 +21,12 @@ if (!result.success) {
 	process.exit(1);
 }
 
-copyFileSync("../../libs/core.ui/build/styles.css", "build/main-ui/styles.css");
+// Combine core.ui styles + dockview CSS + theme overrides
+const coreStyles = readFileSync("../../libs/core.ui/build/styles.css", "utf8");
+const dockviewCss = readFileSync(
+	"../../../node_modules/dockview-core/dist/styles/dockview.css",
+	"utf8",
+);
+const overrides = readFileSync("src/main-ui/dockview-overrides.css", "utf8");
+writeFileSync("build/main-ui/styles.css", `${coreStyles}\n${dockviewCss}\n${overrides}`);
 console.info("View built successfully");
