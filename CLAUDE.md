@@ -103,6 +103,89 @@ Key differences from `dev:desktop`:
 - **`Effect Schema` is the single source of truth** for domain types — derive TypeScript types from schemas, never duplicate them.
 - The browsing unit of work is a **session** — use `domain.feature.session` not `domain.feature.tab`. Constants use `SESSION_FEATURE`, not `TAB_FEATURE`.
 
+### Package Deprecation
+When a package needs an incompatible rewrite, use the **deprecation fork** pattern. Maximum TWO versions exist at any time:
+
+```
+Step 1: Rename current → domain.feature.session-deprecated
+Step 2: Create new → domain.feature.session (fresh, incompatible)
+Step 3: Migrate all consumers from deprecated → new
+Step 4: Delete domain.feature.session-deprecated
+```
+
+Rules:
+- Never `v1`, `v2`, `v3` — only `current` and `-deprecated`
+- If you need to break again before migration is done — finish the migration first
+- Add `/** @deprecated Use X instead */` to the barrel export
+- A grit rule blocks NEW imports of `-deprecated` packages
+
+### Core Package Levels
+Three-tier core structure, each level can only import levels above it:
+
+```
+Level 1: core.ports.*    → pure interfaces (Context.Tag + type signatures), zero deps
+Level 2: core.shared     → schemas, errors, utilities (imports core.ports.*)
+Level 3: core.ui         → components, hooks (imports core.shared + core.ports.*)
+```
+
+Ports are **atomic packages** — one per concern:
+- `core.ports.storage` → SessionRepository, BookmarkRepository, HistoryRepository, LayoutRepository
+- `core.ports.webview` → WebviewExecutor
+- `core.ports.event-bus` → EventBus
+- Each adapter imports only the ports it implements
+
+### Transport Layers
+Three nested layers for cross-process communication:
+
+```
+IPC Transport (Electrobun native ↔ Bun process)
+  └── RPC Transport (Bun process ↔ Webview process)
+        └── EventBus (logical — commands & events routing)
+```
+
+- **IPC** and **RPC** are transports — they carry bytes across process boundaries
+- **EventBus** is the logical routing layer — commands in, events out, subscribers react
+- The EventBus USES transports to cross process boundaries but doesn't know about them
+
+## App Icon
+
+Icon source files live in `~/Desktop/ctrl.page/icons/` (organized by version). The app uses `packages/apps/desktop/assets/icon.iconset/` → `.icns`.
+
+### Updating the icon
+
+1. Design in **Apple Icon Composer** (`.icon` format)
+2. Export as PNG: platform **"iOS, macOS"** (latest format), 1024pt @ 1x
+3. Save the export to `~/Desktop/ctrl.page/icons/<version>/`
+4. Apply the macOS squircle mask (Electrobun needs transparent corners):
+   ```bash
+   python3 packages/apps/desktop/assets/apply-macos-mask.py <exported.png> /tmp/icon-masked.png
+   ```
+5. Generate all iconset sizes + `.icns`:
+   ```bash
+   SOURCE="/tmp/icon-masked.png"
+   ICONSET="packages/apps/desktop/assets/icon.iconset"
+   sips -z 16 16 "$SOURCE" --out "$ICONSET/icon_16x16.png"
+   sips -z 32 32 "$SOURCE" --out "$ICONSET/icon_16x16@2x.png"
+   sips -z 32 32 "$SOURCE" --out "$ICONSET/icon_32x32.png"
+   sips -z 64 64 "$SOURCE" --out "$ICONSET/icon_32x32@2x.png"
+   sips -z 128 128 "$SOURCE" --out "$ICONSET/icon_128x128.png"
+   sips -z 256 256 "$SOURCE" --out "$ICONSET/icon_128x128@2x.png"
+   sips -z 256 256 "$SOURCE" --out "$ICONSET/icon_256x256.png"
+   sips -z 512 512 "$SOURCE" --out "$ICONSET/icon_256x256@2x.png"
+   sips -z 512 512 "$SOURCE" --out "$ICONSET/icon_512x512.png"
+   cp "$SOURCE" "$ICONSET/icon_512x512@2x.png"
+   iconutil -c icns "$ICONSET" -o packages/apps/desktop/assets/icon.icns
+   ```
+6. Copy to app bundle + clear caches:
+   ```bash
+   cp packages/apps/desktop/assets/icon.icns packages/apps/desktop/build/dev-macos-arm64/ctrl.page-dev.app/Contents/Resources/AppIcon.icns
+   sudo killall Dock
+   ```
+
+### Why the mask script?
+
+Electrobun uses the legacy `.iconset` → `.icns` pipeline which displays icons as-is (no runtime masking). Icon Composer's latest export has opaque corners. The `apply-macos-mask.py` script adds transparent corners + padding to match macOS squircle expectations.
+
 ## Notes
 
 - This file provides context to Claude Code when working on this project
