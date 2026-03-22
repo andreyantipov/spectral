@@ -8,5 +8,12 @@
 	},
 	"scripts": {
 		"check": "tsgo --noEmit"
+	},
+	"dependencies": {
+		"@ctrl/core.base.model": "workspace:*",
+		"@ctrl/core.base.types": "workspace:*",
+		"@ctrl/core.base.tracing": "workspace:*",
+		"@ctrl/core.base.errors": "workspace:*",
+		"@ctrl/core.port.event-bus": "workspace:*"
 	}
 }
