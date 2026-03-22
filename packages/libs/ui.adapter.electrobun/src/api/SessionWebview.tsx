@@ -103,12 +103,14 @@ export function SessionWebview(props: SessionWebviewProps) {
 	});
 
 	return (
-		<div
-			ref={(el) => {
-				containerRef = el;
-			}}
-			style="width: 100%; height: 100%; position: relative; overflow: hidden; border-radius: 10px;"
-		/>
+		<div style="width: 100%; height: 100%; position: absolute; inset: 0;">
+			<div
+				ref={(el) => {
+					containerRef = el;
+				}}
+				style="width: 100%; height: 100%; position: relative;"
+			/>
+		</div>
 	);
 }
 
