@@ -1,11 +1,7 @@
-import {
-	DatabaseError,
-	DEFAULT_TAB_URL,
-	type Page,
-	type Session,
-	SessionRepository,
-	withTracing,
-} from "@ctrl/core.shared";
+import { DatabaseError } from "@ctrl/core.base.errors";
+import { withTracing } from "@ctrl/core.base.tracing";
+import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
+import { type Page, type Session, SessionRepository } from "@ctrl/core.shared";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { Effect, Layer } from "effect";

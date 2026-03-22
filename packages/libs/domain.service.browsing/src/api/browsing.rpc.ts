@@ -1,10 +1,9 @@
+import { DatabaseError, ValidationError } from "@ctrl/core.base.errors";
 import {
 	BookmarkSchema,
 	BrowsingStateSchema,
-	DatabaseError,
 	HistoryEntrySchema,
 	SessionSchema,
-	ValidationError,
 } from "@ctrl/core.shared";
 import { Rpc, RpcGroup } from "@effect/rpc";
 import { Schema } from "effect";

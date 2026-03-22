@@ -1,4 +1,5 @@
-import { DatabaseError, withTracing } from "@ctrl/core.shared";
+import { DatabaseError } from "@ctrl/core.base.errors";
+import { withTracing } from "@ctrl/core.base.tracing";
 import type { GroupNode, LayoutNode, PanelRef, SplitNode } from "@ctrl/domain.feature.layout";
 import { LayoutFeature } from "@ctrl/domain.feature.layout";
 import { Effect } from "effect";

@@ -1,4 +1,4 @@
-import { DatabaseError } from "@ctrl/core.shared";
+import { DatabaseError } from "@ctrl/core.base.errors";
 import {
 	LayoutNodeSchema,
 	PanelRefSchema,

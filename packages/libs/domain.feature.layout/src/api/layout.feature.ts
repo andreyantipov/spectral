@@ -1,4 +1,5 @@
-import { LayoutRepository, withTracing } from "@ctrl/core.shared";
+import { withTracing } from "@ctrl/core.base.tracing";
+import { LayoutRepository } from "@ctrl/core.shared";
 import { Context, Effect, Layer, PubSub, Stream } from "effect";
 import { LAYOUT_FEATURE } from "../lib/constants";
 import type { LayoutNode, PersistedLayout } from "../model/layout.validators";

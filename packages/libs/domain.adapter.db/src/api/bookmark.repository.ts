@@ -1,4 +1,6 @@
-import { type Bookmark, BookmarkRepository, DatabaseError, withTracing } from "@ctrl/core.shared";
+import { DatabaseError } from "@ctrl/core.base.errors";
+import { withTracing } from "@ctrl/core.base.tracing";
+import { type Bookmark, BookmarkRepository } from "@ctrl/core.shared";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { desc, eq } from "drizzle-orm";
 import { Effect, Layer } from "effect";

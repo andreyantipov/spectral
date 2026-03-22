@@ -1,10 +1,6 @@
-import {
-	type DatabaseError,
-	type Session,
-	SessionRepository,
-	ValidationError,
-	withTracing,
-} from "@ctrl/core.shared";
+import { ValidationError } from "@ctrl/core.base.errors";
+import { withTracing } from "@ctrl/core.base.tracing";
+import { type DatabaseError, type Session, SessionRepository } from "@ctrl/core.shared";
 import { Context, Effect, Layer, PubSub, Stream } from "effect";
 import { SESSION_FEATURE } from "../lib/constants";
 import { canGoBack, canGoForward } from "../lib/session.helpers";

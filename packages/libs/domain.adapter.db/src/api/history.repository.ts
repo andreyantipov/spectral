@@ -1,9 +1,6 @@
-import {
-	DatabaseError,
-	type HistoryEntry,
-	HistoryRepository,
-	withTracing,
-} from "@ctrl/core.shared";
+import { DatabaseError } from "@ctrl/core.base.errors";
+import { withTracing } from "@ctrl/core.base.tracing";
+import { type HistoryEntry, HistoryRepository } from "@ctrl/core.shared";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { desc, sql } from "drizzle-orm";
 import { Effect, Layer } from "effect";

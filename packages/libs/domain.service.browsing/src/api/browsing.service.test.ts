@@ -1,14 +1,14 @@
+import { spanName } from "@ctrl/core.base.tracing";
+import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
 import type { DatabaseError } from "@ctrl/core.shared";
 import {
 	type Bookmark,
 	BookmarkRepository,
-	DEFAULT_TAB_URL,
 	type HistoryEntry,
 	HistoryRepository,
 	type Page,
 	type Session,
 	SessionRepository,
-	spanName,
 } from "@ctrl/core.shared";
 import {
 	assertContainsSpan,
