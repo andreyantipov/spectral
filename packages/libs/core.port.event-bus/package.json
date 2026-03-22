@@ -1,5 +1,5 @@
 {
-	"name": "@ctrl/core.ports.event-bus",
+	"name": "@ctrl/core.port.event-bus",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",

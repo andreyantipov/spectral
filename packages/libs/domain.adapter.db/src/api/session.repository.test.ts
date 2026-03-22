@@ -1,4 +1,5 @@
-import { DEFAULT_TAB_URL, SessionRepository } from "@ctrl/core.shared";
+import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
+import { SessionRepository } from "@ctrl/core.shared";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { LibsqlClient } from "@effect/sql-libsql";
 import { Effect, Layer } from "effect";

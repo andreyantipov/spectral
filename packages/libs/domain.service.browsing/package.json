@@ -11,11 +11,15 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
+		"@ctrl/core.base.errors": "workspace:*",
+		"@ctrl/core.base.model": "workspace:*",
+		"@ctrl/core.base.tracing": "workspace:*",
+		"@ctrl/core.base.types": "workspace:*",
 		"@ctrl/core.shared": "workspace:*",
+		"@ctrl/domain.adapter.otel": "workspace:*",
 		"@ctrl/domain.feature.bookmark": "workspace:*",
 		"@ctrl/domain.feature.history": "workspace:*",
 		"@ctrl/domain.feature.omnibox": "workspace:*",
-		"@ctrl/domain.feature.session": "workspace:*",
-		"@ctrl/domain.adapter.otel": "workspace:*"
+		"@ctrl/domain.feature.session": "workspace:*"
 	}
 }

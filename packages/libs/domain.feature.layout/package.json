@@ -11,6 +11,7 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
+		"@ctrl/core.base.tracing": "workspace:*",
 		"@ctrl/core.shared": "workspace:*"
 	}
 }

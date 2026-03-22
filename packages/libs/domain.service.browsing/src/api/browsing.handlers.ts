@@ -1,4 +1,4 @@
-import { withTracing } from "@ctrl/core.shared";
+import { withTracing } from "@ctrl/core.base.tracing";
 import { BookmarkFeature } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeature } from "@ctrl/domain.feature.history";
 import { OmniboxFeature } from "@ctrl/domain.feature.omnibox";

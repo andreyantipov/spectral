@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { EventBusHandlersLive, EventBusLive } from "@ctrl/core.ports.event-bus";
+import { EventBusHandlersLive, EventBusLive } from "@ctrl/core.port.event-bus";
 import {
 	BookmarkRepositoryLive,
 	HistoryRepositoryLive,
@@ -19,7 +19,7 @@ import { WorkspaceHandlersLive } from "@ctrl/domain.service.workspace";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { Layer } from "effect";
 
-const dbPath = join(homedir(), ".ctrl.page", "data.db");
+const dbPath = join(homedir(), ".spectral", "data.db");
 
 // Infrastructure: libsql client -> Drizzle ORM
 const DbClientLive = makeDbClient(`file:${dbPath}`);

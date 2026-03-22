@@ -1,15 +1,8 @@
-import type { DatabaseError } from "@ctrl/core.shared";
-import {
-	type Bookmark,
-	BookmarkRepository,
-	DEFAULT_TAB_URL,
-	type HistoryEntry,
-	HistoryRepository,
-	type Page,
-	type Session,
-	SessionRepository,
-	spanName,
-} from "@ctrl/core.shared";
+import type { DatabaseError } from "@ctrl/core.base.errors";
+import type { Bookmark, HistoryEntry, Page, Session } from "@ctrl/core.base.model";
+import { spanName } from "@ctrl/core.base.tracing";
+import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
+import { BookmarkRepository, HistoryRepository, SessionRepository } from "@ctrl/core.shared";
 import {
 	assertContainsSpan,
 	TestSpanExporter,

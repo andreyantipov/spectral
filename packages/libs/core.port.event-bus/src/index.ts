@@ -8,3 +8,5 @@ export {
 	EventBus,
 } from "./event-bus.port";
 export { EventBusRpcs } from "./event-bus.rpc";
+export { DEFAULT_SHORTCUTS, type ShortcutBinding } from "./shortcuts";
+export * from "./signals/all";

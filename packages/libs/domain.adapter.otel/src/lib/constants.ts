@@ -1,4 +1,4 @@
 export const OTEL_SERVICE_NAMES = {
-	main: "ctrl.page.main",
-	webview: "ctrl.page.webview",
+	main: "spectral.main",
+	webview: "spectral.webview",
 } as const;

@@ -1,3 +1,1 @@
-import type { BrowsingState } from "@ctrl/core.shared";
-
-export type { BrowsingState };
+export type { BrowsingState } from "@ctrl/core.shared";

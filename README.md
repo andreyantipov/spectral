@@ -1,2 +1,2 @@
-# ctrl.page
+# Spectral
 ~

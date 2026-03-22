@@ -1,4 +1,5 @@
-import { type HistoryEntry, HistoryRepository } from "@ctrl/core.shared";
+import type { HistoryEntry } from "@ctrl/core.base.model";
+import { HistoryRepository } from "@ctrl/core.shared";
 import { Chunk, type Context, Duration, Effect, Fiber, Layer, Stream } from "effect";
 import { describe, expect, it } from "vitest";
 import { HistoryFeature, HistoryFeatureLive } from "./history.feature";
