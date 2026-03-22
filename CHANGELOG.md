@@ -1,3 +1,10 @@
+# [0.12.0](https://github.com/andreyantipov/spectral/compare/v0.11.0...v0.12.0) (2026-03-22)
+
+
+### Features
+
+* arch: event-driven v2 Phase 2 — EventLog migration ([#13](https://github.com/andreyantipov/spectral/issues/13)) ([1d68865](https://github.com/andreyantipov/spectral/commit/1d688653da8eaca61562f1a787354edbd13e2839))
+
 # [0.11.0](https://github.com/andreyantipov/spectral/compare/v0.10.0...v0.11.0) (2026-03-22)
 
 
