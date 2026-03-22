@@ -43,8 +43,16 @@ function SessionPanel(panelProps: PanelProps) {
 }
 
 function EmptyPanelRenderer(_panelProps: PanelProps) {
-	// TODO: wire to session creation once WebviewBindings exposes createSession
-	return <EmptyPane onCreateTab={() => {}} />;
+	const bindings = useContext(BindingsContext);
+	return (
+		<EmptyPane
+			onCreateTab={() => {
+				// Create a new session — it will be added to dockview via the session sync effect.
+				// The empty panel will be cleaned up when the new session panel replaces it.
+				void bindings?.createSession();
+			}}
+		/>
+	);
 }
 
 const COMPONENTS = { session: SessionPanel, empty: EmptyPanelRenderer };
@@ -56,6 +64,24 @@ function WorkspaceContent() {
 	const bindings = maybeBindings;
 	let api: DockviewApi | undefined;
 	let initialized = false;
+
+	// Register split handler so sidebar context menu can split panes
+	bindings.onSplitSession = (sessionId: string, direction: "right" | "down") => {
+		if (!api) return;
+		const refPanel = api.panels.find((p) => p.id === sessionId);
+		if (!refPanel) return;
+		// Create a new empty panel next to the reference in the specified direction
+		const newId = `empty-${Date.now()}`;
+		api.addPanel({
+			id: newId,
+			component: "empty",
+			position: {
+				referencePanel: refPanel,
+				direction: direction === "right" ? "right" : "below",
+			},
+		});
+		scheduleSync();
+	};
 
 	const sessionIds = createMemo(() => bindings.sessions().map((s) => s.id), undefined, {
 		equals: (a, b) => a.length === b.length && a.every((id, i) => id === b[i]),
