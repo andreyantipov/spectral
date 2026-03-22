@@ -20,6 +20,17 @@
 	border-radius: 10px;
 	overflow: hidden;
 }
+/* Active group highlight — subtle border so user sees which pane is focused */
+.dv-workspace .dv-resize-container:has(> .dv-groupview.dv-active-group) {
+	outline: 1.5px solid rgba(59, 130, 246, 0.5);
+	outline-offset: -1.5px;
+	border-radius: 10px;
+}
+.dv-workspace .dv-resize-container:has(> .dv-groupview.dv-inactive-group) {
+	outline: 1.5px solid transparent;
+	border-radius: 10px;
+	transition: outline-color 0.15s ease;
+}
 /* Drop target styling */
 .dv-workspace .dv-drop-target-container .dv-drop-target-anchor {
 	background: rgba(59, 130, 246, 0.15);
