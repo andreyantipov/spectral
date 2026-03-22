@@ -1,4 +1,5 @@
-import { useRuntime, useStream } from "@ctrl/core.ui";
+import { useStream } from "@ctrl/core.ui";
+import { useRuntime } from "@ctrl/core.ui.api";
 import type { BrowsingState } from "@ctrl/domain.service.browsing";
 import { BrowsingRpcs } from "@ctrl/domain.service.browsing";
 import { RpcClient } from "@effect/rpc";
@@ -19,6 +20,6 @@ export function useBrowsingState() {
 		RpcClient.make(BrowsingRpcs).pipe(Effect.provideService(Scope.Scope, scope)),
 	) as RpcClient.FromGroup<typeof BrowsingRpcs>;
 
-	const stream = client.browsingChanges().pipe(Stream.catchAll(() => Stream.empty));
-	return useStream<BrowsingState | undefined>(stream, undefined);
+	const browsingStream = client.browsingChanges().pipe(Stream.catchAll(() => Stream.empty));
+	return useStream<BrowsingState | undefined>(browsingStream, undefined);
 }

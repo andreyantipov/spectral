@@ -32,8 +32,8 @@ export type SidebarFeatureProps = {
 };
 
 export function SidebarFeature(props: SidebarFeatureProps) {
-	const api = useApi();
 	const state = useBrowsingState();
+	const api = useApi();
 	const [omniboxQuery, setOmniboxQuery] = createSignal("");
 
 	// Auto-create first session if none exist (guard prevents multiple creates)
