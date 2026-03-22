@@ -1,3 +1,4 @@
+export { useEventBus } from "@ctrl/core.ui.api";
 export type { ButtonProps } from "./components/atoms/Button";
 export { Button } from "./components/atoms/Button";
 export type { InputProps } from "./components/atoms/Input";
@@ -40,9 +41,7 @@ export {
 	AppShellTemplate,
 	type AppShellTemplateProps,
 } from "./components/templates/AppShellTemplate";
-
 export { RuntimeProvider, useRuntime } from "./lib/runtime-provider";
 export { useDomainService } from "./lib/use-domain-service";
-export { useEventBus } from "./lib/use-event-bus";
 export { useService } from "./lib/use-service";
 export { useStream } from "./lib/use-stream";

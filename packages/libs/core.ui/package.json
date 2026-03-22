@@ -15,6 +15,7 @@
 		"build-storybook": "storybook build"
 	},
 	"dependencies": {
+		"@ctrl/core.ui.api": "workspace:*",
 		"@ctrl/core.port.event-bus": "workspace:*",
 		"@zag-js/toast": "^1.36.0"
 	}
