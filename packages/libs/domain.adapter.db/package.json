@@ -13,6 +13,10 @@
 		"db:push": "drizzle-kit push"
 	},
 	"dependencies": {
+		"@ctrl/core.base.errors": "workspace:*",
+		"@ctrl/core.base.model": "workspace:*",
+		"@ctrl/core.base.tracing": "workspace:*",
+		"@ctrl/core.base.types": "workspace:*",
 		"@ctrl/core.shared": "workspace:*"
 	}
 }

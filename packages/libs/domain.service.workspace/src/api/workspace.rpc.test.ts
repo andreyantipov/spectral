@@ -1,4 +1,5 @@
-import { type DatabaseError, LayoutRepository } from "@ctrl/core.shared";
+import type { DatabaseError } from "@ctrl/core.base.errors";
+import { LayoutRepository } from "@ctrl/core.shared";
 import type { LayoutNode, PanelRef, PersistedLayout } from "@ctrl/domain.feature.layout";
 import { LayoutFeatureLive } from "@ctrl/domain.feature.layout";
 import { Headers } from "@effect/platform";

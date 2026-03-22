@@ -1,9 +1,6 @@
-import {
-	type Bookmark,
-	BookmarkRepository,
-	type DatabaseError,
-	makeFeatureService,
-} from "@ctrl/core.shared";
+import type { DatabaseError } from "@ctrl/core.base.errors";
+import type { Bookmark } from "@ctrl/core.base.model";
+import { BookmarkRepository, makeFeatureService } from "@ctrl/core.shared";
 import { Context, Effect, type Stream } from "effect";
 import { BOOKMARK_FEATURE } from "../lib/constants";
 

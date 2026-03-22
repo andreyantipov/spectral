@@ -1,4 +1,4 @@
-import { DEFAULT_TAB_URL } from "@ctrl/core.shared";
+import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
 import { Schema } from "effect";
 
 export const CreateSessionInput = Schema.Struct({

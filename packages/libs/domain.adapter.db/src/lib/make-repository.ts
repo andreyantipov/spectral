@@ -1,4 +1,4 @@
-import { withTracing } from "@ctrl/core.shared";
+import { withTracing } from "@ctrl/core.base.tracing";
 import type { SQL } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import type { AnySQLiteColumn, SQLiteTableWithColumns, TableConfig } from "drizzle-orm/sqlite-core";

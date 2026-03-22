@@ -1,4 +1,5 @@
-import { type Bookmark, BookmarkRepository } from "@ctrl/core.shared";
+import type { Bookmark } from "@ctrl/core.base.model";
+import { BookmarkRepository } from "@ctrl/core.shared";
 import { Chunk, type Context, Duration, Effect, Fiber, Layer, Stream } from "effect";
 import { describe, expect, it } from "vitest";
 import { BookmarkFeature, BookmarkFeatureLive } from "./bookmark.service";
