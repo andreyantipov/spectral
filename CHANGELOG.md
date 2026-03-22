@@ -1,3 +1,10 @@
+# [0.10.0](https://github.com/andreyantipov/ctrl.page/compare/v0.9.0...v0.10.0) (2026-03-22)
+
+
+### Features
+
+* arch: event-driven architecture — EventBus + command system ([#10](https://github.com/andreyantipov/ctrl.page/issues/10)) ([17c15ce](https://github.com/andreyantipov/ctrl.page/commit/17c15ce426c478f0146371286e516dcf14c5cf02))
+
 # [0.9.0](https://github.com/andreyantipov/ctrl.page/compare/v0.8.1...v0.9.0) (2026-03-22)
 
 
