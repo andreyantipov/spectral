@@ -42,27 +42,24 @@ function SessionPanel(panelProps: PanelProps) {
 	);
 }
 
+// FIX #8: EmptyPane "+" — wait for session sync before closing empty panel
 function EmptyPanelRenderer(panelProps: PanelProps) {
 	const bindings = useContext(BindingsContext);
 	return (
 		<EmptyPane
 			onCreateTab={() => {
 				if (!bindings) return;
-				// Create a new session, then replace this empty panel with the session panel
 				bindings.createSession().then(() => {
-					// The session sync effect will add the new session panel.
-					// Remove this empty panel after a short delay to let the sync happen first.
+					// Wait TWO frames: 1st for session state to propagate,
+					// 2nd for sync effect to add the new panel to dockview
 					requestAnimationFrame(() => {
-						try {
-							// Access the panel's group to add the new session there
-							const panelApi = panelProps.api;
-							if (panelApi) {
-								// Close this empty panel — the session sync effect handles adding the new one
-								panelApi.close();
+						requestAnimationFrame(() => {
+							try {
+								panelProps.api?.close();
+							} catch {
+								// Panel may already be cleaned up
 							}
-						} catch {
-							// Panel may already be cleaned up
-						}
+						});
 					});
 				});
 			}}
@@ -85,7 +82,6 @@ function WorkspaceContent() {
 		if (!api) return;
 		const refPanel = api.panels.find((p) => p.id === sessionId);
 		if (!refPanel) return;
-		// Create a new empty panel next to the reference in the specified direction
 		const newId = `empty-${Date.now()}`;
 		api.addPanel({
 			id: newId,
@@ -102,17 +98,15 @@ function WorkspaceContent() {
 		equals: (a, b) => a.length === b.length && a.every((id, i) => id === b[i]),
 	});
 
-	const isActiveBlank = () => {
-		const s = bindings.sessions().find((s) => s.id === bindings.activeSessionId());
-		if (!s) return true;
-		const url = currentUrl(s);
-		return !url || url === "about:blank";
-	};
+	// FIX #7: Only show BlankPage when there are NO sessions at all,
+	// not when active session has about:blank (that's normal for new tabs)
+	const hasSessions = () => bindings.sessions().length > 0;
 
 	function scheduleSync() {
 		requestAnimationFrame(() => syncAllWebviewDimensions());
 	}
 
+	// FIX #6: Guard panel sync - don't remove empty panels, only session panels
 	createEffect(() => {
 		const ids = sessionIds();
 		if (!api || !initialized) return;
@@ -123,9 +117,16 @@ function WorkspaceContent() {
 				api.addPanel({ id, component: "session", params: { sessionId: id } });
 			}
 		}
+		// Only remove session panels that no longer exist in state
+		// Keep empty panels (they start with "empty-")
 		for (const panel of [...api.panels]) {
-			if (!ids.includes(panel.id)) {
-				api.removePanel(panel);
+			const isEmptyPanel = panel.id.startsWith("empty-");
+			if (!isEmptyPanel && !ids.includes(panel.id)) {
+				try {
+					api.removePanel(panel);
+				} catch {
+					// Panel may be mid-interaction
+				}
 			}
 		}
 		scheduleSync();
@@ -162,7 +163,7 @@ function WorkspaceContent() {
 	return (
 		<div style="display: flex; flex: 1; width: 100%; height: 100%; position: relative; overflow: hidden;">
 			<DockviewProvider components={COMPONENTS} onReady={handleReady} class="dv-workspace" />
-			<Show when={isActiveBlank()}>
+			<Show when={!hasSessions()}>
 				<div style="position: absolute; inset: 0; z-index: 1;">
 					<BlankPage />
 				</div>

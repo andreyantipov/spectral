@@ -162,7 +162,10 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 				onItemClose: ops.closeSession,
 				onItemContextMenu: (id: string, e: MouseEvent) => {
 					setCtxMenuTarget(id);
-					setCtxMenuPos({ x: e.clientX, y: e.clientY });
+					// Position menu at click Y but push X past sidebar to avoid clipping
+					const sidebarEl = (e.currentTarget as HTMLElement).closest("[data-sidebar]");
+					const sidebarRight = sidebarEl ? sidebarEl.getBoundingClientRect().right : e.clientX;
+					setCtxMenuPos({ x: Math.max(e.clientX, sidebarRight + 4), y: e.clientY });
 				},
 			}}
 			omniBox={{

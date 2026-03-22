@@ -86,14 +86,12 @@ export function SessionWebview(props: SessionWebviewProps) {
 
 	createEffect(() => {
 		if (!webviewRef) return;
+		// All rendered webviews are visible and interactive in split-view.
+		// Dockview only renders panels that are in the layout, so every
+		// webview here should be non-transparent and non-passthrough.
+		webviewRef.toggleTransparent(false);
+		webviewRef.togglePassthrough(false);
 		webviewRef.syncDimensions(true);
-		if (props.isActive) {
-			webviewRef.toggleTransparent(false);
-			webviewRef.togglePassthrough(false);
-		} else {
-			webviewRef.toggleTransparent(false);
-			webviewRef.togglePassthrough(true);
-		}
 	});
 
 	onCleanup(() => {
