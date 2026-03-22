@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { EventBusHandlersLive, EventBusLive } from "@ctrl/core.ports.event-bus";
+import { EventBusHandlersLive, EventBusLive } from "@ctrl/core.port.event-bus";
 import {
 	BookmarkRepositoryLive,
 	HistoryRepositoryLive,

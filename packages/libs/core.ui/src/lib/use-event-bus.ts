@@ -1,4 +1,4 @@
-import { type AppCommand, EventBusRpcs } from "@ctrl/core.ports.event-bus";
+import { type AppCommand, EventBusRpcs } from "@ctrl/core.port.event-bus";
 import { RpcClient } from "@effect/rpc";
 import type { Protocol } from "@effect/rpc/RpcClient";
 import { Effect, Exit, type ManagedRuntime, Scope } from "effect";

@@ -15,7 +15,7 @@
 		"build-storybook": "storybook build"
 	},
 	"dependencies": {
-		"@ctrl/core.ports.event-bus": "workspace:*",
+		"@ctrl/core.port.event-bus": "workspace:*",
 		"@ctrl/core.shared": "workspace:*",
 		"@zag-js/toast": "^1.36.0"
 	}
