@@ -12,6 +12,7 @@ import { WorkspaceRpcs } from "@ctrl/domain.service.workspace";
 import { RpcSerialization, RpcServer } from "@effect/rpc";
 import { Layer, ManagedRuntime, Runtime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
+import { startCommandRouter } from "./command-router";
 import { type AppLayer, DesktopLive } from "./layers";
 import { createMainRPC } from "./rpc";
 
@@ -27,6 +28,10 @@ const rt = await runtime.runtime();
 
 // Ensure database schema exists
 await Runtime.runPromise(rt)(ensureSchema);
+
+// Start the EventBus command router (keyboard shortcuts → feature services)
+// Cast: runtime provides all services including EventBus + SessionFeature + OmniboxFeature
+startCommandRouter(rt as unknown as Parameters<typeof startCommandRouter>[0]);
 
 ApplicationMenu.setApplicationMenu([
 	{
