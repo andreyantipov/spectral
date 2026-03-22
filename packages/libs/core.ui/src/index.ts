@@ -43,5 +43,6 @@ export {
 
 export { RuntimeProvider, useRuntime } from "./lib/runtime-provider";
 export { useDomainService } from "./lib/use-domain-service";
+export { useEventBus } from "./lib/use-event-bus";
 export { useService } from "./lib/use-service";
 export { useStream } from "./lib/use-stream";
