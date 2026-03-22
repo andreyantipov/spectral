@@ -1,6 +1,6 @@
 import { Effect } from "effect";
+import { EventBus } from "./event-bus.port";
 import { EventBusRpcs } from "./event-bus.rpc";
-import { EventBus } from "./index";
 
 export const EventBusHandlersLive = EventBusRpcs.toLayer(
 	Effect.gen(function* () {

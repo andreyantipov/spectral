@@ -1,5 +1,5 @@
 import { Effect, Layer, PubSub, Stream } from "effect";
-import { type AppCommand, type AppEvent, EventBus } from "./index";
+import { type AppCommand, type AppEvent, EventBus } from "./event-bus.port";
 
 export const EventBusLive = Layer.effect(
 	EventBus,
