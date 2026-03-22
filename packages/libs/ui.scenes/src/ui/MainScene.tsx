@@ -1,11 +1,11 @@
 import { currentUrl } from "@ctrl/core.base.types";
 import { BlankPage } from "@ctrl/core.ui";
-import type { PanelProps } from "@ctrl/ui.adapter.dockview";
-import { DockviewProvider } from "@ctrl/ui.adapter.dockview";
-import { SessionWebview, syncAllWebviewDimensions } from "@ctrl/ui.adapter.electrobun";
 import { SidebarFeature, type WebviewBindings } from "@ctrl/ui.feature.sidebar";
+import type { PanelProps } from "@ctrl/ui.feature.workspace";
+import { DockviewProvider } from "@ctrl/ui.feature.workspace";
 import type { DockviewApi } from "dockview-core";
 import { createContext, createEffect, createMemo, Show, untrack, useContext } from "solid-js";
+import { SessionWebview, syncAllWebviewDimensions } from "../lib/SessionWebview";
 import { EmptyPane } from "./EmptyPane";
 
 const BindingsContext = createContext<WebviewBindings>();
@@ -49,17 +49,16 @@ function EmptyPanelRenderer(panelProps: PanelProps) {
 		<EmptyPane
 			onCreateTab={() => {
 				if (!bindings) return;
-				bindings.createSession().then(() => {
-					// Wait TWO frames: 1st for session state to propagate,
-					// 2nd for sync effect to add the new panel to dockview
+				bindings.createSession();
+				// Wait TWO frames: 1st for session state to propagate,
+				// 2nd for sync effect to add the new panel to dockview
+				requestAnimationFrame(() => {
 					requestAnimationFrame(() => {
-						requestAnimationFrame(() => {
-							try {
-								panelProps.api?.close();
-							} catch {
-								// Panel may already be cleaned up
-							}
-						});
+						try {
+							panelProps.api?.close();
+						} catch {
+							// Panel may already be cleaned up
+						}
 					});
 				});
 			}}

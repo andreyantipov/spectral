@@ -1,4 +1,4 @@
-import { BookmarkRepository } from "@ctrl/core.shared";
+import { BookmarkRepository } from "@ctrl/core.port.storage";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { LibsqlClient } from "@effect/sql-libsql";
 import { Effect, Layer } from "effect";

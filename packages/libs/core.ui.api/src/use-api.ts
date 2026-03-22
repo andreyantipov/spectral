@@ -1,10 +1,22 @@
-import type { AppCommand } from "@ctrl/core.port.event-bus";
-import { EventBus } from "@ctrl/core.port.event-bus";
-import { Effect, type ManagedRuntime } from "effect";
+import { type AppCommand, EventBusRpcs } from "@ctrl/core.port.event-bus";
+import { RpcClient } from "@effect/rpc";
+import type { Protocol } from "@effect/rpc/RpcClient";
+import { Effect, Exit, type ManagedRuntime, Scope } from "effect";
+import { onCleanup } from "solid-js";
 import { useRuntime } from "./use-runtime";
 
 export function useApi() {
-	const runtime = useRuntime() as unknown as ManagedRuntime.ManagedRuntime<EventBus, never>;
+	const runtime = useRuntime() as unknown as ManagedRuntime.ManagedRuntime<
+		Protocol | Scope.Scope,
+		never
+	>;
+
+	const scope = runtime.runSync(Scope.make());
+	onCleanup(() => runtime.runSync(Scope.close(scope, Exit.void)));
+
+	const client = runtime.runSync(
+		RpcClient.make(EventBusRpcs).pipe(Effect.provideService(Scope.Scope, scope)),
+	) as RpcClient.FromGroup<typeof EventBusRpcs>;
 
 	const send = (action: string, payload?: unknown) => {
 		const cmd: AppCommand = {
@@ -13,15 +25,11 @@ export function useApi() {
 			payload,
 			meta: { source: "ui" },
 		};
-		return runtime.runPromise(
-			Effect.gen(function* () {
-				const bus = yield* EventBus;
-				yield* bus.send(cmd);
-			}),
-		);
+		void runtime.runPromise(client.dispatch({ command: cmd }));
 	};
 
 	return {
+		send,
 		session: {
 			create: (payload: { readonly mode: "visual" }) => send("session.create", payload),
 			close: (payload: { readonly id: string }) => send("session.close", payload),

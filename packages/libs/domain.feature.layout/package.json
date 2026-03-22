@@ -12,6 +12,6 @@
 	},
 	"dependencies": {
 		"@ctrl/core.base.tracing": "workspace:*",
-		"@ctrl/core.shared": "workspace:*"
+		"@ctrl/core.port.storage": "workspace:*"
 	}
 }

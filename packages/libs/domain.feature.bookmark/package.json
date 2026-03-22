@@ -13,6 +13,6 @@
 	"dependencies": {
 		"@ctrl/core.base.errors": "workspace:*",
 		"@ctrl/core.base.model": "workspace:*",
-		"@ctrl/core.shared": "workspace:*"
+		"@ctrl/core.port.storage": "workspace:*"
 	}
 }

@@ -1,5 +1,5 @@
 {
-	"name": "@ctrl/ui.adapter.electrobun",
+	"name": "@ctrl/core.port.storage",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -11,6 +11,8 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@ctrl/core.shared": "workspace:*"
+		"@ctrl/core.base.errors": "workspace:*",
+		"@ctrl/core.base.model": "workspace:*",
+		"@ctrl/core.base.tracing": "workspace:*"
 	}
 }

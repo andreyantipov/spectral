@@ -1,8 +1,8 @@
-import type { PanelProps } from "@ctrl/ui.adapter.dockview";
-import { DockviewProvider } from "@ctrl/ui.adapter.dockview";
 import type { JSX } from "solid-js";
 import { Show } from "solid-js";
 import { useWorkspace } from "../api/use-workspace";
+import type { PanelProps } from "../lib/createSolidRenderer";
+import { DockviewProvider } from "../lib/DockviewProvider";
 import { workspace } from "./workspace.style";
 
 function SessionPanel(props: PanelProps): JSX.Element {

@@ -1,23 +1,22 @@
 import { type AppCommand, EventBus } from "@ctrl/core.port.event-bus";
-import {
-	BM_ADD,
-	BM_REMOVE,
-	DIAG_PING,
-	EVT_DIAG_PONG,
-	NAV_BACK,
-	NAV_FORWARD,
-	NAV_NAVIGATE,
-	NAV_REPORT,
-	NAV_UPDATE_TITLE,
-	SESSION_ACTIVATE,
-	SESSION_CLOSE,
-	SESSION_CREATE,
-} from "@ctrl/core.shared";
 import { BookmarkFeature } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeature } from "@ctrl/domain.feature.history";
 import { OmniboxFeature } from "@ctrl/domain.feature.omnibox";
 import { SessionFeature } from "@ctrl/domain.feature.session";
 import { Effect, Layer, Stream } from "effect";
+
+const SESSION_CREATE = "session.create" as const;
+const SESSION_CLOSE = "session.close" as const;
+const SESSION_ACTIVATE = "session.activate" as const;
+const NAV_NAVIGATE = "nav.navigate" as const;
+const NAV_BACK = "nav.back" as const;
+const NAV_FORWARD = "nav.forward" as const;
+const NAV_REPORT = "nav.report" as const;
+const NAV_UPDATE_TITLE = "nav.update-title" as const;
+const BM_ADD = "bm.add" as const;
+const BM_REMOVE = "bm.remove" as const;
+const DIAG_PING = "diag.ping" as const;
+const EVT_DIAG_PONG = "diag.pong" as const;
 
 type Payload = Record<string, unknown>;
 

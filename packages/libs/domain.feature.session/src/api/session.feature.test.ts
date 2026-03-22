@@ -1,6 +1,6 @@
 import type { Page, Session } from "@ctrl/core.base.model";
 import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
-import { SessionRepository } from "@ctrl/core.shared";
+import { SessionRepository } from "@ctrl/core.port.storage";
 import { Chunk, type Context, Duration, Effect, Fiber, Layer, Stream } from "effect";
 import { describe, expect, it } from "vitest";
 import { SessionFeature, SessionFeatureLive } from "./session.feature";

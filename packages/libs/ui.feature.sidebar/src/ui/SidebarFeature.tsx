@@ -10,7 +10,7 @@ import {
 } from "@ctrl/core.ui";
 import { useApi } from "@ctrl/core.ui.api";
 import { createEffect, createMemo, createSignal, type JSX } from "solid-js";
-import { useBrowsingRpc } from "../api/use-sidebar";
+import { useBrowsingState } from "../api/use-browsing-state";
 import { SIDEBAR_FEATURE } from "../lib/constants";
 import { buildOmniBoxSuggestions, mapSessionsToSidebarItems } from "../model/sidebar.bindings";
 
@@ -23,7 +23,7 @@ export type WebviewBindings = {
 	readonly activeUrl: () => string | undefined;
 	readonly onNavigate: (sessionId: string, url: string) => void;
 	readonly onTitleChange: (sessionId: string, title: string) => void;
-	readonly createSession: () => Promise<unknown>;
+	readonly createSession: () => void;
 	onSplitSession: (sessionId: string, direction: "right" | "down") => void;
 };
 
@@ -32,7 +32,7 @@ export type SidebarFeatureProps = {
 };
 
 export function SidebarFeature(props: SidebarFeatureProps) {
-	const { state } = useBrowsingRpc();
+	const state = useBrowsingState();
 	const api = useApi();
 	const [omniboxQuery, setOmniboxQuery] = createSignal("");
 

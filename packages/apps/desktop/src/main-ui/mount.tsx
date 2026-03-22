@@ -1,4 +1,4 @@
-import type { AppCommand } from "@ctrl/core.shared";
+import type { AppCommand } from "@ctrl/domain.adapter.electrobun";
 import type { ManagedRuntime } from "effect";
 import { render } from "solid-js/web";
 import App from "./App";

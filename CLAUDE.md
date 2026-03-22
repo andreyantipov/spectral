@@ -95,7 +95,7 @@ Key differences from `dev:desktop`:
 
 ### Key Rules
 - `type` only, never `interface` in packages/libs/
-- No `Effect.withSpan()` — use `withTracing()` from `@ctrl/core.shared`
+- No `Effect.withSpan()` — use `withTracing()` from `@ctrl/core.base.tracing`
 - No hardcoded strings for span names or service identifiers
 - GritQL enforces all boundaries — run `bunx grit check .` before committing
 - Two public surfaces: `domain.service.*` (for UI) and `ui.scenes` (for apps)
@@ -124,8 +124,8 @@ Three-tier core structure, each level can only import levels above it:
 
 ```
 Level 1: core.port.*    → pure interfaces (Context.Tag + type signatures), zero deps
-Level 2: core.shared     → schemas, errors, utilities (imports core.port.*)
-Level 3: core.ui         → components, hooks (imports core.shared + core.port.*)
+Level 2: core.base.*     → schemas, errors, utilities (imports core.port.*)
+Level 3: core.ui         → components, hooks (imports core.base.* + core.port.*)
 ```
 
 Ports are **atomic packages** — one per concern:

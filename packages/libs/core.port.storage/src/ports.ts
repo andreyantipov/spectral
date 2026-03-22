@@ -1,12 +1,6 @@
-/**
- * @deprecated Storage ports will move to `@ctrl/core.ports.storage` in Phase 2.
- * New code should prepare for the migration but continue importing from here for now.
- * See: docs/superpowers/specs/2026-03-22-event-driven-architecture-design.md
- */
+import type { DatabaseError } from "@ctrl/core.base.errors";
+import type { Bookmark, HistoryEntry, Page, Session } from "@ctrl/core.base.model";
 import { Context, type Effect } from "effect";
-import type { AppCommand } from "./commands";
-import type { DatabaseError } from "./errors";
-import type { Bookmark, HistoryEntry, Page, Session } from "./schemas";
 
 export const DATABASE_SERVICE_ID = "DatabaseService" as const;
 export const SESSION_REPOSITORY_ID = "SessionRepository" as const;
@@ -42,16 +36,6 @@ export class HistoryRepository extends Context.Tag(HISTORY_REPOSITORY_ID)<
 			query?: string | null,
 		) => Effect.Effect<HistoryEntry, DatabaseError>;
 		readonly clear: () => Effect.Effect<void, DatabaseError>;
-	}
->() {}
-
-export const IPC_BRIDGE_ID = "IpcBridge" as const;
-
-export class IpcBridge extends Context.Tag(IPC_BRIDGE_ID)<
-	IpcBridge,
-	{
-		readonly send: (command: AppCommand) => void;
-		readonly subscribe: (handler: (command: AppCommand) => void) => () => void;
 	}
 >() {}
 
