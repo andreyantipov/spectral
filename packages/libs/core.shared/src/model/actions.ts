@@ -45,3 +45,7 @@ export const EVT_BOOKMARK_REMOVED = "bm.removed" as const;
 export const EVT_HISTORY_CLEARED = "hist.cleared" as const;
 export const EVT_SYS_DOM_READY = "sys.dom-ready" as const;
 export const EVT_SYS_DID_NAVIGATE = "sys.did-navigate" as const;
+
+// Diagnostic commands (for agentic validation)
+export const DIAG_PING = "diag.ping" as const;
+export const EVT_DIAG_PONG = "diag.pong" as const;
