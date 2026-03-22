@@ -22,3 +22,8 @@ export const withTracing = <S extends Record<string, unknown>>(
 			return [method, fn];
 		}),
 	) as S;
+
+export const withServiceSpan =
+	(serviceName: string, operation: string) =>
+	<A, E, R>(effect: Effect.Effect<A, E, R>): Effect.Effect<A, E, R> =>
+		effect.pipe(Effect.withSpan(spanName(serviceName, operation)));

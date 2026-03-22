@@ -8,5 +8,8 @@ export {
 	EventBus,
 } from "./event-bus.port";
 export { EventBusRpcs } from "./event-bus.rpc";
+export { BookmarkEvents } from "./groups/bookmark";
+export { NavigationEvents } from "./groups/navigation";
+export { AppEvents } from "./groups/schema";
+export { SessionEvents } from "./groups/session";
 export { DEFAULT_SHORTCUTS, type ShortcutBinding } from "./shortcuts";
-export * from "./signals/all";

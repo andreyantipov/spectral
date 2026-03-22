@@ -7,8 +7,8 @@ import {
 	type ContextMenuItem,
 	type SidebarItem as CoreSidebarItem,
 	type OmniBoxSuggestion,
-	useRuntime,
 } from "@ctrl/core.ui";
+import { useApi } from "@ctrl/core.ui.api";
 import { createEffect, createMemo, createSignal, type JSX } from "solid-js";
 import { useBrowsingRpc } from "../api/use-sidebar";
 import { SIDEBAR_FEATURE } from "../lib/constants";
@@ -32,8 +32,8 @@ export type SidebarFeatureProps = {
 };
 
 export function SidebarFeature(props: SidebarFeatureProps) {
-	const { client, state } = useBrowsingRpc();
-	const runtime = useRuntime();
+	const { state } = useBrowsingRpc();
+	const api = useApi();
 	const [omniboxQuery, setOmniboxQuery] = createSignal("");
 
 	// Auto-create first session if none exist (guard prevents multiple creates)
@@ -74,21 +74,21 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		navigate: (input: string) => {
 			const session = activeSession();
 			if (session) {
-				void runtime.runPromise(client.navigate({ id: session.id, input }));
+				void api.nav.navigate({ id: session.id, input });
 			}
 		},
-		createSession: () => runtime.runPromise(client.createSession({ mode: "visual" })),
+		createSession: () => api.session.create({ mode: "visual" }),
 		switchSession: (id: string) => {
-			void runtime.runPromise(client.setActive({ id }));
+			void api.session.activate({ id });
 		},
 		closeSession: (id: string) => {
-			void runtime.runPromise(client.removeSession({ id }));
+			void api.session.close({ id });
 		},
 		reportNavigation: (sessionId: string, url: string) => {
-			void runtime.runPromise(client.reportNavigation({ id: sessionId, url }));
+			void api.nav.report({ id: sessionId, url });
 		},
 		updateTitle: (sessionId: string, title: string) => {
-			void runtime.runPromise(client.updateTitle({ id: sessionId, title }));
+			void api.nav.updateTitle({ id: sessionId, title });
 		},
 	});
 

@@ -18,6 +18,7 @@ import { BrowsingHandlersLive } from "@ctrl/domain.service.browsing";
 import { WorkspaceHandlersLive } from "@ctrl/domain.service.workspace";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { Layer } from "effect";
+import { EventBridgeLive } from "./event-bridge";
 
 const dbPath = join(homedir(), ".spectral", "data.db");
 
@@ -54,18 +55,31 @@ const TracedWorkspaceLayer = WorkspaceHandlersLayer.pipe(Layer.provide(OtelLayer
 // EventBus: handlers need the EventBus service from EventBusLive
 const EventBusHandlersLayer = EventBusHandlersLive.pipe(Layer.provide(EventBusLive));
 
+// EventBridge: routes EventBus commands to domain feature handlers.
+// Replaces the old imperative startCommandRouter() — runs as a scoped Layer.
+const EventBridgeLayer = EventBridgeLive.pipe(
+	Layer.provide(SessionFeatureLayer),
+	Layer.provide(BookmarkFeatureLayer),
+	Layer.provide(HistoryFeatureLayer),
+	Layer.provide(OmniboxFeatureLive),
+	Layer.provide(EventBusLive),
+	Layer.provide(OtelLayer),
+);
+
 // Compose: expose all layers needed by the app
 // - DbClientLive: for migrations (LibsqlClient)
 // - TracedBrowsingLayer: browsing RPC handlers with OTEL tracing
 // - TracedWorkspaceLayer: workspace RPC handlers with OTEL tracing
 // - EventBusLive: EventBus service
 // - EventBusHandlersLayer: EventBus RPC handlers
+// - EventBridgeLayer: EventBus command → feature handler dispatch
 export const DesktopLive = Layer.mergeAll(
 	DbClientLive,
 	TracedBrowsingLayer,
 	TracedWorkspaceLayer,
 	EventBusLive,
 	EventBusHandlersLayer,
+	EventBridgeLayer,
 );
 
 export type AppLayer = Layer.Layer.Success<typeof DesktopLive>;
