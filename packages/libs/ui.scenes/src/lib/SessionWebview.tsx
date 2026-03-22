@@ -1,6 +1,6 @@
 import { createEffect, onCleanup } from "solid-js";
-import { SHORTCUT_PRELOAD } from "../lib/constants";
-import type { WebviewTagElement } from "../lib/types";
+import { SHORTCUT_PRELOAD } from "./webview-constants";
+import type { WebviewTagElement } from "./webview-types";
 
 export type SessionWebviewProps = {
 	sessionId: string;
