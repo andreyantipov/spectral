@@ -5,24 +5,55 @@ import { DockviewProvider } from "@ctrl/ui.adapter.dockview";
 import { SessionWebview, syncAllWebviewDimensions } from "@ctrl/ui.adapter.electrobun";
 import { SidebarFeature, type WebviewBindings } from "@ctrl/ui.feature.sidebar";
 import type { DockviewApi } from "dockview-core";
-import { createEffect, createMemo, on, Show } from "solid-js";
+import { createContext, createEffect, createMemo, Show, untrack, useContext } from "solid-js";
+
+// Context to share bindings with panel components without prop-drilling
+const BindingsContext = createContext<WebviewBindings>();
 
 export function MainScene() {
 	return (
 		<SidebarFeature>
-			{(bindings: WebviewBindings) => <WorkspaceContent bindings={bindings} />}
+			{(bindings: WebviewBindings) => (
+				<BindingsContext.Provider value={bindings}>
+					<WorkspaceContent />
+				</BindingsContext.Provider>
+			)}
 		</SidebarFeature>
 	);
 }
 
-function WorkspaceContent(props: { bindings: WebviewBindings }) {
+// Panel component rendered inside each dockview pane — stable module-level reference
+function SessionPanel(panelProps: PanelProps) {
+	const bindings = useContext(BindingsContext);
+	const sessionId = String(panelProps.params.sessionId ?? "");
+
+	const getSession = (): Session | undefined =>
+		bindings?.sessions().find((s) => s.id === sessionId);
+
+	const url = () => {
+		const s = getSession();
+		return s ? (currentUrl(s) ?? "about:blank") : "about:blank";
+	};
+
+	return (
+		<SessionWebview
+			sessionId={sessionId}
+			url={url()}
+			isActive={bindings?.activeSessionId() === sessionId}
+			onNavigate={(navUrl) => bindings?.onNavigate(sessionId, navUrl)}
+			onTitleChange={(title) => bindings?.onTitleChange(sessionId, title)}
+		/>
+	);
+}
+
+// Stable components map — never recreated
+const PANEL_COMPONENTS = { session: SessionPanel };
+
+function WorkspaceContent() {
+	const bindings = useContext(BindingsContext)!;
 	let dockviewApi: DockviewApi | undefined;
 	let rafId: number | null = null;
-
-	const bindings = props.bindings;
-
-	const getSession = (id: string): Session | undefined =>
-		bindings.sessions().find((s) => s.id === id);
+	let initialized = false;
 
 	const sessionIds = createMemo(() => bindings.sessions().map((s) => s.id), undefined, {
 		equals: (a, b) => a.length === b.length && a.every((id, i) => id === b[i]),
@@ -35,35 +66,29 @@ function WorkspaceContent(props: { bindings: WebviewBindings }) {
 		return !url || url === "about:blank";
 	};
 
-	// Sync dockview panels with sessions
-	createEffect(
-		on(sessionIds, (ids) => {
-			if (!dockviewApi) return;
-			const existingPanelIds = new Set(dockviewApi.panels.map((p) => p.id));
+	// Sync dockview panels when sessions change (skip initial — handleReady covers it)
+	createEffect(() => {
+		const ids = sessionIds();
+		if (!dockviewApi || !initialized) return;
 
-			// Add panels for new sessions
-			for (const id of ids) {
-				if (!existingPanelIds.has(id)) {
-					dockviewApi.addPanel({
-						id,
-						component: "session",
-						params: { sessionId: id },
-					});
-				}
+		const existingPanelIds = new Set(dockviewApi.panels.map((p) => p.id));
+
+		for (const id of ids) {
+			if (!existingPanelIds.has(id)) {
+				dockviewApi.addPanel({ id, component: "session", params: { sessionId: id } });
 			}
+		}
 
-			// Remove panels for deleted sessions
-			for (const panel of dockviewApi.panels) {
-				if (!ids.includes(panel.id)) {
-					dockviewApi.removePanel(panel);
-				}
+		for (const panel of [...dockviewApi.panels]) {
+			if (!ids.includes(panel.id)) {
+				dockviewApi.removePanel(panel);
 			}
+		}
 
-			scheduleSync();
-		}),
-	);
+		scheduleSync();
+	});
 
-	// Sync active panel with active session
+	// Sync active panel
 	createEffect(() => {
 		const activeId = bindings.activeSessionId();
 		if (!dockviewApi || !activeId) return;
@@ -83,57 +108,27 @@ function WorkspaceContent(props: { bindings: WebviewBindings }) {
 
 	function handleReady(api: DockviewApi) {
 		dockviewApi = api;
-
 		api.onDidLayoutChange(() => scheduleSync());
-		api.onDidAddPanel(() => scheduleSync());
 
-		// Add existing sessions as panels
-		for (const id of sessionIds()) {
-			api.addPanel({
-				id,
-				component: "session",
-				params: { sessionId: id },
-			});
+		const ids = untrack(sessionIds);
+		for (const id of ids) {
+			api.addPanel({ id, component: "session", params: { sessionId: id } });
 		}
 
-		// Set active panel
-		const activeId = bindings.activeSessionId();
+		const activeId = untrack(bindings.activeSessionId);
 		if (activeId) {
 			const panel = api.panels.find((p) => p.id === activeId);
 			if (panel) panel.api.setActive();
 		}
 
-		// Force layout with reported dimensions, then sync webviews
 		api.layout(api.width, api.height, true);
 		scheduleSync();
-		// Double-sync after a frame to catch deferred DOM updates
-		requestAnimationFrame(() => scheduleSync());
+		initialized = true;
 	}
-
-	// Panel component rendered inside each dockview pane
-	function SessionPanel(panelProps: PanelProps) {
-		const sessionId = () => String(panelProps.params.sessionId ?? "");
-		const url = () => {
-			const s = getSession(sessionId());
-			return s ? (currentUrl(s) ?? "about:blank") : "about:blank";
-		};
-
-		return (
-			<SessionWebview
-				sessionId={sessionId()}
-				url={url()}
-				isActive={bindings.activeSessionId() === sessionId()}
-				onNavigate={(navUrl) => bindings.onNavigate(sessionId(), navUrl)}
-				onTitleChange={(title) => bindings.onTitleChange(sessionId(), title)}
-			/>
-		);
-	}
-
-	const components = { session: SessionPanel };
 
 	return (
 		<div style="display: flex; flex: 1; width: 100%; height: 100%; position: relative; overflow: hidden;">
-			<DockviewProvider components={components} onReady={handleReady} class="dv-workspace" />
+			<DockviewProvider components={PANEL_COMPONENTS} onReady={handleReady} class="dv-workspace" />
 			<Show when={isActiveBlank()}>
 				<div style="position: absolute; inset: 0; z-index: 1;">
 					<BlankPage />
