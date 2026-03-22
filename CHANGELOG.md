@@ -1,3 +1,10 @@
+# [0.9.0](https://github.com/andreyantipov/ctrl.page/compare/v0.8.1...v0.9.0) (2026-03-22)
+
+
+### Features
+
+* proto: workspace split-view layout system (UNSTABLE) ([#9](https://github.com/andreyantipov/ctrl.page/issues/9)) ([9b37444](https://github.com/andreyantipov/ctrl.page/commit/9b37444569967d057dd0fee9968d648663e800a1)), closes [#111111](https://github.com/andreyantipov/ctrl.page/issues/111111) [#111111](https://github.com/andreyantipov/ctrl.page/issues/111111) [#1e1e1e](https://github.com/andreyantipov/ctrl.page/issues/1e1e1e) [#111111](https://github.com/andreyantipov/ctrl.page/issues/111111) [#1e1e1e](https://github.com/andreyantipov/ctrl.page/issues/1e1e1e) [#1e1e1e](https://github.com/andreyantipov/ctrl.page/issues/1e1e1e) [#111111](https://github.com/andreyantipov/ctrl.page/issues/111111)
+
 ## [0.8.1](https://github.com/andreyantipov/ctrl.page/compare/v0.8.0...v0.8.1) (2026-03-21)
 
 
