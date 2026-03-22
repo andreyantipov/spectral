@@ -1,3 +1,8 @@
+/**
+ * @deprecated Storage ports will move to `@ctrl/core.ports.storage` in Phase 2.
+ * New code should prepare for the migration but continue importing from here for now.
+ * See: docs/superpowers/specs/2026-03-22-event-driven-architecture-design.md
+ */
 import { Context, type Effect } from "effect";
 import type { AppCommand } from "./commands";
 import type { DatabaseError } from "./errors";
