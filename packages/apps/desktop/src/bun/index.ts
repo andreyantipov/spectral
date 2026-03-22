@@ -1,6 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { EventBusRpcs } from "@ctrl/core.ports.event-bus";
 import { APP_NAME, APP_VERSION } from "@ctrl/core.shared";
 import { ensureSchema } from "@ctrl/domain.adapter.db";
 import { createIpcBridge, type ElectrobunHandle } from "@ctrl/domain.adapter.electrobun";
@@ -11,6 +12,7 @@ import { WorkspaceRpcs } from "@ctrl/domain.service.workspace";
 import { RpcSerialization, RpcServer } from "@effect/rpc";
 import { Layer, ManagedRuntime, Runtime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
+import { startCommandRouter } from "./command-router";
 import { type AppLayer, DesktopLive } from "./layers";
 import { createMainRPC } from "./rpc";
 
@@ -26,6 +28,10 @@ const rt = await runtime.runtime();
 
 // Ensure database schema exists
 await Runtime.runPromise(rt)(ensureSchema);
+
+// Start the EventBus command router (keyboard shortcuts → feature services)
+// Cast: runtime provides all services including EventBus + SessionFeature + OmniboxFeature
+startCommandRouter(rt as unknown as Parameters<typeof startCommandRouter>[0]);
 
 ApplicationMenu.setApplicationMenu([
 	{
@@ -90,7 +96,7 @@ const ServerProtocolLive = Layer.scoped(
 
 const HandlersFromRuntime = Layer.succeedContext(rt.context) as Layer.Layer<AppLayer, never, never>;
 
-const AllRpcs = BrowsingRpcs.merge(WorkspaceRpcs);
+const AllRpcs = BrowsingRpcs.merge(WorkspaceRpcs).merge(EventBusRpcs);
 const ServerLive = RpcServer.layer(AllRpcs).pipe(
 	Layer.provide(ServerProtocolLive),
 	Layer.provide(HandlersFromRuntime),

@@ -123,13 +123,13 @@ Rules:
 Three-tier core structure, each level can only import levels above it:
 
 ```
-Level 1: core.ports.*    → pure interfaces (Context.Tag + type signatures), zero deps
-Level 2: core.shared     → schemas, errors, utilities (imports core.ports.*)
-Level 3: core.ui         → components, hooks (imports core.shared + core.ports.*)
+Level 1: core.port.*    → pure interfaces (Context.Tag + type signatures), zero deps
+Level 2: core.shared     → schemas, errors, utilities (imports core.port.*)
+Level 3: core.ui         → components, hooks (imports core.shared + core.port.*)
 ```
 
 Ports are **atomic packages** — one per concern:
-- `core.ports.storage` → SessionRepository, BookmarkRepository, HistoryRepository, LayoutRepository
+- `core.port.storage` → SessionRepository, BookmarkRepository, HistoryRepository, LayoutRepository
 - `core.ports.webview` → WebviewExecutor
 - `core.ports.event-bus` → EventBus
 - Each adapter imports only the ports it implements
@@ -154,42 +154,41 @@ EventBus (business logic):
 
 ## App Icon
 
-Icon source files live in `~/Desktop/ctrl.page/icons/` (organized by version). The app uses `packages/apps/desktop/assets/icon.iconset/` → `.icns`.
+All icon assets live in `packages/apps/desktop/assets/`:
+
+```
+assets/
+  icon-source.png          ← 1024x1024 source PNG (replace this to update)
+  icon-exports/            ← all Icon Composer exports (Default, Dark, Tinted, etc.)
+  icon.iconset/            ← generated sizes for macOS
+  icon.icns                ← generated .icns bundle
+  apply-macos-mask.py      ← squircle mask script
+```
 
 ### Updating the icon
 
-1. Design in **Apple Icon Composer** (`.icon` format)
-2. Export as PNG: platform **"iOS, macOS"** (latest format), 1024pt @ 1x
-3. Save the export to `~/Desktop/ctrl.page/icons/<version>/`
-4. Apply the macOS squircle mask (Electrobun needs transparent corners):
+1. Replace `assets/icon-source.png` with new 1024x1024 PNG
+2. If from Icon Composer, also update `assets/icon-exports/` with all variants
+3. Generate iconset:
    ```bash
-   python3 packages/apps/desktop/assets/apply-macos-mask.py <exported.png> /tmp/icon-masked.png
+   cd packages/apps/desktop
+   python3 assets/apply-macos-mask.py assets/icon-source.png /tmp/icon-masked.png
+   S="/tmp/icon-masked.png"; I="assets/icon.iconset"
+   sips -z 16 16 $S --out $I/icon_16x16.png
+   sips -z 32 32 $S --out $I/icon_16x16@2x.png
+   sips -z 32 32 $S --out $I/icon_32x32.png
+   sips -z 64 64 $S --out $I/icon_32x32@2x.png
+   sips -z 128 128 $S --out $I/icon_128x128.png
+   sips -z 256 256 $S --out $I/icon_128x128@2x.png
+   sips -z 256 256 $S --out $I/icon_256x256.png
+   sips -z 512 512 $S --out $I/icon_256x256@2x.png
+   sips -z 512 512 $S --out $I/icon_512x512.png
+   cp $S $I/icon_512x512@2x.png
+   iconutil -c icns $I -o assets/icon.icns
    ```
-5. Generate all iconset sizes + `.icns`:
-   ```bash
-   SOURCE="/tmp/icon-masked.png"
-   ICONSET="packages/apps/desktop/assets/icon.iconset"
-   sips -z 16 16 "$SOURCE" --out "$ICONSET/icon_16x16.png"
-   sips -z 32 32 "$SOURCE" --out "$ICONSET/icon_16x16@2x.png"
-   sips -z 32 32 "$SOURCE" --out "$ICONSET/icon_32x32.png"
-   sips -z 64 64 "$SOURCE" --out "$ICONSET/icon_32x32@2x.png"
-   sips -z 128 128 "$SOURCE" --out "$ICONSET/icon_128x128.png"
-   sips -z 256 256 "$SOURCE" --out "$ICONSET/icon_128x128@2x.png"
-   sips -z 256 256 "$SOURCE" --out "$ICONSET/icon_256x256.png"
-   sips -z 512 512 "$SOURCE" --out "$ICONSET/icon_256x256@2x.png"
-   sips -z 512 512 "$SOURCE" --out "$ICONSET/icon_512x512.png"
-   cp "$SOURCE" "$ICONSET/icon_512x512@2x.png"
-   iconutil -c icns "$ICONSET" -o packages/apps/desktop/assets/icon.icns
-   ```
-6. Copy to app bundle + clear caches:
-   ```bash
-   cp packages/apps/desktop/assets/icon.icns packages/apps/desktop/build/dev-macos-arm64/ctrl.page-dev.app/Contents/Resources/AppIcon.icns
-   sudo killall Dock
-   ```
+4. Commit everything, clear Dock cache: `sudo killall Dock`
 
-### Why the mask script?
-
-Electrobun uses the legacy `.iconset` → `.icns` pipeline which displays icons as-is (no runtime masking). Icon Composer's latest export has opaque corners. The `apply-macos-mask.py` script adds transparent corners + padding to match macOS squircle expectations.
+The mask script adds transparent squircle corners (Electrobun doesn't apply runtime masking).
 
 ## Notes
 
