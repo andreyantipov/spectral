@@ -121,7 +121,6 @@ function WorkspaceContent() {
 			if (panel) panel.api.setActive();
 		}
 
-		api.layout(api.width, api.height, true);
 		scheduleSync();
 		initialized = true;
 	}

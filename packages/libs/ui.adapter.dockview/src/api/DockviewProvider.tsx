@@ -14,11 +14,11 @@ export type DockviewProviderProps = {
 export function DockviewProvider(props: DockviewProviderProps): JSX.Element {
 	let container: HTMLDivElement | undefined;
 	let dockview: DockviewComponent | undefined;
+	let resizeObserver: ResizeObserver | undefined;
 
 	onMount(() => {
 		if (!container) return;
 
-		// Capture components at mount time — no reactive tracking
 		const renderers = Object.fromEntries(
 			Object.entries(props.components).map(([key, comp]) => [key, createSolidRenderer(comp)]),
 		);
@@ -35,14 +35,34 @@ export function DockviewProvider(props: DockviewProviderProps): JSX.Element {
 			dockview.fromJSON(props.initialLayout);
 		}
 
+		// Tell dockview its dimensions from the container
+		const { offsetWidth, offsetHeight } = container;
+		if (offsetWidth > 0 && offsetHeight > 0) {
+			dockview.layout(offsetWidth, offsetHeight);
+		}
+
 		props.onReady?.(dockview.api);
 
 		dockview.api.onDidLayoutChange(() => {
-			props.onLayoutChange?.(dockview!.api);
+			props.onLayoutChange?.(dockview?.api as DockviewApi);
 		});
+
+		// Watch container size and update dockview layout
+		resizeObserver = new ResizeObserver((entries) => {
+			for (const entry of entries) {
+				const { width, height } = entry.contentRect;
+				if (width > 0 && height > 0) {
+					dockview?.layout(width, height);
+				}
+			}
+		});
+		resizeObserver.observe(container);
 	});
 
-	onCleanup(() => dockview?.dispose());
+	onCleanup(() => {
+		resizeObserver?.disconnect();
+		dockview?.dispose();
+	});
 
 	const cls = () => `dockview-theme-dark${props.class ? ` ${props.class}` : ""}`;
 	return <div ref={container} class={cls()} style={{ height: "100%", width: "100%" }} />;
