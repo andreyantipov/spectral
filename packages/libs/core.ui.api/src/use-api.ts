@@ -29,6 +29,7 @@ export function useApi() {
 	};
 
 	return {
+		send,
 		session: {
 			create: (payload: { readonly mode: "visual" }) => send("session.create", payload),
 			close: (payload: { readonly id: string }) => send("session.close", payload),

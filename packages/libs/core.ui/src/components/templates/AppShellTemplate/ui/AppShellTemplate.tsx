@@ -1,5 +1,5 @@
 import { DEFAULT_SHORTCUTS } from "@ctrl/core.port.event-bus";
-import { useEventBus } from "@ctrl/core.ui.api";
+import { useApi } from "@ctrl/core.ui.api";
 import { createEffect, createSignal, type JSX, onCleanup, onMount, Show } from "solid-js";
 import { OmniBox, type OmniBoxProps, type OmniBoxSuggestion } from "../../../molecules/OmniBox";
 import { Notifications } from "../../../organisms/Notifications";
@@ -29,7 +29,7 @@ export type AppShellTemplateProps = {
 export function AppShellTemplate(props: AppShellTemplateProps) {
 	const $ = appShellTemplate;
 	const [omniboxOpen, setOmniboxOpen] = createSignal(false);
-	const { send } = useEventBus();
+	const { send } = useApi();
 	let ipcUnsub: (() => void) | undefined;
 
 	function openOmnibox() {

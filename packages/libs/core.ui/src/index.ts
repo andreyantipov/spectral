@@ -1,4 +1,3 @@
-export { useEventBus } from "@ctrl/core.ui.api";
 export type { ButtonProps } from "./components/atoms/Button";
 export { Button } from "./components/atoms/Button";
 export type { InputProps } from "./components/atoms/Input";
