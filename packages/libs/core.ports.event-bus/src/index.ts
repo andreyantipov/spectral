@@ -30,4 +30,6 @@ export class EventBus extends Context.Tag(EVENT_BUS_ID)<
 	}
 >() {}
 
+export { EventBusHandlersLive } from "./event-bus.handlers";
 export { EventBusLive } from "./event-bus.live";
+export { EventBusRpcs } from "./event-bus.rpc";

@@ -1,6 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { EventBusRpcs } from "@ctrl/core.ports.event-bus";
 import { APP_NAME, APP_VERSION } from "@ctrl/core.shared";
 import { ensureSchema } from "@ctrl/domain.adapter.db";
 import { createIpcBridge, type ElectrobunHandle } from "@ctrl/domain.adapter.electrobun";
@@ -90,7 +91,7 @@ const ServerProtocolLive = Layer.scoped(
 
 const HandlersFromRuntime = Layer.succeedContext(rt.context) as Layer.Layer<AppLayer, never, never>;
 
-const AllRpcs = BrowsingRpcs.merge(WorkspaceRpcs);
+const AllRpcs = BrowsingRpcs.merge(WorkspaceRpcs).merge(EventBusRpcs);
 const ServerLive = RpcServer.layer(AllRpcs).pipe(
 	Layer.provide(ServerProtocolLive),
 	Layer.provide(HandlersFromRuntime),

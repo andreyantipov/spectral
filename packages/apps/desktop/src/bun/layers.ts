@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { EventBusLive } from "@ctrl/core.ports.event-bus";
+import { EventBusHandlersLive, EventBusLive } from "@ctrl/core.ports.event-bus";
 import {
 	BookmarkRepositoryLive,
 	HistoryRepositoryLive,
@@ -51,15 +51,21 @@ const OtelLayer = OtelLive(OTEL_SERVICE_NAMES.main);
 const TracedBrowsingLayer = BrowsingHandlersLayer.pipe(Layer.provide(OtelLayer));
 const TracedWorkspaceLayer = WorkspaceHandlersLayer.pipe(Layer.provide(OtelLayer));
 
+// EventBus: handlers need the EventBus service from EventBusLive
+const EventBusHandlersLayer = EventBusHandlersLive.pipe(Layer.provide(EventBusLive));
+
 // Compose: expose all layers needed by the app
 // - DbClientLive: for migrations (LibsqlClient)
 // - TracedBrowsingLayer: browsing RPC handlers with OTEL tracing
 // - TracedWorkspaceLayer: workspace RPC handlers with OTEL tracing
+// - EventBusLive: EventBus service
+// - EventBusHandlersLayer: EventBus RPC handlers
 export const DesktopLive = Layer.mergeAll(
 	DbClientLive,
 	TracedBrowsingLayer,
 	TracedWorkspaceLayer,
 	EventBusLive,
+	EventBusHandlersLayer,
 );
 
 export type AppLayer = Layer.Layer.Success<typeof DesktopLive>;
