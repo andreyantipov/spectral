@@ -64,6 +64,6 @@ export function DockviewProvider(props: DockviewProviderProps): JSX.Element {
 		dockview?.dispose();
 	});
 
-	const cls = () => `dockview-theme-dark${props.class ? ` ${props.class}` : ""}`;
+	const cls = () => `dockview-theme-abyss-spaced${props.class ? ` ${props.class}` : ""}`;
 	return <div ref={container} class={cls()} style={{ height: "100%", width: "100%" }} />;
 }
