@@ -1,3 +1,10 @@
+# [0.13.0](https://github.com/andreyantipov/spectral/compare/v0.12.0...v0.13.0) (2026-03-22)
+
+
+### Features
+
+* arch: Phase 2-3 completion — delete core.shared, absorb adapters, fix boundaries ([#14](https://github.com/andreyantipov/spectral/issues/14)) ([d8017d6](https://github.com/andreyantipov/spectral/commit/d8017d6764b0ad855e19e632a6b5bb56984b40a0))
+
 # [0.12.0](https://github.com/andreyantipov/spectral/compare/v0.11.0...v0.12.0) (2026-03-22)
 
 
