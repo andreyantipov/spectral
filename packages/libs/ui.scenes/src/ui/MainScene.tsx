@@ -49,17 +49,16 @@ function EmptyPanelRenderer(panelProps: PanelProps) {
 		<EmptyPane
 			onCreateTab={() => {
 				if (!bindings) return;
-				bindings.createSession().then(() => {
-					// Wait TWO frames: 1st for session state to propagate,
-					// 2nd for sync effect to add the new panel to dockview
+				bindings.createSession();
+				// Wait TWO frames: 1st for session state to propagate,
+				// 2nd for sync effect to add the new panel to dockview
+				requestAnimationFrame(() => {
 					requestAnimationFrame(() => {
-						requestAnimationFrame(() => {
-							try {
-								panelProps.api?.close();
-							} catch {
-								// Panel may already be cleaned up
-							}
-						});
+						try {
+							panelProps.api?.close();
+						} catch {
+							// Panel may already be cleaned up
+						}
 					});
 				});
 			}}
