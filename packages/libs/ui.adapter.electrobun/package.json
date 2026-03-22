@@ -9,8 +9,5 @@
 	"scripts": {
 		"check": "tsgo --noEmit",
 		"test": "vitest run"
-	},
-	"dependencies": {
-		"@ctrl/core.shared": "workspace:*"
 	}
 }

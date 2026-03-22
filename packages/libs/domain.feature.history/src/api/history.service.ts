@@ -1,6 +1,6 @@
 import type { DatabaseError } from "@ctrl/core.base.errors";
 import type { HistoryEntry } from "@ctrl/core.base.model";
-import { HistoryRepository, makeFeatureService } from "@ctrl/core.shared";
+import { HistoryRepository, makeFeatureService } from "@ctrl/core.port.storage";
 import { Context, Effect, type Stream } from "effect";
 import { HISTORY_FEATURE } from "../lib/constants";
 

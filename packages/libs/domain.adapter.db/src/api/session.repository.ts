@@ -2,7 +2,7 @@ import { DatabaseError } from "@ctrl/core.base.errors";
 import type { Page, Session } from "@ctrl/core.base.model";
 import { withTracing } from "@ctrl/core.base.tracing";
 import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
-import { SessionRepository } from "@ctrl/core.shared";
+import { SessionRepository } from "@ctrl/core.port.storage";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { Effect, Layer } from "effect";

@@ -14,7 +14,6 @@
 		"@ctrl/core.base.model": "workspace:*",
 		"@ctrl/core.base.tracing": "workspace:*",
 		"@ctrl/core.base.types": "workspace:*",
-		"@ctrl/core.shared": "workspace:*",
 		"@ctrl/core.ui": "workspace:*",
 		"@ctrl/core.ui.api": "workspace:*",
 		"@ctrl/domain.feature.session": "workspace:*",

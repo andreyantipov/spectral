@@ -1,6 +1,6 @@
 import type { Bookmark, HistoryEntry, Page, Session } from "@ctrl/core.base.model";
 import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
-import { BookmarkRepository, HistoryRepository, SessionRepository } from "@ctrl/core.shared";
+import { BookmarkRepository, HistoryRepository, SessionRepository } from "@ctrl/core.port.storage";
 import { type TestSpanExporter, TestSpanExporterLive } from "@ctrl/domain.adapter.otel";
 import { BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeatureLive } from "@ctrl/domain.feature.history";

@@ -1,5 +1,5 @@
+import { withTracing } from "@ctrl/core.base.tracing";
 import { type Context, Effect, Layer, PubSub, Stream } from "effect";
-import { withTracing } from "../lib/with-tracing";
 
 /**
  * Factory for creating feature services with PubSub reactivity.

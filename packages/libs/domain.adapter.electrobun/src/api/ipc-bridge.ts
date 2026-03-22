@@ -1,4 +1,4 @@
-import type { AppCommand } from "@ctrl/core.shared";
+import type { AppCommand } from "../model/commands";
 import type { ElectrobunHandle } from "../model/handle";
 
 const CHANNEL = "app-commands";

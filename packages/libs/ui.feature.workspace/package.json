@@ -10,7 +10,6 @@
 		"check": "tsgo --noEmit"
 	},
 	"dependencies": {
-		"@ctrl/core.shared": "workspace:*",
 		"@ctrl/core.ui": "workspace:*",
 		"@ctrl/ui.adapter.dockview": "workspace:*",
 		"@ctrl/domain.service.workspace": "workspace:*"
