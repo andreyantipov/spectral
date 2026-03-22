@@ -1,4 +1,4 @@
-import { HistoryRepository } from "@ctrl/core.shared";
+import { HistoryRepository } from "@ctrl/core.port.storage";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { LibsqlClient } from "@effect/sql-libsql";
 import { Effect, Layer } from "effect";

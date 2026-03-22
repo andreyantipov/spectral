@@ -1,6 +1,6 @@
 import { DatabaseError } from "@ctrl/core.base.errors";
 import { withTracing } from "@ctrl/core.base.tracing";
-import { LayoutRepository } from "@ctrl/core.shared";
+import { LayoutRepository } from "@ctrl/core.port.storage";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { eq } from "drizzle-orm";
 import { Effect, Layer } from "effect";

@@ -1,5 +1,5 @@
 {
-	"name": "@ctrl/domain.feature.session",
+	"name": "@ctrl/core.port.storage",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -13,8 +13,6 @@
 	"dependencies": {
 		"@ctrl/core.base.errors": "workspace:*",
 		"@ctrl/core.base.model": "workspace:*",
-		"@ctrl/core.base.tracing": "workspace:*",
-		"@ctrl/core.base.types": "workspace:*",
-		"@ctrl/core.port.storage": "workspace:*"
+		"@ctrl/core.base.tracing": "workspace:*"
 	}
 }

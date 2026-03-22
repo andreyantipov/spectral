@@ -1,4 +1,4 @@
-import { LayoutRepository } from "@ctrl/core.shared";
+import { LayoutRepository } from "@ctrl/core.port.storage";
 import { Chunk, Duration, Effect, Fiber, Layer, Stream } from "effect";
 import { describe, expect, it } from "vitest";
 import type { PersistedLayout } from "../model/layout.validators";

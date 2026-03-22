@@ -1,5 +1,5 @@
-import type { AppCommand } from "@ctrl/core.shared";
 import { describe, expect, it } from "vitest";
+import type { AppCommand } from "../model/commands";
 import { createIpcBridge } from "./ipc-bridge";
 
 const createMockHandle = () => {

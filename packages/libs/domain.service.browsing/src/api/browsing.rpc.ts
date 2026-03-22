@@ -4,9 +4,9 @@ import {
 	HistoryEntry as HistoryEntrySchema,
 	Session as SessionSchema,
 } from "@ctrl/core.base.model";
-import { BrowsingStateSchema } from "@ctrl/core.shared";
 import { Rpc, RpcGroup } from "@effect/rpc";
 import { Schema } from "effect";
+import { BrowsingStateSchema } from "../model/browsing.events";
 
 export class BrowsingRpcs extends RpcGroup.make(
 	// Session RPCs

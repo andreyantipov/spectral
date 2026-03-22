@@ -6,8 +6,7 @@ const DEBOUNCE_MS = 200;
 const watchDirs = [
 	resolve("src/main-ui"),
 	resolve("../../libs/core.ui/src"),
-	resolve("../../libs/core.shared/src"),
-	resolve("../../libs/feature.sidebar-tabs/src"),
+	resolve("../../libs/core.port.storage/src"),
 ];
 
 async function buildView() {

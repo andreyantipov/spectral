@@ -2,7 +2,7 @@ import type { DatabaseError } from "@ctrl/core.base.errors";
 import type { Bookmark, HistoryEntry, Page, Session } from "@ctrl/core.base.model";
 import { spanName } from "@ctrl/core.base.tracing";
 import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
-import { BookmarkRepository, HistoryRepository, SessionRepository } from "@ctrl/core.shared";
+import { BookmarkRepository, HistoryRepository, SessionRepository } from "@ctrl/core.port.storage";
 import {
 	assertContainsSpan,
 	TestSpanExporter,

@@ -1,7 +1,7 @@
 import { DatabaseError } from "@ctrl/core.base.errors";
 import type { HistoryEntry } from "@ctrl/core.base.model";
 import { withTracing } from "@ctrl/core.base.tracing";
-import { HistoryRepository } from "@ctrl/core.shared";
+import { HistoryRepository } from "@ctrl/core.port.storage";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { desc, sql } from "drizzle-orm";
 import { Effect, Layer } from "effect";
