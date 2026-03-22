@@ -1,4 +1,4 @@
-import { currentUrl } from "@ctrl/core.shared";
+import { currentUrl } from "@ctrl/core.base.types";
 import { BlankPage } from "@ctrl/core.ui";
 import type { PanelProps } from "@ctrl/ui.adapter.dockview";
 import { DockviewProvider } from "@ctrl/ui.adapter.dockview";

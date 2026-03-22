@@ -11,7 +11,7 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@ctrl/core.shared": "workspace:*",
+		"@ctrl/core.base.types": "workspace:*",
 		"@ctrl/core.ui": "workspace:*",
 		"@ctrl/ui.adapter.dockview": "workspace:*",
 		"@ctrl/ui.adapter.electrobun": "workspace:*",

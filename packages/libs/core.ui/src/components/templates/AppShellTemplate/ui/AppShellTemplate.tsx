@@ -1,4 +1,4 @@
-import { DEFAULT_SHORTCUTS } from "@ctrl/core.shared";
+import { DEFAULT_SHORTCUTS } from "@ctrl/core.port.event-bus";
 import { createEffect, createSignal, type JSX, onCleanup, onMount, Show } from "solid-js";
 import { useEventBus } from "../../../../lib/use-event-bus";
 import { OmniBox, type OmniBoxProps, type OmniBoxSuggestion } from "../../../molecules/OmniBox";

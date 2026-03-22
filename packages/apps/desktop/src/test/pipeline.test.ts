@@ -1,4 +1,5 @@
-import { type Session, spanName } from "@ctrl/core.shared";
+import type { Session } from "@ctrl/core.base.model";
+import { spanName } from "@ctrl/core.base.tracing";
 import { assertContainsSpan, TestSpanExporter } from "@ctrl/domain.adapter.otel";
 import { SESSION_FEATURE } from "@ctrl/domain.feature.session";
 import { BROWSING_SERVICE, BrowsingRpcs, type BrowsingState } from "@ctrl/domain.service.browsing";

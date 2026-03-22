@@ -1,13 +1,6 @@
-import {
-	type Bookmark,
-	BookmarkRepository,
-	DEFAULT_TAB_URL,
-	type HistoryEntry,
-	HistoryRepository,
-	type Page,
-	type Session,
-	SessionRepository,
-} from "@ctrl/core.shared";
+import type { Bookmark, HistoryEntry, Page, Session } from "@ctrl/core.base.model";
+import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
+import { BookmarkRepository, HistoryRepository, SessionRepository } from "@ctrl/core.shared";
 import { type TestSpanExporter, TestSpanExporterLive } from "@ctrl/domain.adapter.otel";
 import { BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
