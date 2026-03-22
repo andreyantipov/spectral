@@ -12,4 +12,5 @@ export type { AppCommand, ShowNotification, ToggleCommandCenter } from "./model/
 export * from "./model/errors";
 export * from "./model/ports";
 export * from "./model/schemas";
+export * from "./model/shortcuts";
 export * from "./rpc-schemas";
