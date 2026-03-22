@@ -1,3 +1,10 @@
+# [0.11.0](https://github.com/andreyantipov/spectral/compare/v0.10.0...v0.11.0) (2026-03-22)
+
+
+### Features
+
+* arch: event-driven v2 phase 1 — core restructure + rename to Spectral ([#11](https://github.com/andreyantipov/spectral/issues/11)) ([fe5318e](https://github.com/andreyantipov/spectral/commit/fe5318ee3c22ba670bf336da8f10ca45db30a3ba))
+
 # [0.10.0](https://github.com/andreyantipov/ctrl.page/compare/v0.9.0...v0.10.0) (2026-03-22)
 
 
