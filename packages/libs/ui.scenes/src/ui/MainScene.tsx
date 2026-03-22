@@ -6,6 +6,7 @@ import { SessionWebview, syncAllWebviewDimensions } from "@ctrl/ui.adapter.elect
 import { SidebarFeature, type WebviewBindings } from "@ctrl/ui.feature.sidebar";
 import type { DockviewApi } from "dockview-core";
 import { createContext, createEffect, createMemo, Show, untrack, useContext } from "solid-js";
+import { EmptyPane } from "./EmptyPane";
 
 const BindingsContext = createContext<WebviewBindings>();
 
@@ -41,7 +42,12 @@ function SessionPanel(panelProps: PanelProps) {
 	);
 }
 
-const COMPONENTS = { session: SessionPanel };
+function EmptyPanelRenderer(_panelProps: PanelProps) {
+	// TODO: wire to session creation once WebviewBindings exposes createSession
+	return <EmptyPane onCreateTab={() => {}} />;
+}
+
+const COMPONENTS = { session: SessionPanel, empty: EmptyPanelRenderer };
 
 function WorkspaceContent() {
 	const maybeBindings = useContext(BindingsContext);
