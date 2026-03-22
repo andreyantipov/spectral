@@ -1,5 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { EventBusLive } from "@ctrl/core.ports.event-bus";
 import {
 	BookmarkRepositoryLive,
 	HistoryRepositoryLive,
@@ -54,6 +55,11 @@ const TracedWorkspaceLayer = WorkspaceHandlersLayer.pipe(Layer.provide(OtelLayer
 // - DbClientLive: for migrations (LibsqlClient)
 // - TracedBrowsingLayer: browsing RPC handlers with OTEL tracing
 // - TracedWorkspaceLayer: workspace RPC handlers with OTEL tracing
-export const DesktopLive = Layer.mergeAll(DbClientLive, TracedBrowsingLayer, TracedWorkspaceLayer);
+export const DesktopLive = Layer.mergeAll(
+	DbClientLive,
+	TracedBrowsingLayer,
+	TracedWorkspaceLayer,
+	EventBusLive,
+);
 
 export type AppLayer = Layer.Layer.Success<typeof DesktopLive>;
