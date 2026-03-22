@@ -41,6 +41,7 @@ export function SessionWebview(props: SessionWebviewProps) {
 		containerRef.appendChild(htmlEl);
 		el.addMaskSelector("[data-omnibox]");
 		el.addMaskSelector("[data-sidebar]");
+		el.addMaskSelector("[data-context-menu]");
 		currentLoadedUrl = url;
 
 		el.on("did-navigate", (event: CustomEvent) => {

@@ -42,14 +42,29 @@ function SessionPanel(panelProps: PanelProps) {
 	);
 }
 
-function EmptyPanelRenderer(_panelProps: PanelProps) {
+function EmptyPanelRenderer(panelProps: PanelProps) {
 	const bindings = useContext(BindingsContext);
 	return (
 		<EmptyPane
 			onCreateTab={() => {
-				// Create a new session — it will be added to dockview via the session sync effect.
-				// The empty panel will be cleaned up when the new session panel replaces it.
-				void bindings?.createSession();
+				if (!bindings) return;
+				// Create a new session, then replace this empty panel with the session panel
+				bindings.createSession().then(() => {
+					// The session sync effect will add the new session panel.
+					// Remove this empty panel after a short delay to let the sync happen first.
+					requestAnimationFrame(() => {
+						try {
+							// Access the panel's group to add the new session there
+							const panelApi = panelProps.api;
+							if (panelApi) {
+								// Close this empty panel — the session sync effect handles adding the new one
+								panelApi.close();
+							}
+						} catch {
+							// Panel may already be cleaned up
+						}
+					});
+				});
 			}}
 		/>
 	);

@@ -110,6 +110,16 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 	const [ctxMenuPos, setCtxMenuPos] = createSignal<{ x: number; y: number } | null>(null);
 	const [ctxMenuTarget, setCtxMenuTarget] = createSignal<string | null>(null);
 
+	// Sync webview masks when context menu opens/closes
+	createEffect(() => {
+		const _pos = ctxMenuPos();
+		requestAnimationFrame(() => {
+			document.querySelectorAll("electrobun-webview").forEach((el) => {
+				(el as HTMLElement & { syncDimensions: (f?: boolean) => void }).syncDimensions(true);
+			});
+		});
+	});
+
 	const ctxMenuItems: ContextMenuItem[] = [
 		{ id: "split-right", label: "Split Right" },
 		{ id: "split-down", label: "Split Down" },

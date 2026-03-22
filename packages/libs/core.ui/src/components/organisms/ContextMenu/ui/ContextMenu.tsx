@@ -91,6 +91,7 @@ export function ContextMenu(props: ContextMenuProps) {
 					ref={rootRef}
 					class={$.root}
 					role="menu"
+					data-context-menu
 					style={{
 						position: "fixed",
 						left: `${clampedPosition().x}px`,
