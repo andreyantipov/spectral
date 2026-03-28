@@ -1,3 +1,10 @@
+# [0.15.0](https://github.com/andreyantipov/spectral/compare/v0.14.0...v0.15.0) (2026-03-28)
+
+
+### Features
+
+* arch: EventLog integration + runtime packages + full cleanup ([#17](https://github.com/andreyantipov/spectral/issues/17)) ([a4e3b7a](https://github.com/andreyantipov/spectral/commit/a4e3b7a536f9c836bada3a00db1b5b2a118bc9a3))
+
 # [0.14.0](https://github.com/andreyantipov/spectral/compare/v0.13.0...v0.14.0) (2026-03-28)
 
 
