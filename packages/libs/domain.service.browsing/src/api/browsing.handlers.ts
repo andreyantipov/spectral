@@ -1,30 +1,102 @@
 import {
 	type AppCommand,
-	BM_ADD,
-	BM_REMOVE,
+	BookmarkEvents,
 	type BrowsingState,
-	DIAG_PING,
-	DIAG_PONG,
 	EventBus,
-	MUTATION_TAGS,
-	NAV_BACK,
-	NAV_FORWARD,
-	NAV_NAVIGATE,
-	NAV_REPORT,
-	NAV_UPDATE_TITLE,
-	SESSION_ACTIVATE,
-	SESSION_CLOSE,
-	SESSION_CREATE,
+	NavigationEvents,
+	SessionEvents,
 	STATE_SNAPSHOT,
 } from "@ctrl/core.port.event-bus";
 import { BookmarkFeature } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeature } from "@ctrl/domain.feature.history";
 import { OmniboxFeature } from "@ctrl/domain.feature.omnibox";
 import { SessionFeature } from "@ctrl/domain.feature.session";
+import { EventLog } from "@effect/experimental";
 import { Cause, Effect, Layer, Stream } from "effect";
 import { BROWSING_SERVICE } from "../lib/constants";
 
-type Payload = Record<string, unknown>;
+// -- EventLog.group() handlers — exhaustive, typed from EventGroup ------------
+
+export const SessionHandlers = EventLog.group(SessionEvents, (h) =>
+	h
+		.handle("session.create", ({ payload }) =>
+			Effect.gen(function* () {
+				const sessions = yield* SessionFeature;
+				const session = yield* sessions.create(payload.mode);
+				yield* sessions.setActive(session.id);
+				return session;
+			}),
+		)
+		.handle("session.close", ({ payload }) =>
+			Effect.gen(function* () {
+				const sessions = yield* SessionFeature;
+				yield* sessions.remove(payload.id);
+			}),
+		)
+		.handle("session.activate", ({ payload }) =>
+			Effect.gen(function* () {
+				const sessions = yield* SessionFeature;
+				yield* sessions.setActive(payload.id);
+			}),
+		),
+);
+
+export const NavigationHandlers = EventLog.group(NavigationEvents, (h) =>
+	h
+		.handle("nav.navigate", ({ payload }) =>
+			Effect.gen(function* () {
+				const sessions = yield* SessionFeature;
+				const omnibox = yield* OmniboxFeature;
+				const history = yield* HistoryFeature;
+				const { url, query } = yield* omnibox.resolve(payload.input);
+				const session = yield* sessions.navigate(payload.id, url);
+				yield* history.record(url, null, query).pipe(Effect.ignore);
+				return session;
+			}),
+		)
+		.handle("nav.back", ({ payload }) =>
+			Effect.gen(function* () {
+				const sessions = yield* SessionFeature;
+				return yield* sessions.goBack(payload.id);
+			}),
+		)
+		.handle("nav.forward", ({ payload }) =>
+			Effect.gen(function* () {
+				const sessions = yield* SessionFeature;
+				return yield* sessions.goForward(payload.id);
+			}),
+		)
+		.handle("nav.report", ({ payload }) =>
+			Effect.gen(function* () {
+				const sessions = yield* SessionFeature;
+				const history = yield* HistoryFeature;
+				yield* sessions.updateUrl(payload.id, payload.url);
+				yield* history.record(payload.url, null, null).pipe(Effect.ignore);
+			}),
+		)
+		.handle("nav.update-title", ({ payload }) =>
+			Effect.gen(function* () {
+				const sessions = yield* SessionFeature;
+				yield* sessions.updateTitle(payload.id, payload.title);
+			}),
+		),
+);
+
+export const BookmarkHandlers = EventLog.group(BookmarkEvents, (h) =>
+	h
+		.handle("bm.add", ({ payload }) =>
+			Effect.gen(function* () {
+				const bookmarks = yield* BookmarkFeature;
+				return yield* bookmarks.create(payload.url, payload.title);
+			}),
+		)
+		.handle("bm.remove", ({ payload }) =>
+			Effect.gen(function* () {
+				const bookmarks = yield* BookmarkFeature;
+				yield* bookmarks.remove(payload.id);
+			}),
+		),
+);
 
 // -- Snapshot publishing ------------------------------------------------------
 
@@ -42,138 +114,55 @@ const publishSnapshot = Effect.gen(function* () {
 	});
 });
 
-// -- Command handlers ---------------------------------------------------------
+// -- Commands that trigger snapshot -------------------------------------------
 
-const handleSessionCreate = (p: Payload) =>
-	Effect.gen(function* () {
-		const sessions = yield* SessionFeature;
-		const mode = typeof p.mode === "string" ? (p.mode as "visual") : "visual";
-		const session = yield* sessions.create(mode);
-		yield* sessions.setActive(session.id);
-	});
+const MUTATION_ACTIONS = new Set([
+	"session.create",
+	"session.close",
+	"session.activate",
+	"nav.navigate",
+	"nav.back",
+	"nav.forward",
+	"nav.report",
+	"nav.update-title",
+	"bm.add",
+	"bm.remove",
+]);
 
-const handleSessionClose = (p: Payload) =>
-	Effect.gen(function* () {
-		const sessions = yield* SessionFeature;
-		yield* sessions.remove(p.id as string);
-	});
+// -- BrowsingServiceLive — bridges EventBus commands to EventLog dispatch -----
 
-const handleSessionActivate = (p: Payload) =>
-	Effect.gen(function* () {
-		const sessions = yield* SessionFeature;
-		yield* sessions.setActive(p.id as string);
-	});
-
-const handleNavNavigate = (p: Payload) =>
-	Effect.gen(function* () {
-		const sessions = yield* SessionFeature;
-		const omnibox = yield* OmniboxFeature;
-		const history = yield* HistoryFeature;
-		const { url, query } = yield* omnibox.resolve(p.input as string);
-		yield* sessions.navigate(p.id as string, url);
-		yield* history.record(url, null, query).pipe(Effect.ignore);
-	});
-
-const handleNavBack = (p: Payload) =>
-	Effect.gen(function* () {
-		const sessions = yield* SessionFeature;
-		yield* sessions.goBack(p.id as string);
-	});
-
-const handleNavForward = (p: Payload) =>
-	Effect.gen(function* () {
-		const sessions = yield* SessionFeature;
-		yield* sessions.goForward(p.id as string);
-	});
-
-const handleNavReport = (p: Payload) =>
-	Effect.gen(function* () {
-		const sessions = yield* SessionFeature;
-		const history = yield* HistoryFeature;
-		yield* sessions.updateUrl(p.id as string, p.url as string);
-		yield* history.record(p.url as string, null, null).pipe(Effect.ignore);
-	});
-
-const handleNavUpdateTitle = (p: Payload) =>
-	Effect.gen(function* () {
-		const sessions = yield* SessionFeature;
-		yield* sessions.updateTitle(p.id as string, p.title as string);
-	});
-
-const handleBmAdd = (p: Payload) =>
-	Effect.gen(function* () {
-		const bookmarks = yield* BookmarkFeature;
-		yield* bookmarks.create(p.url as string, (p.title as string | null) ?? null);
-	});
-
-const handleBmRemove = (p: Payload) =>
-	Effect.gen(function* () {
-		const bookmarks = yield* BookmarkFeature;
-		yield* bookmarks.remove(p.id as string);
-	});
-
-const handleDiagPing = () =>
-	Effect.gen(function* () {
-		const bus = yield* EventBus;
-		yield* bus.publish({
-			type: "event",
-			name: DIAG_PONG,
-			timestamp: Date.now(),
-			payload: { message: "EventBus alive" },
-			causedBy: DIAG_PING,
-		});
-	});
-
-// -- Dispatch table -----------------------------------------------------------
-
-type Services = BookmarkFeature | EventBus | HistoryFeature | OmniboxFeature | SessionFeature;
-type HandlerFn = (p: Payload) => Effect.Effect<void, unknown, Services>;
-
-const handlers: Record<string, HandlerFn | undefined> = {
-	[SESSION_CREATE]: (p) => handleSessionCreate(p),
-	[SESSION_CLOSE]: (p) => (p.id ? handleSessionClose(p) : Effect.void),
-	[SESSION_ACTIVATE]: (p) => (p.id ? handleSessionActivate(p) : Effect.void),
-	[NAV_NAVIGATE]: (p) => (p.id && p.input ? handleNavNavigate(p) : Effect.void),
-	[NAV_BACK]: (p) => (p.id ? handleNavBack(p) : Effect.void),
-	[NAV_FORWARD]: (p) => (p.id ? handleNavForward(p) : Effect.void),
-	[NAV_REPORT]: (p) => (p.id && p.url ? handleNavReport(p) : Effect.void),
-	[NAV_UPDATE_TITLE]: (p) => (p.id && p.title ? handleNavUpdateTitle(p) : Effect.void),
-	[BM_ADD]: (p) => (p.url ? handleBmAdd(p) : Effect.void),
-	[BM_REMOVE]: (p) => (p.id ? handleBmRemove(p) : Effect.void),
-	[DIAG_PING]: () => handleDiagPing(),
-};
-
-const dispatch = (cmd: AppCommand) => {
-	const handler = handlers[cmd.action];
-	if (!handler) return Effect.void;
-	const effect = handler((cmd.payload as Payload) ?? {});
-	if (MUTATION_TAGS.has(cmd.action)) {
-		return effect.pipe(Effect.andThen(publishSnapshot));
-	}
-	return effect;
-};
-
-/**
- * BrowsingServiceLive listens to EventBus commands and dispatches to domain
- * features. After mutations, publishes state.snapshot events with full
- * browsing state (sessions + bookmarks + history).
- */
 export const BrowsingServiceLive = Layer.scopedDiscard(
 	Effect.gen(function* () {
 		const bus = yield* EventBus;
+		const client = yield* EventLog.makeClient(
+			EventLog.schema(SessionEvents, NavigationEvents, BookmarkEvents),
+		);
 
-		// Listen for commands and dispatch
 		yield* bus.commands.pipe(
-			Stream.runForEach((cmd) =>
-				dispatch(cmd).pipe(
+			Stream.runForEach((cmd: AppCommand) => {
+				const action = cmd.action;
+				const payload = (cmd.payload ?? {}) as Record<string, unknown>;
+
+				const effect = Effect.gen(function* () {
+					// Try to dispatch via EventLog typed client
+					yield* (client as (tag: string, p: unknown) => Effect.Effect<unknown, unknown>)(
+						action,
+						payload,
+					);
+				}).pipe(
 					Effect.catchAllCause((cause) => {
 						if (Cause.isFailure(cause)) {
-							console.error(`[${BROWSING_SERVICE}] ${cmd.action}:`, Cause.pretty(cause));
+							console.error(`[${BROWSING_SERVICE}] ${action}:`, Cause.pretty(cause));
 						}
 						return Effect.void;
 					}),
-				),
-			),
+				);
+
+				if (MUTATION_ACTIONS.has(action)) {
+					return effect.pipe(Effect.andThen(publishSnapshot));
+				}
+				return effect;
+			}),
 			Effect.forkScoped,
 		);
 

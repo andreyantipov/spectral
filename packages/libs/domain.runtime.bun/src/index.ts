@@ -1,4 +1,4 @@
-import { EventBusHandlersLive, EventBusLive } from "@ctrl/core.port.event-bus";
+import { AppEvents, EventBusHandlersLive, EventBusLive } from "@ctrl/core.port.event-bus";
 import {
 	BookmarkRepositoryLive,
 	HistoryRepositoryLive,
@@ -10,13 +10,18 @@ import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
 import { LayoutFeatureLive } from "@ctrl/domain.feature.layout";
 import { OmniboxFeatureLive } from "@ctrl/domain.feature.omnibox";
 import { SessionFeatureLive } from "@ctrl/domain.feature.session";
-import { BrowsingServiceLive } from "@ctrl/domain.service.browsing";
+import {
+	BookmarkHandlers,
+	BrowsingServiceLive,
+	NavigationHandlers,
+	SessionHandlers,
+} from "@ctrl/domain.service.browsing";
 import { WorkspaceHandlersLive } from "@ctrl/domain.service.workspace";
+import { EventJournal, EventLog } from "@effect/experimental";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
-import { Layer } from "effect";
+import { Effect, Layer } from "effect";
 
 // -- Storage: Drizzle ORM + repositories --------------------------------------
-// Requires: SqlClient (provided by app via makeDbClient)
 
 const DrizzleLive = drizzleLayer;
 
@@ -32,20 +37,38 @@ const BookmarkFeatureLayer = BookmarkFeatureLive.pipe(Layer.provide(BookmarkRepo
 const HistoryFeatureLayer = HistoryFeatureLive.pipe(Layer.provide(HistoryRepositoryLayer));
 const LayoutFeatureLayer = LayoutFeatureLive.pipe(Layer.provide(LayoutRepositoryLayer));
 
+// -- EventLog: typed handlers + in-memory journal -----------------------------
+
+const IdentityLive = Layer.effect(
+	EventLog.Identity,
+	Effect.sync(() => EventLog.Identity.makeRandom()),
+);
+const JournalLive = EventJournal.layerMemory;
+
+const HandlersLive = Layer.mergeAll(
+	SessionHandlers.pipe(Layer.provide(SessionFeatureLayer)),
+	NavigationHandlers.pipe(
+		Layer.provide(SessionFeatureLayer),
+		Layer.provide(OmniboxFeatureLive),
+		Layer.provide(HistoryFeatureLayer),
+	),
+	BookmarkHandlers.pipe(Layer.provide(BookmarkFeatureLayer)),
+);
+
+const EventLogLive = EventLog.layer(AppEvents).pipe(
+	Layer.provide(HandlersLive),
+	Layer.provide(JournalLive),
+	Layer.provide(IdentityLive),
+);
+
 // -- Services -----------------------------------------------------------------
-// WorkspaceHandlersLive needs LayoutFeature (+ Tracer from app-provided OTEL)
 
 const WorkspaceHandlersLayer = WorkspaceHandlersLive.pipe(Layer.provide(LayoutFeatureLayer));
 
-// -- EventBus -----------------------------------------------------------------
-
 const EventBusHandlersLayer = EventBusHandlersLive.pipe(Layer.provide(EventBusLive));
 
-// -- EventBridge: routes EventBus commands to domain feature handlers ---------
-// Re-exports BrowsingServiceLive — listens to EventBus commands, dispatches
-// to features, publishes state snapshots after mutations.
-
-const EventBridgeLive = BrowsingServiceLive.pipe(
+const BrowsingServiceLayer = BrowsingServiceLive.pipe(
+	Layer.provide(EventLogLive),
 	Layer.provide(SessionFeatureLayer),
 	Layer.provide(BookmarkFeatureLayer),
 	Layer.provide(HistoryFeatureLayer),
@@ -55,11 +78,10 @@ const EventBridgeLive = BrowsingServiceLive.pipe(
 
 // -- Compose ------------------------------------------------------------------
 // Requires from app: SqlClient (LibsqlClient) + Tracer (OTEL)
-// Provides: all domain services, EventBus, EventBridge
 
 export const BunLive = Layer.mergeAll(
 	WorkspaceHandlersLayer,
 	EventBusLive,
 	EventBusHandlersLayer,
-	EventBridgeLive,
+	BrowsingServiceLayer,
 );
