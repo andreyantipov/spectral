@@ -1,5 +1,5 @@
 {
-	"name": "@ctrl/domain.service.browsing",
+	"name": "@ctrl/domain.runtime.bun",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -7,21 +7,18 @@
 		".": "./src/index.ts"
 	},
 	"scripts": {
-		"check": "tsgo --noEmit",
-		"test": "vitest run"
+		"check": "tsgo --noEmit"
 	},
 	"dependencies": {
-		"@ctrl/core.base.errors": "workspace:*",
-		"@ctrl/core.base.model": "workspace:*",
-		"@ctrl/core.base.tracing": "workspace:*",
-		"@ctrl/core.base.types": "workspace:*",
 		"@ctrl/core.port.event-bus": "workspace:*",
 		"@ctrl/core.port.storage": "workspace:*",
-		"@ctrl/domain.adapter.otel": "workspace:*",
+		"@ctrl/domain.adapter.db": "workspace:*",
 		"@ctrl/domain.feature.bookmark": "workspace:*",
 		"@ctrl/domain.feature.history": "workspace:*",
 		"@ctrl/domain.feature.layout": "workspace:*",
 		"@ctrl/domain.feature.omnibox": "workspace:*",
-		"@ctrl/domain.feature.session": "workspace:*"
+		"@ctrl/domain.feature.session": "workspace:*",
+		"@ctrl/domain.service.browsing": "workspace:*",
+		"@ctrl/domain.service.workspace": "workspace:*"
 	}
 }

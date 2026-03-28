@@ -8,9 +8,13 @@ const APP_VERSION = rootPkg.version;
 
 import { EventBusRpcs } from "@ctrl/core.port.event-bus";
 import { ensureSchema } from "@ctrl/domain.adapter.db";
-import { createIpcBridge, type ElectrobunHandle } from "@ctrl/domain.adapter.electrobun";
 import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/domain.adapter.otel";
-import { type ElectrobunRpcHandle, ElectrobunServerProtocol } from "@ctrl/domain.adapter.rpc";
+import {
+	createIpcBridge,
+	type ElectrobunHandle,
+	type ElectrobunRpcHandle,
+	ElectrobunServerProtocol,
+} from "@ctrl/domain.service.native";
 import { WorkspaceRpcs } from "@ctrl/domain.service.workspace";
 import { RpcSerialization, RpcServer } from "@effect/rpc";
 import { Layer, ManagedRuntime, Runtime } from "effect";

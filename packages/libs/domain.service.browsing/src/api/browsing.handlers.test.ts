@@ -1,14 +1,24 @@
 import type { Bookmark, HistoryEntry, Page, Session } from "@ctrl/core.base.model";
 import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
-import { EventBus, EventBusLive } from "@ctrl/core.port.event-bus";
+import { AppEvents, EventBus, EventBusLive, SystemEvents } from "@ctrl/core.port.event-bus";
 import { BookmarkRepository, HistoryRepository, SessionRepository } from "@ctrl/core.port.storage";
 import { BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
+import { LayoutFeature } from "@ctrl/domain.feature.layout";
 import { OmniboxFeature } from "@ctrl/domain.feature.omnibox";
 import { SessionFeatureLive } from "@ctrl/domain.feature.session";
+import { EventJournal, EventLog as EventLogMod } from "@effect/experimental";
 import { Chunk, Duration, Effect, Fiber, Layer, Stream } from "effect";
 import { describe, expect, it } from "vitest";
-import { BrowsingServiceLive } from "./browsing.handlers";
+import {
+	BookmarkHandlers,
+	BrowsingServiceLive,
+	NavigationHandlers,
+	SessionHandlers,
+	SystemHandlers,
+	UIHandlers,
+	WorkspaceHandlers,
+} from "./browsing.handlers";
 
 // -- Test helpers -------------------------------------------------------------
 
@@ -136,10 +146,45 @@ const makeMockLayers = () => {
 	const BookmarkLayer = BookmarkFeatureLive.pipe(Layer.provide(MockBookmarkRepo));
 	const HistoryLayer = HistoryFeatureLive.pipe(Layer.provide(MockHistoryRepo));
 
+	const MockLayoutFeature = Layer.succeed(LayoutFeature, {
+		getLayout: () => Effect.succeed({ type: "group" as const, panels: [], activePanel: "" }),
+		getPersistedLayout: () => Effect.succeed(null),
+		updateLayout: () => Effect.void,
+		changes: Stream.empty,
+	});
+
+	// EventLog layers (required by BrowsingServiceLive)
+	const IdentityLive = Layer.succeed(EventLogMod.Identity, EventLogMod.Identity.makeRandom());
+	const JournalLive = EventJournal.layerMemory;
+	const HandlersLive = Layer.mergeAll(
+		SessionHandlers.pipe(Layer.provide(SessionLayer)),
+		NavigationHandlers.pipe(
+			Layer.provide(SessionLayer),
+			Layer.provide(MockOmnibox),
+			Layer.provide(HistoryLayer),
+		),
+		BookmarkHandlers.pipe(Layer.provide(BookmarkLayer)),
+		WorkspaceHandlers.pipe(Layer.provide(MockLayoutFeature)),
+		SystemHandlers.pipe(
+			Layer.provide(SessionLayer),
+			Layer.provide(BookmarkLayer),
+			Layer.provide(HistoryLayer),
+			Layer.provide(EventBusLive),
+		),
+		UIHandlers,
+	);
+	const EventLogLive = EventLogMod.layer(AppEvents).pipe(
+		Layer.provide(HandlersLive),
+		Layer.provide(JournalLive),
+		Layer.provide(IdentityLive),
+	);
+
 	const ServiceLayer = BrowsingServiceLive.pipe(
+		Layer.provide(EventLogLive),
 		Layer.provide(SessionLayer),
 		Layer.provide(BookmarkLayer),
 		Layer.provide(HistoryLayer),
+		Layer.provide(MockLayoutFeature),
 		Layer.provide(MockOmnibox),
 		Layer.provide(EventBusLive),
 	);
@@ -160,7 +205,7 @@ const runWithService = <A, E>(effect: Effect.Effect<A, E, EventBus>) =>
 const sendAndWaitSnapshot = (bus: EventBus["Type"], action: string, payload?: unknown) =>
 	Effect.gen(function* () {
 		const fiber = yield* bus
-			.on("state.snapshot")
+			.on(SystemEvents.events["state.snapshot"].tag)
 			.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
 		yield* Effect.sleep(Duration.millis(10)); // let listener start
 		yield* bus.send({ type: "command", action, payload, meta: { source: "ui" } });
@@ -182,10 +227,10 @@ describe("BrowsingServiceLive — EventBus integration", () => {
 				const bus = yield* EventBus;
 				yield* Effect.sleep(Duration.millis(50));
 				const fiber = yield* bus
-					.on("diag.pong")
+					.on(SystemEvents.events["diag.pong"].tag)
 					.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
 				yield* Effect.sleep(Duration.millis(10));
-				yield* bus.send({ type: "command", action: "diag.ping" });
+				yield* bus.send({ type: "command", action: SystemEvents.events["diag.ping"].tag });
 				yield* Effect.sleep(Duration.millis(100));
 				const events = Chunk.toArray(yield* Fiber.join(fiber));
 				expect(events).toHaveLength(1);
@@ -262,10 +307,10 @@ describe("BrowsingServiceLive — EventBus integration", () => {
 				const bus = yield* EventBus;
 				yield* Effect.sleep(Duration.millis(50));
 				const fiber = yield* bus
-					.on("diag.pong")
+					.on(SystemEvents.events["diag.pong"].tag)
 					.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
 				yield* Effect.sleep(Duration.millis(10));
-				yield* bus.send({ type: "command", action: "diag.ping" });
+				yield* bus.send({ type: "command", action: SystemEvents.events["diag.ping"].tag });
 				yield* Effect.sleep(Duration.millis(100));
 				const events = Chunk.toArray(yield* Fiber.join(fiber));
 				expect(events).toHaveLength(1);

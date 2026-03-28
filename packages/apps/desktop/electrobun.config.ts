@@ -12,7 +12,7 @@ export default {
   },
   build: {
     bun: {
-      entrypoint: "src/bun/index.ts",
+      entrypoint: "build/bun-entry.js",
       external: ["@libsql/client"],
     },
     views: {},

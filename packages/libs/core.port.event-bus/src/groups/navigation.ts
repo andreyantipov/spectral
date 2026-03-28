@@ -1,3 +1,4 @@
+import { DatabaseError, ValidationError } from "@ctrl/core.base.errors";
 import { Session } from "@ctrl/core.base.model";
 import { EventGroup } from "@effect/experimental";
 import { Schema } from "effect";
@@ -32,4 +33,6 @@ export const NavigationEvents = EventGroup.empty
 		primaryKey: (p) => p.id,
 		payload: Schema.Struct({ id: Schema.String, title: Schema.String }),
 		success: Schema.Void,
-	});
+	})
+	.addError(DatabaseError)
+	.addError(ValidationError);

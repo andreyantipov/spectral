@@ -1,3 +1,4 @@
+import { DatabaseError } from "@ctrl/core.base.errors";
 import { Session } from "@ctrl/core.base.model";
 import { EventGroup } from "@effect/experimental";
 import { Schema } from "effect";
@@ -20,4 +21,5 @@ export const SessionEvents = EventGroup.empty
 		primaryKey: (p) => p.id,
 		payload: Schema.Struct({ id: Schema.String }),
 		success: Schema.Void,
-	});
+	})
+	.addError(DatabaseError);

@@ -1,25 +1,7 @@
 import { OTEL_SERVICE_NAMES, OtelWebLive } from "@ctrl/domain.adapter.otel/web";
-import type { ElectrobunRpcHandle } from "@ctrl/domain.adapter.rpc";
-import { ElectrobunClientProtocol } from "@ctrl/domain.adapter.rpc";
-import { RpcClient, RpcSerialization } from "@effect/rpc";
+import { createWebviewLive } from "@ctrl/domain.runtime.webview";
+import type { ElectrobunRpcHandle } from "@ctrl/domain.service.native";
 import { Layer } from "effect";
 
-/**
- * Build the webview-side Effect layer stack.
- *
- * Compose: ElectrobunClientProtocol -> RpcSerialization -> RpcClient.Protocol
- *          + OtelWebLive for browser-side tracing
- *
- * Consumers obtain a typed RPC client from the runtime context — no domain
- * imports needed here.
- */
-export const createWebviewLive = (electrobunRpc: ElectrobunRpcHandle) => {
-	const SerializationLive = RpcSerialization.layerJson;
-
-	const ClientProtocolLive = Layer.scoped(
-		RpcClient.Protocol,
-		ElectrobunClientProtocol(electrobunRpc),
-	).pipe(Layer.provide(SerializationLive));
-
-	return ClientProtocolLive.pipe(Layer.provide(OtelWebLive(OTEL_SERVICE_NAMES.webview)));
-};
+export const createDesktopWebviewLive = (electrobunRpc: ElectrobunRpcHandle) =>
+	createWebviewLive(electrobunRpc).pipe(Layer.provide(OtelWebLive(OTEL_SERVICE_NAMES.webview)));

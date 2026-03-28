@@ -1,13 +1,8 @@
+import { type PanelRef, PanelRefSchema } from "@ctrl/core.base.model";
 import { Schema } from "effect";
 
-export const PanelRefSchema = Schema.Struct({
-	id: Schema.String,
-	type: Schema.Literal("session", "tool"),
-	sessionId: Schema.optional(Schema.String),
-	toolId: Schema.optional(Schema.String),
-});
-
-export type PanelRef = typeof PanelRefSchema.Type;
+export type { PanelRef };
+export { PanelRefSchema };
 
 export const GroupNodeSchema = Schema.Struct({
 	type: Schema.Literal("group"),

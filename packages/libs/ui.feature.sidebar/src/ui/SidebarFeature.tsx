@@ -1,7 +1,7 @@
 import type { Session } from "@ctrl/core.base.model";
 import { withWebTracing } from "@ctrl/core.base.tracing";
 import { currentUrl } from "@ctrl/core.base.types";
-import type { BrowsingState } from "@ctrl/core.port.event-bus";
+import { type BrowsingState, DEFAULT_SHORTCUTS, SystemEvents } from "@ctrl/core.port.event-bus";
 import {
 	AppShellTemplate,
 	ContextMenu,
@@ -14,8 +14,17 @@ import { createEffect, createMemo, createSignal, type JSX } from "solid-js";
 import { SIDEBAR_FEATURE } from "../lib/constants";
 import { buildOmniBoxSuggestions, mapSessionsToSidebarItems } from "../model/sidebar.bindings";
 
-// No tabs = no rail. Sessions is the only section, rail serves no purpose.
 const sidebarTabs: { id: string; icon: JSX.Element; label: string }[] = [];
+
+/** Normalize KeyboardEvent to shortcut string (e.g. "Cmd+T") */
+function toShortcutString(e: KeyboardEvent): string {
+	const parts: string[] = [];
+	if (e.metaKey || e.ctrlKey) parts.push("Cmd");
+	if (e.shiftKey) parts.push("Shift");
+	if (e.altKey) parts.push("Alt");
+	parts.push(e.key.length === 1 ? e.key.toUpperCase() : e.key);
+	return parts.join("+");
+}
 
 export type WebviewBindings = {
 	readonly sessions: () => readonly Session[];
@@ -33,16 +42,15 @@ export type SidebarFeatureProps = {
 
 export function SidebarFeature(props: SidebarFeatureProps) {
 	const api = useApi();
-	const state = api.on<BrowsingState>("state.snapshot");
+	const state = api.on<BrowsingState>(SystemEvents.events["state.snapshot"].tag);
 	const [omniboxQuery, setOmniboxQuery] = createSignal("");
 
-	// Auto-create first session if none exist (guard prevents multiple creates)
 	let autoCreated = false;
 	createEffect(() => {
 		const s = state();
 		if (s && s.sessions.length === 0 && !autoCreated) {
 			autoCreated = true;
-			ops.createSession();
+			api.dispatch("session.create", { mode: "visual" });
 		}
 	});
 
@@ -67,29 +75,22 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		}));
 
 	const activeItemId = () => mappedSessions().find((item) => item.active)?.id ?? null;
-
 	const activeSession = () => state()?.sessions?.find((s) => s.isActive);
 
 	const ops = withWebTracing(SIDEBAR_FEATURE, {
 		navigate: (input: string) => {
 			const session = activeSession();
 			if (session) {
-				void api.nav.navigate({ id: session.id, input });
+				api.dispatch("nav.navigate", { id: session.id, input });
 			}
 		},
-		createSession: () => api.session.create({ mode: "visual" }),
-		switchSession: (id: string) => {
-			void api.session.activate({ id });
-		},
-		closeSession: (id: string) => {
-			void api.session.close({ id });
-		},
-		reportNavigation: (sessionId: string, url: string) => {
-			void api.nav.report({ id: sessionId, url });
-		},
-		updateTitle: (sessionId: string, title: string) => {
-			void api.nav.updateTitle({ id: sessionId, title });
-		},
+		createSession: () => api.dispatch("session.create", { mode: "visual" }),
+		switchSession: (id: string) => api.dispatch("session.activate", { id }),
+		closeSession: (id: string) => api.dispatch("session.close", { id }),
+		reportNavigation: (sessionId: string, url: string) =>
+			api.dispatch("nav.report", { id: sessionId, url }),
+		updateTitle: (sessionId: string, title: string) =>
+			api.dispatch("nav.update-title", { id: sessionId, title }),
 	});
 
 	const activeUrl = () => {
@@ -108,11 +109,59 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 
 	const headerInput = () => activeUrl() ?? "Search or enter URL...";
 
-	// Context menu for tab right-click
+	// Actions that need the active session's ID as their payload
+	const SESSION_ID_ACTIONS = new Set(["session.close", "nav.back", "nav.forward"]);
+
+	const resolveActivatePayload = (binding: (typeof DEFAULT_SHORTCUTS)[number]) => {
+		const idx = Number.parseInt(binding.shortcut.replace("Cmd+", ""), 10) - 1;
+		const sessions = state()?.sessions;
+		if (!sessions || idx < 0 || idx >= sessions.length) return null;
+		return { action: binding.action, payload: { id: sessions[idx].id } };
+	};
+
+	const resolveSplitPayload = (binding: (typeof DEFAULT_SHORTCUTS)[number]) => {
+		const session = activeSession();
+		if (!session) return null;
+		const direction = (binding.payload?.direction as "horizontal" | "vertical") ?? "horizontal";
+		return {
+			action: binding.action,
+			payload: {
+				panelId: session.id,
+				direction,
+				newPanel: { id: crypto.randomUUID(), type: "session", sessionId: session.id },
+			},
+		};
+	};
+
+	type Resolved = { action: string; payload: Record<string, unknown> };
+
+	const resolveShortcutPayload = (binding: (typeof DEFAULT_SHORTCUTS)[number]): Resolved | null => {
+		if (binding.action === "session.activate") return resolveActivatePayload(binding);
+		if (binding.action === "ws.split-panel") return resolveSplitPayload(binding);
+		if (SESSION_ID_ACTIONS.has(binding.action)) {
+			const session = activeSession();
+			return session ? { action: binding.action, payload: { id: session.id } } : null;
+		}
+		return { action: binding.action, payload: {} };
+	};
+
+	const handleKeyDown = (e: KeyboardEvent) => {
+		const shortcutStr = toShortcutString(e);
+		const binding = DEFAULT_SHORTCUTS.find(
+			(s) => s.shortcut.toLowerCase() === shortcutStr.toLowerCase(),
+		);
+		if (!binding) return;
+		e.preventDefault();
+
+		const resolved = resolveShortcutPayload(binding);
+		if (!resolved) return;
+		api.send(resolved.action, resolved.payload);
+	};
+
+	// Context menu
 	const [ctxMenuPos, setCtxMenuPos] = createSignal<{ x: number; y: number } | null>(null);
 	const [ctxMenuTarget, setCtxMenuTarget] = createSignal<string | null>(null);
 
-	// Sync webview masks when context menu opens/closes
 	createEffect(() => {
 		const _pos = ctxMenuPos();
 		requestAnimationFrame(() => {
@@ -129,7 +178,6 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		{ id: "close", label: "Close Tab" },
 	];
 
-	// splitSession callback — set by MainScene via bindings
 	let splitHandler: ((sessionId: string, direction: "right" | "down") => void) | undefined;
 
 	const webviewBindings: WebviewBindings = {
@@ -164,7 +212,6 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 				onItemClose: ops.closeSession,
 				onItemContextMenu: (id: string, e: MouseEvent) => {
 					setCtxMenuTarget(id);
-					// Position menu at click Y but push X past sidebar to avoid clipping
 					const sidebarEl = (e.currentTarget as HTMLElement).closest("[data-sidebar]");
 					const sidebarRight = sidebarEl ? sidebarEl.getBoundingClientRect().right : e.clientX;
 					setCtxMenuPos({ x: Math.max(e.clientX, sidebarRight + 4), y: e.clientY });
@@ -176,6 +223,7 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 				onInput: setOmniboxQuery,
 				onSubmit: handleOmniboxSubmit,
 			}}
+			onKeyDown={handleKeyDown}
 		>
 			{content()}
 			<ContextMenu
