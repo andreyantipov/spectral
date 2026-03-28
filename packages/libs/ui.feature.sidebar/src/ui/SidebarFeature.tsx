@@ -115,10 +115,66 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		const binding = DEFAULT_SHORTCUTS.find(
 			(s) => s.shortcut.toLowerCase() === shortcutStr.toLowerCase(),
 		);
-		if (binding) {
-			e.preventDefault();
-			api.dispatch(binding.action as Parameters<typeof api.dispatch>[0], {} as never);
+		if (!binding) return;
+		e.preventDefault();
+
+		// session.activate needs the Nth session's ID
+		if (binding.action === "session.activate") {
+			const idx = Number.parseInt(binding.shortcut.replace("Cmd+", ""), 10) - 1;
+			const sessions = state()?.sessions;
+			if (!sessions || idx < 0 || idx >= sessions.length) return;
+			api.dispatch(
+				"session.activate" as Parameters<typeof api.dispatch>[0],
+				{
+					id: sessions[idx].id,
+				} as never,
+			);
+			return;
 		}
+
+		// session.close needs the active session's ID
+		if (binding.action === "session.close") {
+			const session = activeSession();
+			if (!session) return;
+			api.dispatch(
+				"session.close" as Parameters<typeof api.dispatch>[0],
+				{
+					id: session.id,
+				} as never,
+			);
+			return;
+		}
+
+		// nav.back/nav.forward need the active session's ID
+		if (binding.action === "nav.back" || binding.action === "nav.forward") {
+			const session = activeSession();
+			if (!session) return;
+			api.dispatch(
+				binding.action as Parameters<typeof api.dispatch>[0],
+				{
+					id: session.id,
+				} as never,
+			);
+			return;
+		}
+
+		// ws.split-right/ws.split-down need the active session context
+		if (binding.action === "ws.split-right" || binding.action === "ws.split-down") {
+			const session = activeSession();
+			if (!session) return;
+			const direction = binding.action === "ws.split-right" ? "horizontal" : "vertical";
+			api.dispatch(
+				"ws.split-panel" as Parameters<typeof api.dispatch>[0],
+				{
+					panelId: session.id,
+					direction,
+					newPanel: { id: crypto.randomUUID(), type: "session", sessionId: session.id },
+				} as never,
+			);
+			return;
+		}
+
+		api.dispatch(binding.action as Parameters<typeof api.dispatch>[0], {} as never);
 	};
 
 	// Context menu
