@@ -1,6 +1,7 @@
 import type { Session } from "@ctrl/core.base.model";
 import { withWebTracing } from "@ctrl/core.base.tracing";
 import { currentUrl } from "@ctrl/core.base.types";
+import type { BrowsingState } from "@ctrl/core.port.event-bus";
 import {
 	AppShellTemplate,
 	ContextMenu,
@@ -10,7 +11,6 @@ import {
 } from "@ctrl/core.ui";
 import { useApi } from "@ctrl/core.ui.api";
 import { createEffect, createMemo, createSignal, type JSX } from "solid-js";
-import { useBrowsingState } from "../api/use-browsing-state";
 import { SIDEBAR_FEATURE } from "../lib/constants";
 import { buildOmniBoxSuggestions, mapSessionsToSidebarItems } from "../model/sidebar.bindings";
 
@@ -32,8 +32,8 @@ export type SidebarFeatureProps = {
 };
 
 export function SidebarFeature(props: SidebarFeatureProps) {
-	const state = useBrowsingState();
 	const api = useApi();
+	const state = api.on<BrowsingState>("state.snapshot");
 	const [omniboxQuery, setOmniboxQuery] = createSignal("");
 
 	// Auto-create first session if none exist (guard prevents multiple creates)
