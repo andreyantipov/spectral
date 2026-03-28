@@ -26,6 +26,13 @@ Every PR title must be prefixed with a type. This enables filtering git history 
 
 PRs must pass CI (green checks) before merge — no exceptions including `proto:`.
 
+### PR Requirements
+
+Every PR that changes architecture MUST include:
+1. **Before/After diagram** — package structure or data flow before and after changes (use `.github/pull_request_template.md`)
+2. **CLAUDE.md update** — if packages added/removed/renamed
+3. **Definition of Done checklist** — all items checked before declaring ready
+
 ## Ollama
 
 A local Ollama instance is available via MCP tools (`ollama_chat`, `ollama_generate`, etc.). Use it to offload work that doesn't require Claude-level reasoning — code generation from simple prompts, boilerplate, format conversions, summaries — to save API tokens and reduce latency when appropriate.
