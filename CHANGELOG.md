@@ -1,3 +1,10 @@
+# [0.14.0](https://github.com/andreyantipov/spectral/compare/v0.13.0...v0.14.0) (2026-03-28)
+
+
+### Features
+
+* arch: Phase 5 — typed client, EventBus state snapshots, full RPC removal ([#15](https://github.com/andreyantipov/spectral/issues/15)) ([4ad3186](https://github.com/andreyantipov/spectral/commit/4ad318699d32c8788c5529e75b91c88ddf5e8f00))
+
 # [0.13.0](https://github.com/andreyantipov/spectral/compare/v0.12.0...v0.13.0) (2026-03-22)
 
 
