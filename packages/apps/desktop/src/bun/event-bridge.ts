@@ -5,22 +5,36 @@ import { OmniboxFeature } from "@ctrl/domain.feature.omnibox";
 import { SessionFeature } from "@ctrl/domain.feature.session";
 import { Effect, Layer, Stream } from "effect";
 
-const SESSION_CREATE = "session.create" as const;
-const SESSION_CLOSE = "session.close" as const;
-const SESSION_ACTIVATE = "session.activate" as const;
-const NAV_NAVIGATE = "nav.navigate" as const;
-const NAV_BACK = "nav.back" as const;
-const NAV_FORWARD = "nav.forward" as const;
-const NAV_REPORT = "nav.report" as const;
-const NAV_UPDATE_TITLE = "nav.update-title" as const;
-const BM_ADD = "bm.add" as const;
-const BM_REMOVE = "bm.remove" as const;
-const DIAG_PING = "diag.ping" as const;
-const EVT_DIAG_PONG = "diag.pong" as const;
-
 type Payload = Record<string, unknown>;
 
-// -- Session handlers (mirrors SessionHandlers from browsing.eventlog) --------
+// -- Snapshot publishing ------------------------------------------------------
+
+const publishSnapshot = Effect.gen(function* () {
+	const bus = yield* EventBus;
+	const sessions = yield* SessionFeature;
+	const bookmarks = yield* BookmarkFeature;
+	const history = yield* HistoryFeature;
+	const [s, b, h] = yield* Effect.all([sessions.getAll(), bookmarks.getAll(), history.getAll()]);
+	yield* bus.publish({
+		type: "event",
+		name: "state.snapshot",
+		payload: { sessions: s, bookmarks: b, history: h },
+		timestamp: Date.now(),
+	});
+}).pipe(Effect.orDie);
+
+// Debounce: max one snapshot per 50ms
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+let forkSnapshot: (() => void) | null = null;
+
+const scheduleSnapshot = Effect.sync(() => {
+	if (debounceTimer) clearTimeout(debounceTimer);
+	debounceTimer = setTimeout(() => {
+		forkSnapshot?.();
+	}, 50);
+});
+
+// -- Command handlers ---------------------------------------------------------
 
 const handleSessionCreate = () =>
 	Effect.gen(function* () {
@@ -40,8 +54,6 @@ const handleSessionActivate = (p: Payload) =>
 		const sessions = yield* SessionFeature;
 		yield* sessions.setActive(p.id as string);
 	}).pipe(Effect.orDie);
-
-// -- Navigation handlers (mirrors NavigationHandlers from browsing.eventlog) --
 
 const handleNavNavigate = (p: Payload) =>
 	Effect.gen(function* () {
@@ -79,8 +91,6 @@ const handleNavUpdateTitle = (p: Payload) =>
 		yield* sessions.updateTitle(p.id as string, p.title as string);
 	}).pipe(Effect.orDie);
 
-// -- Bookmark handlers (mirrors BookmarkHandlers from browsing.eventlog) ------
-
 const handleBmAdd = (p: Payload) =>
 	Effect.gen(function* () {
 		const bookmarks = yield* BookmarkFeature;
@@ -93,59 +103,80 @@ const handleBmRemove = (p: Payload) =>
 		yield* bookmarks.remove(p.id as string);
 	}).pipe(Effect.orDie);
 
-// -- Diagnostic (kept for agentic validation) ---------------------------------
-
 const handleDiagPing = () =>
 	Effect.gen(function* () {
 		const bus = yield* EventBus;
 		yield* bus.publish({
 			type: "event",
-			name: EVT_DIAG_PONG,
+			name: "diag.pong",
 			timestamp: Date.now(),
 			payload: { message: "EventBus alive" },
-			causedBy: DIAG_PING,
+			causedBy: "diag.ping",
 		});
 	});
 
 // -- Dispatch table -----------------------------------------------------------
 
-type Services = SessionFeature | BookmarkFeature | HistoryFeature | OmniboxFeature | EventBus;
+type Services = BookmarkFeature | EventBus | HistoryFeature | OmniboxFeature | SessionFeature;
 type HandlerFn = (p: Payload) => Effect.Effect<void, never, Services>;
 
+const MUTATION_ACTIONS = new Set([
+	"session.create",
+	"session.close",
+	"session.activate",
+	"nav.navigate",
+	"nav.back",
+	"nav.forward",
+	"nav.report",
+	"nav.update-title",
+	"bm.add",
+	"bm.remove",
+]);
+
 const handlers: Record<string, HandlerFn | undefined> = {
-	[SESSION_CREATE]: () => handleSessionCreate(),
-	[SESSION_CLOSE]: (p) => (p.id ? handleSessionClose(p) : Effect.void),
-	[SESSION_ACTIVATE]: (p) => (p.id ? handleSessionActivate(p) : Effect.void),
-	[NAV_NAVIGATE]: (p) => (p.id && p.input ? handleNavNavigate(p) : Effect.void),
-	[NAV_BACK]: (p) => (p.id ? handleNavBack(p) : Effect.void),
-	[NAV_FORWARD]: (p) => (p.id ? handleNavForward(p) : Effect.void),
-	[NAV_REPORT]: (p) => (p.id && p.url ? handleNavReport(p) : Effect.void),
-	[NAV_UPDATE_TITLE]: (p) => (p.id && p.title ? handleNavUpdateTitle(p) : Effect.void),
-	[BM_ADD]: (p) => (p.url ? handleBmAdd(p) : Effect.void),
-	[BM_REMOVE]: (p) => (p.id ? handleBmRemove(p) : Effect.void),
-	[DIAG_PING]: () => handleDiagPing(),
+	"session.create": () => handleSessionCreate(),
+	"session.close": (p) => (p.id ? handleSessionClose(p) : Effect.void),
+	"session.activate": (p) => (p.id ? handleSessionActivate(p) : Effect.void),
+	"nav.navigate": (p) => (p.id && p.input ? handleNavNavigate(p) : Effect.void),
+	"nav.back": (p) => (p.id ? handleNavBack(p) : Effect.void),
+	"nav.forward": (p) => (p.id ? handleNavForward(p) : Effect.void),
+	"nav.report": (p) => (p.id && p.url ? handleNavReport(p) : Effect.void),
+	"nav.update-title": (p) => (p.id && p.title ? handleNavUpdateTitle(p) : Effect.void),
+	"bm.add": (p) => (p.url ? handleBmAdd(p) : Effect.void),
+	"bm.remove": (p) => (p.id ? handleBmRemove(p) : Effect.void),
+	"diag.ping": () => handleDiagPing(),
 };
 
 const dispatch = (cmd: AppCommand) => {
 	const handler = handlers[cmd.action];
 	if (!handler) return Effect.void;
-	return handler((cmd.payload as Payload) ?? {});
+	const effect = handler((cmd.payload as Payload) ?? {});
+	if (MUTATION_ACTIONS.has(cmd.action)) {
+		return effect.pipe(Effect.tap(() => scheduleSnapshot));
+	}
+	return effect;
 };
 
 /**
  * EventBridgeLive subscribes to EventBus.commands and dispatches each command
- * to the appropriate domain feature handler. This replaces the old imperative
- * startCommandRouter() — it runs as a Layer so it starts automatically with the
- * runtime and is torn down with it.
- *
- * The handler logic mirrors the EventLog handlers in browsing.eventlog.ts.
- * When EventJournal persistence is added, this bridge will be replaced by full
- * EventLog.write() dispatch.
+ * to the appropriate domain feature handler. After mutations, publishes a
+ * debounced state.snapshot event with full browsing state.
  */
 export const EventBridgeLive = Layer.scopedDiscard(
 	Effect.gen(function* () {
 		const bus = yield* EventBus;
 
+		// Capture fork function for debounced snapshot timer callback
+		const runtime = yield* Effect.runtime<
+			BookmarkFeature | EventBus | HistoryFeature | SessionFeature
+		>();
+		forkSnapshot = () => {
+			import("effect").then(({ Runtime }) => {
+				Runtime.runFork(runtime)(publishSnapshot);
+			});
+		};
+
+		// Listen for commands and dispatch
 		yield* bus.commands.pipe(
 			Stream.runForEach((cmd) =>
 				dispatch(cmd).pipe(
@@ -157,6 +188,9 @@ export const EventBridgeLive = Layer.scopedDiscard(
 			),
 			Effect.forkScoped,
 		);
+
+		// Publish initial state snapshot so UI has data on first render
+		yield* publishSnapshot;
 
 		console.info("[bun] EventBridge started — listening for EventBus commands");
 	}),
