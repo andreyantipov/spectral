@@ -1,4 +1,18 @@
-import { type AppCommand, type AppEvent, EventBusRpcs } from "@ctrl/core.port.event-bus";
+import {
+	type AppCommand,
+	type AppEvent,
+	BM_ADD,
+	BM_REMOVE,
+	EventBusRpcs,
+	NAV_BACK,
+	NAV_FORWARD,
+	NAV_NAVIGATE,
+	NAV_REPORT,
+	NAV_UPDATE_TITLE,
+	SESSION_ACTIVATE,
+	SESSION_CLOSE,
+	SESSION_CREATE,
+} from "@ctrl/core.port.event-bus";
 import { RpcClient } from "@effect/rpc";
 import type { Protocol } from "@effect/rpc/RpcClient";
 import { Effect, Exit, Fiber, type ManagedRuntime, Scope, Stream } from "effect";
@@ -63,24 +77,23 @@ export function useApi() {
 		send,
 		on,
 		session: {
-			create: (payload: { readonly mode: "visual" }) => send("session.create", payload),
-			close: (payload: { readonly id: string }) => send("session.close", payload),
-			activate: (payload: { readonly id: string }) => send("session.activate", payload),
+			create: (payload: { readonly mode: "visual" }) => send(SESSION_CREATE, payload),
+			close: (payload: { readonly id: string }) => send(SESSION_CLOSE, payload),
+			activate: (payload: { readonly id: string }) => send(SESSION_ACTIVATE, payload),
 		},
 		nav: {
 			navigate: (payload: { readonly id: string; readonly input: string }) =>
-				send("nav.navigate", payload),
-			back: (payload: { readonly id: string }) => send("nav.back", payload),
-			forward: (payload: { readonly id: string }) => send("nav.forward", payload),
-			report: (payload: { readonly id: string; readonly url: string }) =>
-				send("nav.report", payload),
+				send(NAV_NAVIGATE, payload),
+			back: (payload: { readonly id: string }) => send(NAV_BACK, payload),
+			forward: (payload: { readonly id: string }) => send(NAV_FORWARD, payload),
+			report: (payload: { readonly id: string; readonly url: string }) => send(NAV_REPORT, payload),
 			updateTitle: (payload: { readonly id: string; readonly title: string }) =>
-				send("nav.update-title", payload),
+				send(NAV_UPDATE_TITLE, payload),
 		},
 		bm: {
 			add: (payload: { readonly url: string; readonly title: string | null }) =>
-				send("bm.add", payload),
-			remove: (payload: { readonly id: string }) => send("bm.remove", payload),
+				send(BM_ADD, payload),
+			remove: (payload: { readonly id: string }) => send(BM_REMOVE, payload),
 		},
 	};
 }

@@ -1,4 +1,22 @@
-import { type AppCommand, type BrowsingState, EventBus } from "@ctrl/core.port.event-bus";
+import {
+	type AppCommand,
+	BM_ADD,
+	BM_REMOVE,
+	type BrowsingState,
+	DIAG_PING,
+	DIAG_PONG,
+	EventBus,
+	MUTATION_TAGS,
+	NAV_BACK,
+	NAV_FORWARD,
+	NAV_NAVIGATE,
+	NAV_REPORT,
+	NAV_UPDATE_TITLE,
+	SESSION_ACTIVATE,
+	SESSION_CLOSE,
+	SESSION_CREATE,
+	STATE_SNAPSHOT,
+} from "@ctrl/core.port.event-bus";
 import { BookmarkFeature } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeature } from "@ctrl/domain.feature.history";
 import { OmniboxFeature } from "@ctrl/domain.feature.omnibox";
@@ -18,7 +36,7 @@ const publishSnapshot = Effect.gen(function* () {
 	const [s, b, h] = yield* Effect.all([sessions.getAll(), bookmarks.getAll(), history.getAll()]);
 	yield* bus.publish({
 		type: "event",
-		name: "state.snapshot",
+		name: STATE_SNAPSHOT,
 		payload: { sessions: s, bookmarks: b, history: h } satisfies BrowsingState,
 		timestamp: Date.now(),
 	});
@@ -98,10 +116,10 @@ const handleDiagPing = () =>
 		const bus = yield* EventBus;
 		yield* bus.publish({
 			type: "event",
-			name: "diag.pong",
+			name: DIAG_PONG,
 			timestamp: Date.now(),
 			payload: { message: "EventBus alive" },
-			causedBy: "diag.ping",
+			causedBy: DIAG_PING,
 		});
 	});
 
@@ -110,39 +128,25 @@ const handleDiagPing = () =>
 type Services = BookmarkFeature | EventBus | HistoryFeature | OmniboxFeature | SessionFeature;
 type HandlerFn = (p: Payload) => Effect.Effect<void, never, Services>;
 
-const MUTATION_ACTIONS = new Set([
-	"session.create",
-	"session.close",
-	"session.activate",
-	"nav.navigate",
-	"nav.back",
-	"nav.forward",
-	"nav.report",
-	"nav.update-title",
-	"bm.add",
-	"bm.remove",
-]);
-
 const handlers: Record<string, HandlerFn | undefined> = {
-	"session.create": () => handleSessionCreate(),
-	"session.close": (p) => (p.id ? handleSessionClose(p) : Effect.void),
-	"session.activate": (p) => (p.id ? handleSessionActivate(p) : Effect.void),
-	"nav.navigate": (p) => (p.id && p.input ? handleNavNavigate(p) : Effect.void),
-	"nav.back": (p) => (p.id ? handleNavBack(p) : Effect.void),
-	"nav.forward": (p) => (p.id ? handleNavForward(p) : Effect.void),
-	"nav.report": (p) => (p.id && p.url ? handleNavReport(p) : Effect.void),
-	"nav.update-title": (p) => (p.id && p.title ? handleNavUpdateTitle(p) : Effect.void),
-	"bm.add": (p) => (p.url ? handleBmAdd(p) : Effect.void),
-	"bm.remove": (p) => (p.id ? handleBmRemove(p) : Effect.void),
-	"diag.ping": () => handleDiagPing(),
+	[SESSION_CREATE]: () => handleSessionCreate(),
+	[SESSION_CLOSE]: (p) => (p.id ? handleSessionClose(p) : Effect.void),
+	[SESSION_ACTIVATE]: (p) => (p.id ? handleSessionActivate(p) : Effect.void),
+	[NAV_NAVIGATE]: (p) => (p.id && p.input ? handleNavNavigate(p) : Effect.void),
+	[NAV_BACK]: (p) => (p.id ? handleNavBack(p) : Effect.void),
+	[NAV_FORWARD]: (p) => (p.id ? handleNavForward(p) : Effect.void),
+	[NAV_REPORT]: (p) => (p.id && p.url ? handleNavReport(p) : Effect.void),
+	[NAV_UPDATE_TITLE]: (p) => (p.id && p.title ? handleNavUpdateTitle(p) : Effect.void),
+	[BM_ADD]: (p) => (p.url ? handleBmAdd(p) : Effect.void),
+	[BM_REMOVE]: (p) => (p.id ? handleBmRemove(p) : Effect.void),
+	[DIAG_PING]: () => handleDiagPing(),
 };
 
 const dispatch = (cmd: AppCommand) => {
 	const handler = handlers[cmd.action];
 	if (!handler) return Effect.void;
 	const effect = handler((cmd.payload as Payload) ?? {});
-	// After mutations, publish state snapshot immediately
-	if (MUTATION_ACTIONS.has(cmd.action)) {
+	if (MUTATION_TAGS.has(cmd.action)) {
 		return effect.pipe(Effect.andThen(publishSnapshot));
 	}
 	return effect;
