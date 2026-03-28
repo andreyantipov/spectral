@@ -5,13 +5,15 @@
 ## Architecture Changes
 
 ### Before
-```
-<!-- Package structure / data flow BEFORE changes -->
+```mermaid
+graph LR
+  %% Package/flow diagram BEFORE changes
 ```
 
 ### After
-```
-<!-- Package structure / data flow AFTER changes -->
+```mermaid
+graph LR
+  %% Package/flow diagram AFTER changes
 ```
 
 ## Test plan
