@@ -14,7 +14,6 @@
 		"@ctrl/core.base.errors": "workspace:*",
 		"@ctrl/core.base.tracing": "workspace:*",
 		"@ctrl/core.port.storage": "workspace:*",
-		"@ctrl/domain.feature.layout": "workspace:*",
-		"@ctrl/domain.feature.panel": "workspace:*"
+		"@ctrl/domain.feature.layout": "workspace:*"
 	}
 }
