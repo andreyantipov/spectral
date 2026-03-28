@@ -24,17 +24,6 @@ const publishSnapshot = Effect.gen(function* () {
 	});
 }).pipe(Effect.orDie);
 
-// Debounce: max one snapshot per 50ms
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-let forkSnapshot: (() => void) | null = null;
-
-const scheduleSnapshot = Effect.sync(() => {
-	if (debounceTimer) clearTimeout(debounceTimer);
-	debounceTimer = setTimeout(() => {
-		forkSnapshot?.();
-	}, 50);
-});
-
 // -- Command handlers ---------------------------------------------------------
 
 const handleSessionCreate = () =>
@@ -152,33 +141,21 @@ const dispatch = (cmd: AppCommand) => {
 	const handler = handlers[cmd.action];
 	if (!handler) return Effect.void;
 	const effect = handler((cmd.payload as Payload) ?? {});
+	// After mutations, publish state snapshot immediately
 	if (MUTATION_ACTIONS.has(cmd.action)) {
-		return effect.pipe(Effect.tap(() => scheduleSnapshot));
+		return effect.pipe(Effect.andThen(publishSnapshot));
 	}
 	return effect;
 };
 
 /**
  * BrowsingServiceLive listens to EventBus commands and dispatches to domain
- * features. After mutations, publishes debounced state.snapshot events.
- *
- * This is the EventBus orchestrator for session, navigation, bookmark, and
- * history operations. Features contain pure business logic — this service
- * wires them to the EventBus.
+ * features. After mutations, publishes state.snapshot events with full
+ * browsing state (sessions + bookmarks + history).
  */
 export const BrowsingServiceLive = Layer.scopedDiscard(
 	Effect.gen(function* () {
 		const bus = yield* EventBus;
-
-		// Capture runtime for debounced snapshot timer
-		const runtime = yield* Effect.runtime<
-			BookmarkFeature | EventBus | HistoryFeature | SessionFeature
-		>();
-		forkSnapshot = () => {
-			import("effect").then(({ Runtime }) => {
-				Runtime.runFork(runtime)(publishSnapshot);
-			});
-		};
 
 		// Listen for commands and dispatch
 		yield* bus.commands.pipe(
