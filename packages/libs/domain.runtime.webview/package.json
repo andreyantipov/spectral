@@ -10,6 +10,6 @@
 		"check": "tsgo --noEmit"
 	},
 	"dependencies": {
-		"@ctrl/domain.adapter.rpc": "workspace:*"
+		"@ctrl/domain.service.native": "workspace:*"
 	}
 }
