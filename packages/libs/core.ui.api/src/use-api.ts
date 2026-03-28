@@ -64,6 +64,16 @@ export function useApi() {
 			stream.pipe(Stream.runForEach((evt) => PubSub.publish(eventPubSub, evt))),
 		);
 		onCleanup(() => runtime.runFork(Fiber.interrupt(fiber)));
+
+		// Request initial state — delay to ensure eventStream listener is active
+		requestAnimationFrame(() => {
+			const cmd: AppCommand = {
+				type: "command",
+				action: "state.request",
+				meta: { source: "ui" },
+			};
+			void runtime.runPromise(client.dispatch({ command: cmd }));
+		});
 	});
 
 	function on<T = unknown>(eventName: string): Accessor<T | undefined> {

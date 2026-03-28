@@ -158,6 +158,11 @@ export const BrowsingServiceLive = Layer.scopedDiscard(
 					}),
 				);
 
+				// state.request — UI asks for current state on mount
+				if (action === "state.request") {
+					return publishSnapshot;
+				}
+
 				if (MUTATION_ACTIONS.has(action)) {
 					return effect.pipe(Effect.andThen(publishSnapshot));
 				}
