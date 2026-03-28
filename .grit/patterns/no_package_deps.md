@@ -23,12 +23,14 @@ or {
     $filename <: includes "packages/",
     $filename <: not includes "packages/libs/",
     $filename <: not includes "packages/infra/ci",
+    $filename <: not includes "packages/apps/",
     $deps <: not includes "workspace"
   },
   `"devDependencies": { $deps }` where {
     $filename <: includes "packages/",
     $filename <: not includes "packages/libs/",
-    $filename <: not includes "packages/infra/ci"
+    $filename <: not includes "packages/infra/ci",
+    $filename <: not includes "packages/apps/"
   }
 }
 ```

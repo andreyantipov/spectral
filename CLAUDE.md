@@ -91,7 +91,7 @@ Key differences from `dev:desktop`:
 - FSD segments: see `docs/architecture/fsd-segments.md`
 - Dependencies: see `docs/architecture/dependency-matrix.md`
 - Testing: see `docs/architecture/testing-strategy.md`
-- Full spec: see `docs/superpowers/specs/2026-03-14-domain-architecture-design.md`
+- Generated snapshot: see `docs/architecture/GENERATED.md`
 
 ### Key Rules
 - `type` only, never `interface` in packages/libs/
@@ -99,8 +99,8 @@ Key differences from `dev:desktop`:
 - No hardcoded strings for span names or service identifiers
 - GritQL enforces all boundaries — run `bunx grit check .` before committing
 - Two public surfaces: `domain.service.*` (for UI) and `ui.scenes` (for apps)
-- **`BrowsingRpcs`** is the service contract — an `@effect/rpc` `RpcGroup` exported from `domain.service.browsing`. There is no separate `BrowsingService` `Context.Tag`.
-- **`Effect Schema` is the single source of truth** for domain types — derive TypeScript types from schemas, never duplicate them.
+- **`BrowsingServiceLive`** listens to EventBus commands and dispatches to domain features. All business operations flow through EventBus commands.
+- **`Model.Class` (extending Effect Schema) is the single source of truth** for domain types — derive TypeScript types from schemas, never duplicate them.
 - The browsing unit of work is a **session** — use `domain.feature.session` not `domain.feature.tab`. Constants use `SESSION_FEATURE`, not `TAB_FEATURE`.
 
 ### Package Deprecation
@@ -130,8 +130,7 @@ Level 3: core.ui         → components, hooks (imports core.base.* + core.port.
 
 Ports are **atomic packages** — one per concern:
 - `core.port.storage` → SessionRepository, BookmarkRepository, HistoryRepository, LayoutRepository
-- `core.ports.webview` → WebviewExecutor
-- `core.ports.event-bus` → EventBus
+- `core.port.event-bus` → EventBus
 - Each adapter imports only the ports it implements
 
 ### Carrier + EventBus
@@ -150,7 +149,39 @@ EventBus (business logic):
 
 - **Carrier** (IPC+RPC) = infrastructure. Serialization, encryption, process boundaries. Invisible to business code.
 - **EventBus** = where ALL business happens. Every command, every event, every subscriber. Features and services never touch the carrier directly — they only speak EventBus.
-- See: `docs/superpowers/specs/2026-03-22-event-driven-architecture-design.md`
+- See event catalog: `docs/catalog/` and generated docs: `docs/architecture/GENERATED.md`
+
+## How to Add a New Command (end-to-end)
+
+1. Define event in `core.port.event-bus/src/groups/{domain}.ts`:
+   `EventGroup.add({ tag: "domain.action", payload: Schema.Struct({...}), success: Model })`
+
+2. Add handler in `domain.service.browsing/src/api/browsing.handlers.ts`:
+   `"domain.action": (p) => handleDomainAction(p)`
+
+3. Handler calls Feature (never Repository directly):
+   `const feature = yield* DomainFeature; yield* feature.action(p);`
+
+4. Add convenience method in `core.ui.api/src/use-api.ts`:
+   `domain: { action: (p) => send("domain.action", p) }`
+
+5. Subscribe in UI: `const result = api.on("domain.action.success")`
+
+Files touched: 4. No new packages unless new domain concept.
+
+## Documentation
+
+- `bun run docs:build` — regenerate all docs
+- `docs/architecture/GENERATED.md` — auto-generated package map, events, services (agent context)
+- `docs/architecture/dependency-graph.svg` — import graph visualization
+- `packages/apps/dev-docs/` — EventCatalog architecture documentation (generated on the fly)
+- `docs/superpowers/` — gitignored. Specs/plans live on feature branches, not in main.
+
+## Recent Architecture Changes
+
+- Phase 5 (Mar 28): Typed useApi() client, BrowsingRpcs removed, state via EventBus snapshots
+- Phase 2-3 (Mar 25): core.shared deleted → split into core.base.*, EventLog migration
+- Phase 1 (Mar 22): EventBus + typed signals added, core.port.event-bus created
 
 ## App Icon
 

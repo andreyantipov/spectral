@@ -8,6 +8,7 @@
 		"skipLibCheck": true,
 		"resolveJsonModule": true,
 		"isolatedModules": true,
+		"plugins": [{ "name": "@effect/language-service" }],
 		"paths": {
 			"@ctrl/*": ["./packages/libs/*/src"],
 			"@ctrl/apps/*": ["./packages/apps/*/src"],
