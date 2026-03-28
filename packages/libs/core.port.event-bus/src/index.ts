@@ -1,3 +1,4 @@
+export { type BrowsingState, BrowsingStateSchema } from "./browsing-state";
 export { EventBusHandlersLive } from "./event-bus.handlers";
 export { EventBusLive } from "./event-bus.live";
 export {
