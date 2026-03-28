@@ -15,7 +15,7 @@ import {
 } from "@ctrl/core.port.event-bus";
 import { RpcClient } from "@effect/rpc";
 import type { Protocol } from "@effect/rpc/RpcClient";
-import { Effect, Exit, Fiber, type ManagedRuntime, Scope, Stream } from "effect";
+import { Effect, Exit, Fiber, type ManagedRuntime, PubSub, Scope, Stream } from "effect";
 import { type Accessor, createSignal, getOwner, onCleanup, onMount, runWithOwner } from "solid-js";
 import { useRuntime } from "./use-runtime";
 
@@ -43,9 +43,25 @@ export function useApi() {
 		void runtime.runPromise(client.dispatch({ command: cmd }));
 	};
 
-	// Event subscription — returns reactive SolidJS signal
+	// Single shared event stream — fan out to per-event signals
 	const owner = getOwner();
 	const subscriptions = new Map<string, Accessor<unknown>>();
+	const eventPubSub = runtime.runSync(PubSub.unbounded<AppEvent>());
+
+	// Start single eventStream listener, broadcast to local PubSub
+	onMount(() => {
+		if (!owner) return;
+		const stream = client.eventStream().pipe(
+			Stream.catchAll((error) => {
+				console.error("[useApi] eventStream error:", error);
+				return Stream.empty;
+			}),
+		);
+		const fiber = runtime.runFork(
+			stream.pipe(Stream.runForEach((evt) => PubSub.publish(eventPubSub, evt))),
+		);
+		onCleanup(() => runtime.runFork(Fiber.interrupt(fiber)));
+	});
 
 	function on<T = unknown>(eventName: string): Accessor<T | undefined> {
 		const existing = subscriptions.get(eventName);
@@ -55,12 +71,11 @@ export function useApi() {
 
 		onMount(() => {
 			if (!owner) return;
-			const stream = client.eventStream().pipe(
+			const localStream = Stream.fromPubSub(eventPubSub).pipe(
 				Stream.filter((evt: AppEvent) => evt.name === eventName),
-				Stream.catchAll(() => Stream.empty),
 			);
 			const fiber = runtime.runFork(
-				stream.pipe(
+				localStream.pipe(
 					Stream.runForEach((evt) =>
 						Effect.sync(() => runWithOwner(owner, () => setValue(() => evt.payload as T))),
 					),

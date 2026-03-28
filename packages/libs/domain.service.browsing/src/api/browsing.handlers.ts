@@ -21,7 +21,7 @@ import { BookmarkFeature } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeature } from "@ctrl/domain.feature.history";
 import { OmniboxFeature } from "@ctrl/domain.feature.omnibox";
 import { SessionFeature } from "@ctrl/domain.feature.session";
-import { Effect, Layer, Stream } from "effect";
+import { Cause, Effect, Layer, Stream } from "effect";
 import { BROWSING_SERVICE } from "../lib/constants";
 
 type Payload = Record<string, unknown>;
@@ -40,28 +40,29 @@ const publishSnapshot = Effect.gen(function* () {
 		payload: { sessions: s, bookmarks: b, history: h } satisfies BrowsingState,
 		timestamp: Date.now(),
 	});
-}).pipe(Effect.orDie);
+});
 
 // -- Command handlers ---------------------------------------------------------
 
-const handleSessionCreate = () =>
+const handleSessionCreate = (p: Payload) =>
 	Effect.gen(function* () {
 		const sessions = yield* SessionFeature;
-		const session = yield* sessions.create("visual");
+		const mode = typeof p.mode === "string" ? (p.mode as "visual") : "visual";
+		const session = yield* sessions.create(mode);
 		yield* sessions.setActive(session.id);
-	}).pipe(Effect.orDie);
+	});
 
 const handleSessionClose = (p: Payload) =>
 	Effect.gen(function* () {
 		const sessions = yield* SessionFeature;
 		yield* sessions.remove(p.id as string);
-	}).pipe(Effect.orDie);
+	});
 
 const handleSessionActivate = (p: Payload) =>
 	Effect.gen(function* () {
 		const sessions = yield* SessionFeature;
 		yield* sessions.setActive(p.id as string);
-	}).pipe(Effect.orDie);
+	});
 
 const handleNavNavigate = (p: Payload) =>
 	Effect.gen(function* () {
@@ -71,19 +72,19 @@ const handleNavNavigate = (p: Payload) =>
 		const { url, query } = yield* omnibox.resolve(p.input as string);
 		yield* sessions.navigate(p.id as string, url);
 		yield* history.record(url, null, query).pipe(Effect.ignore);
-	}).pipe(Effect.orDie);
+	});
 
 const handleNavBack = (p: Payload) =>
 	Effect.gen(function* () {
 		const sessions = yield* SessionFeature;
 		yield* sessions.goBack(p.id as string);
-	}).pipe(Effect.orDie);
+	});
 
 const handleNavForward = (p: Payload) =>
 	Effect.gen(function* () {
 		const sessions = yield* SessionFeature;
 		yield* sessions.goForward(p.id as string);
-	}).pipe(Effect.orDie);
+	});
 
 const handleNavReport = (p: Payload) =>
 	Effect.gen(function* () {
@@ -91,25 +92,25 @@ const handleNavReport = (p: Payload) =>
 		const history = yield* HistoryFeature;
 		yield* sessions.updateUrl(p.id as string, p.url as string);
 		yield* history.record(p.url as string, null, null).pipe(Effect.ignore);
-	}).pipe(Effect.orDie);
+	});
 
 const handleNavUpdateTitle = (p: Payload) =>
 	Effect.gen(function* () {
 		const sessions = yield* SessionFeature;
 		yield* sessions.updateTitle(p.id as string, p.title as string);
-	}).pipe(Effect.orDie);
+	});
 
 const handleBmAdd = (p: Payload) =>
 	Effect.gen(function* () {
 		const bookmarks = yield* BookmarkFeature;
 		yield* bookmarks.create(p.url as string, (p.title as string | null) ?? null);
-	}).pipe(Effect.orDie);
+	});
 
 const handleBmRemove = (p: Payload) =>
 	Effect.gen(function* () {
 		const bookmarks = yield* BookmarkFeature;
 		yield* bookmarks.remove(p.id as string);
-	}).pipe(Effect.orDie);
+	});
 
 const handleDiagPing = () =>
 	Effect.gen(function* () {
@@ -126,10 +127,10 @@ const handleDiagPing = () =>
 // -- Dispatch table -----------------------------------------------------------
 
 type Services = BookmarkFeature | EventBus | HistoryFeature | OmniboxFeature | SessionFeature;
-type HandlerFn = (p: Payload) => Effect.Effect<void, never, Services>;
+type HandlerFn = (p: Payload) => Effect.Effect<void, unknown, Services>;
 
 const handlers: Record<string, HandlerFn | undefined> = {
-	[SESSION_CREATE]: () => handleSessionCreate(),
+	[SESSION_CREATE]: (p) => handleSessionCreate(p),
 	[SESSION_CLOSE]: (p) => (p.id ? handleSessionClose(p) : Effect.void),
 	[SESSION_ACTIVATE]: (p) => (p.id ? handleSessionActivate(p) : Effect.void),
 	[NAV_NAVIGATE]: (p) => (p.id && p.input ? handleNavNavigate(p) : Effect.void),
@@ -165,8 +166,10 @@ export const BrowsingServiceLive = Layer.scopedDiscard(
 		yield* bus.commands.pipe(
 			Stream.runForEach((cmd) =>
 				dispatch(cmd).pipe(
-					Effect.catchAll((error) => {
-						console.error(`[${BROWSING_SERVICE}] ${cmd.action}:`, error);
+					Effect.catchAllCause((cause) => {
+						if (Cause.isFailure(cause)) {
+							console.error(`[${BROWSING_SERVICE}] ${cmd.action}:`, Cause.pretty(cause));
+						}
 						return Effect.void;
 					}),
 				),

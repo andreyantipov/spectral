@@ -19,6 +19,7 @@
 		"@ctrl/domain.feature.omnibox": "workspace:*",
 		"@ctrl/domain.feature.session": "workspace:*",
 		"@ctrl/domain.feature.layout": "workspace:*",
+		"@ctrl/domain.service.browsing": "workspace:*",
 		"@ctrl/domain.service.workspace": "workspace:*",
 		"@ctrl/ui.scenes": "workspace:*",
 		"electrobun": "1.15.1"
