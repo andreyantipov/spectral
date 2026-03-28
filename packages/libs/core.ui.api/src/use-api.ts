@@ -1,23 +1,27 @@
 import {
 	type AppCommand,
 	type AppEvent,
-	BM_ADD,
-	BM_REMOVE,
+	type AppEvents,
 	EventBusRpcs,
-	NAV_BACK,
-	NAV_FORWARD,
-	NAV_NAVIGATE,
-	NAV_REPORT,
-	NAV_UPDATE_TITLE,
-	SESSION_ACTIVATE,
-	SESSION_CLOSE,
-	SESSION_CREATE,
 } from "@ctrl/core.port.event-bus";
+import type { Event } from "@effect/experimental/Event";
+import type { EventGroup } from "@effect/experimental/EventGroup";
 import { RpcClient } from "@effect/rpc";
 import type { Protocol } from "@effect/rpc/RpcClient";
 import { Effect, Exit, Fiber, type ManagedRuntime, PubSub, Scope, Stream } from "effect";
 import { type Accessor, createSignal, getOwner, onCleanup, onMount, runWithOwner } from "solid-js";
 import { useRuntime } from "./use-runtime";
+
+/**
+ * Typed dispatch function — types derived from EventGroup at compile time.
+ * No EventLog needed. Just wraps send() with tag + payload type checking.
+ */
+type TypedDispatch<Groups extends EventGroup.Any> = <
+	Tag extends Event.Tag<EventGroup.Events<Groups>>,
+>(
+	tag: Tag,
+	payload: Event.PayloadWithTag<EventGroup.Events<Groups>, Tag>,
+) => void;
 
 export function useApi() {
 	const runtime = useRuntime() as unknown as ManagedRuntime.ManagedRuntime<
@@ -32,23 +36,22 @@ export function useApi() {
 		RpcClient.make(EventBusRpcs).pipe(Effect.provideService(Scope.Scope, scope)),
 	) as RpcClient.FromGroup<typeof EventBusRpcs>;
 
-	// Command dispatch
-	const send = (action: string, payload?: unknown) => {
+	// Typed dispatch — sends command through carrier, types from EventGroup
+	const dispatch: TypedDispatch<(typeof AppEvents)["groups"][number]> = (tag, payload) => {
 		const cmd: AppCommand = {
 			type: "command",
-			action,
-			payload,
+			action: tag,
+			payload: payload as unknown,
 			meta: { source: "ui" },
 		};
 		void runtime.runPromise(client.dispatch({ command: cmd }));
 	};
 
-	// Single shared event stream — fan out to per-event signals
+	// Event subscription — single shared stream, fan out to per-event signals
 	const owner = getOwner();
 	const subscriptions = new Map<string, Accessor<unknown>>();
 	const eventPubSub = runtime.runSync(PubSub.unbounded<AppEvent>());
 
-	// Start single eventStream listener, broadcast to local PubSub
 	onMount(() => {
 		if (!owner) return;
 		const stream = client.eventStream().pipe(
@@ -88,27 +91,5 @@ export function useApi() {
 		return value as Accessor<T | undefined>;
 	}
 
-	return {
-		send,
-		on,
-		session: {
-			create: (payload: { readonly mode: "visual" }) => send(SESSION_CREATE, payload),
-			close: (payload: { readonly id: string }) => send(SESSION_CLOSE, payload),
-			activate: (payload: { readonly id: string }) => send(SESSION_ACTIVATE, payload),
-		},
-		nav: {
-			navigate: (payload: { readonly id: string; readonly input: string }) =>
-				send(NAV_NAVIGATE, payload),
-			back: (payload: { readonly id: string }) => send(NAV_BACK, payload),
-			forward: (payload: { readonly id: string }) => send(NAV_FORWARD, payload),
-			report: (payload: { readonly id: string; readonly url: string }) => send(NAV_REPORT, payload),
-			updateTitle: (payload: { readonly id: string; readonly title: string }) =>
-				send(NAV_UPDATE_TITLE, payload),
-		},
-		bm: {
-			add: (payload: { readonly url: string; readonly title: string | null }) =>
-				send(BM_ADD, payload),
-			remove: (payload: { readonly id: string }) => send(BM_REMOVE, payload),
-		},
-	};
+	return { dispatch, on };
 }
