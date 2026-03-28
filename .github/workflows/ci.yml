@@ -67,21 +67,6 @@ jobs:
         run: bun install --ignore-scripts
       - name: Build libs
         run: bunx turbo build --filter=!@ctrl/desktop
-      - name: Verify Bun bundle (debug)
-        working-directory: packages/apps/desktop
-        run: |
-          bun -e "
-          const result = await Bun.build({
-            entrypoints: ['src/bun/index.ts'],
-            target: 'bun',
-            external: ['@libsql/client'],
-          });
-          if (!result.success) {
-            for (const log of result.logs) console.error(log);
-            process.exit(1);
-          }
-          console.log('Bun bundle OK:', result.outputs.length, 'files');
-          "
       - name: Build desktop app
         working-directory: packages/apps/desktop
         run: bun run build
