@@ -4,17 +4,17 @@
 
 ## Architecture Changes
 
+<!-- Generated from real imports via dep-cruiser. Run:
+  1. git stash && git checkout main && bun run docs:deps && cp docs/architecture/dependency-graph.svg /tmp/before.svg && git checkout - && git stash pop
+  2. bun run docs:deps && cp docs/architecture/dependency-graph.svg /tmp/after.svg
+  3. Attach both SVGs below
+-->
+
 ### Before
-```mermaid
-graph LR
-  %% Package/flow diagram BEFORE changes
-```
+<!-- Drag & drop /tmp/before.svg here -->
 
 ### After
-```mermaid
-graph LR
-  %% Package/flow diagram AFTER changes
-```
+<!-- Drag & drop /tmp/after.svg here -->
 
 ## Test plan
 - [ ] `bun run check` — all typecheck pass
