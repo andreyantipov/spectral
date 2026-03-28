@@ -15,6 +15,7 @@ import {
 	BrowsingServiceLive,
 	NavigationHandlers,
 	SessionHandlers,
+	WorkspaceHandlers,
 } from "@ctrl/domain.service.browsing";
 import { WorkspaceHandlersLive } from "@ctrl/domain.service.workspace";
 import { EventJournal, EventLog } from "@effect/experimental";
@@ -53,6 +54,7 @@ const HandlersLive = Layer.mergeAll(
 		Layer.provide(HistoryFeatureLayer),
 	),
 	BookmarkHandlers.pipe(Layer.provide(BookmarkFeatureLayer)),
+	WorkspaceHandlers.pipe(Layer.provide(LayoutFeatureLayer)),
 );
 
 const EventLogLive = EventLog.layer(AppEvents).pipe(
@@ -72,6 +74,7 @@ const BrowsingServiceLayer = BrowsingServiceLive.pipe(
 	Layer.provide(SessionFeatureLayer),
 	Layer.provide(BookmarkFeatureLayer),
 	Layer.provide(HistoryFeatureLayer),
+	Layer.provide(LayoutFeatureLayer),
 	Layer.provide(OmniboxFeatureLive),
 	Layer.provide(EventBusLive),
 );

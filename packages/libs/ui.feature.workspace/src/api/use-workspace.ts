@@ -1,4 +1,5 @@
 import { useRuntime } from "@ctrl/core.ui";
+import { useApi } from "@ctrl/core.ui.api";
 import { type PanelRef, WorkspaceRpcs } from "@ctrl/domain.service.workspace";
 import { RpcClient } from "@effect/rpc";
 import type { Protocol } from "@effect/rpc/RpcClient";
@@ -7,6 +8,7 @@ import { Effect, Exit, type ManagedRuntime, Scope } from "effect";
 import { createResource, createSignal, onCleanup } from "solid-js";
 
 export function useWorkspace() {
+	const api = useApi();
 	const runtime = useRuntime() as unknown as ManagedRuntime.ManagedRuntime<
 		Protocol | Scope.Scope,
 		never
@@ -24,7 +26,7 @@ export function useWorkspace() {
 		updateLayout: (dockviewState: SerializedDockview) =>
 			runtime.runPromise(client.updateLayout({ layout: { version: 1, dockviewState } })),
 		splitPanel: (panelId: string, direction: "horizontal" | "vertical", newPanel: PanelRef) =>
-			runtime.runPromise(client.splitPanel({ panelId, direction, newPanel })),
+			api.dispatch("ws.split-panel", { panelId, direction, newPanel }),
 	};
 
 	const [initialLayout] = createResource(() => ops.getLayout());

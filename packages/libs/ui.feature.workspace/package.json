@@ -11,6 +11,7 @@
 	},
 	"dependencies": {
 		"@ctrl/core.ui": "workspace:*",
+		"@ctrl/core.ui.api": "workspace:*",
 		"@ctrl/domain.service.workspace": "workspace:*"
 	}
 }

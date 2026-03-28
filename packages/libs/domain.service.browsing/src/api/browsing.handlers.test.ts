@@ -4,6 +4,7 @@ import { AppEvents, EventBus, EventBusLive } from "@ctrl/core.port.event-bus";
 import { BookmarkRepository, HistoryRepository, SessionRepository } from "@ctrl/core.port.storage";
 import { BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
+import { LayoutFeature } from "@ctrl/domain.feature.layout";
 import { OmniboxFeature } from "@ctrl/domain.feature.omnibox";
 import { SessionFeatureLive } from "@ctrl/domain.feature.session";
 import { EventJournal, EventLog as EventLogMod } from "@effect/experimental";
@@ -14,6 +15,7 @@ import {
 	BrowsingServiceLive,
 	NavigationHandlers,
 	SessionHandlers,
+	WorkspaceHandlers,
 } from "./browsing.handlers";
 
 // -- Test helpers -------------------------------------------------------------
@@ -142,6 +144,13 @@ const makeMockLayers = () => {
 	const BookmarkLayer = BookmarkFeatureLive.pipe(Layer.provide(MockBookmarkRepo));
 	const HistoryLayer = HistoryFeatureLive.pipe(Layer.provide(MockHistoryRepo));
 
+	const MockLayoutFeature = Layer.succeed(LayoutFeature, {
+		getLayout: () => Effect.succeed({ type: "group" as const, panels: [], activePanel: "" }),
+		getPersistedLayout: () => Effect.succeed(null),
+		updateLayout: () => Effect.void,
+		changes: Stream.empty,
+	});
+
 	// EventLog layers (required by BrowsingServiceLive)
 	const IdentityLive = Layer.succeed(EventLogMod.Identity, EventLogMod.Identity.makeRandom());
 	const JournalLive = EventJournal.layerMemory;
@@ -153,6 +162,7 @@ const makeMockLayers = () => {
 			Layer.provide(HistoryLayer),
 		),
 		BookmarkHandlers.pipe(Layer.provide(BookmarkLayer)),
+		WorkspaceHandlers.pipe(Layer.provide(MockLayoutFeature)),
 	);
 	const EventLogLive = EventLogMod.layer(AppEvents).pipe(
 		Layer.provide(HandlersLive),
@@ -165,6 +175,7 @@ const makeMockLayers = () => {
 		Layer.provide(SessionLayer),
 		Layer.provide(BookmarkLayer),
 		Layer.provide(HistoryLayer),
+		Layer.provide(MockLayoutFeature),
 		Layer.provide(MockOmnibox),
 		Layer.provide(EventBusLive),
 	);

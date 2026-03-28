@@ -20,6 +20,7 @@
 		"@ctrl/domain.adapter.otel": "workspace:*",
 		"@ctrl/domain.feature.bookmark": "workspace:*",
 		"@ctrl/domain.feature.history": "workspace:*",
+		"@ctrl/domain.feature.layout": "workspace:*",
 		"@ctrl/domain.feature.omnibox": "workspace:*",
 		"@ctrl/domain.feature.session": "workspace:*"
 	}
