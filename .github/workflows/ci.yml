@@ -46,6 +46,17 @@ jobs:
           module: packages/infra/ci
           args: build --source=.
 
+  docs:
+    name: Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: bun install --ignore-scripts
+      - name: Validate dependency docs
+        run: bun run docs:deps:validate
+
   build-desktop:
     name: Build Desktop (macOS)
     runs-on: macos-latest

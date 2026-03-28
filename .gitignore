@@ -18,3 +18,14 @@ packages/infra/ci/sdk
 **/src/**/*.js.map
 storybook-static
 test-results
+
+# Superpowers-generated specs/plans — ephemeral, live on branches only
+docs/superpowers/plans/
+docs/superpowers/specs/
+
+# Generated metadata — rebuilt by docs:build
+metadata.json
+
+# EventCatalog build cache
+.astro
+.eventcatalog-core

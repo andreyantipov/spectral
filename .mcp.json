@@ -1,5 +1,13 @@
 {
 	"mcpServers": {
+		"effect-mcp": {
+			"command": "npx",
+			"args": ["effect-mcp@latest"]
+		},
+		"architecture": {
+			"command": "bun",
+			"args": ["run", "packages/tools/mcp-architecture.ts"]
+		},
 		"ollama": {
 			"command": "npx",
 			"args": ["-y", "ollama-mcp"],
