@@ -1,0 +1,24 @@
+{
+	"name": "@ctrl/domain.runtime.bun",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check": "tsgo --noEmit"
+	},
+	"dependencies": {
+		"@ctrl/core.port.event-bus": "workspace:*",
+		"@ctrl/core.port.storage": "workspace:*",
+		"@ctrl/domain.adapter.db": "workspace:*",
+		"@ctrl/domain.feature.bookmark": "workspace:*",
+		"@ctrl/domain.feature.history": "workspace:*",
+		"@ctrl/domain.feature.layout": "workspace:*",
+		"@ctrl/domain.feature.omnibox": "workspace:*",
+		"@ctrl/domain.feature.session": "workspace:*",
+		"@ctrl/domain.service.browsing": "workspace:*",
+		"@ctrl/domain.service.workspace": "workspace:*"
+	}
+}
