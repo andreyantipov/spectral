@@ -14,7 +14,6 @@ import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
 import { LayoutFeatureLive } from "@ctrl/domain.feature.layout";
 import { OmniboxFeatureLive } from "@ctrl/domain.feature.omnibox";
 import { SessionFeatureLive } from "@ctrl/domain.feature.session";
-import { BrowsingHandlersLive } from "@ctrl/domain.service.browsing";
 import { WorkspaceHandlersLive } from "@ctrl/domain.service.workspace";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { Layer } from "effect";
@@ -37,19 +36,11 @@ const BookmarkFeatureLayer = BookmarkFeatureLive.pipe(Layer.provide(BookmarkRepo
 const HistoryFeatureLayer = HistoryFeatureLive.pipe(Layer.provide(HistoryRepositoryLayer));
 const LayoutFeatureLayer = LayoutFeatureLive.pipe(Layer.provide(LayoutRepositoryLayer));
 
-const BrowsingHandlersLayer = BrowsingHandlersLive.pipe(
-	Layer.provide(SessionFeatureLayer),
-	Layer.provide(BookmarkFeatureLayer),
-	Layer.provide(HistoryFeatureLayer),
-	Layer.provide(OmniboxFeatureLive),
-);
-
 const WorkspaceHandlersLayer = WorkspaceHandlersLive.pipe(Layer.provide(LayoutFeatureLayer));
 
 // OTEL: must be provided to handlers so Effect.withSpan() picks up the tracer
 const OtelLayer = OtelLive(OTEL_SERVICE_NAMES.main);
 
-const TracedBrowsingLayer = BrowsingHandlersLayer.pipe(Layer.provide(OtelLayer));
 const TracedWorkspaceLayer = WorkspaceHandlersLayer.pipe(Layer.provide(OtelLayer));
 
 // EventBus: handlers need the EventBus service from EventBusLive
@@ -68,14 +59,12 @@ const EventBridgeLayer = EventBridgeLive.pipe(
 
 // Compose: expose all layers needed by the app
 // - DbClientLive: for migrations (LibsqlClient)
-// - TracedBrowsingLayer: browsing RPC handlers with OTEL tracing
 // - TracedWorkspaceLayer: workspace RPC handlers with OTEL tracing
 // - EventBusLive: EventBus service
 // - EventBusHandlersLayer: EventBus RPC handlers
 // - EventBridgeLayer: EventBus command → feature handler dispatch
 export const DesktopLive = Layer.mergeAll(
 	DbClientLive,
-	TracedBrowsingLayer,
 	TracedWorkspaceLayer,
 	EventBusLive,
 	EventBusHandlersLayer,

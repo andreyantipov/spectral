@@ -10,8 +10,8 @@ import { Layer } from "effect";
  * Compose: ElectrobunClientProtocol -> RpcSerialization -> RpcClient.Protocol
  *          + OtelWebLive for browser-side tracing
  *
- * Consumers obtain a typed client via `RpcClient.make(BrowsingRpcs)` from the
- * runtime context — no domain imports needed here.
+ * Consumers obtain a typed RPC client from the runtime context — no domain
+ * imports needed here.
  */
 export const createWebviewLive = (electrobunRpc: ElectrobunRpcHandle) => {
 	const SerializationLive = RpcSerialization.layerJson;

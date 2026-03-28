@@ -1,76 +1,185 @@
-import { withTracing } from "@ctrl/core.base.tracing";
+import {
+	type AppCommand,
+	BM_ADD,
+	BM_REMOVE,
+	type BrowsingState,
+	DIAG_PING,
+	DIAG_PONG,
+	EventBus,
+	MUTATION_TAGS,
+	NAV_BACK,
+	NAV_FORWARD,
+	NAV_NAVIGATE,
+	NAV_REPORT,
+	NAV_UPDATE_TITLE,
+	SESSION_ACTIVATE,
+	SESSION_CLOSE,
+	SESSION_CREATE,
+	STATE_SNAPSHOT,
+} from "@ctrl/core.port.event-bus";
 import { BookmarkFeature } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeature } from "@ctrl/domain.feature.history";
 import { OmniboxFeature } from "@ctrl/domain.feature.omnibox";
 import { SessionFeature } from "@ctrl/domain.feature.session";
-import { Effect, Stream } from "effect";
+import { Cause, Effect, Layer, Stream } from "effect";
 import { BROWSING_SERVICE } from "../lib/constants";
-import type { BrowsingState } from "../model/browsing.events";
-import { BrowsingRpcs } from "./browsing.rpc";
 
-export const BrowsingHandlersLive = BrowsingRpcs.toLayer(
+type Payload = Record<string, unknown>;
+
+// -- Snapshot publishing ------------------------------------------------------
+
+const publishSnapshot = Effect.gen(function* () {
+	const bus = yield* EventBus;
+	const sessions = yield* SessionFeature;
+	const bookmarks = yield* BookmarkFeature;
+	const history = yield* HistoryFeature;
+	const [s, b, h] = yield* Effect.all([sessions.getAll(), bookmarks.getAll(), history.getAll()]);
+	yield* bus.publish({
+		type: "event",
+		name: STATE_SNAPSHOT,
+		payload: { sessions: s, bookmarks: b, history: h } satisfies BrowsingState,
+		timestamp: Date.now(),
+	});
+});
+
+// -- Command handlers ---------------------------------------------------------
+
+const handleSessionCreate = (p: Payload) =>
 	Effect.gen(function* () {
 		const sessions = yield* SessionFeature;
-		const bookmarks = yield* BookmarkFeature;
-		const history = yield* HistoryFeature;
-		const omnibox = yield* OmniboxFeature;
+		const mode = typeof p.mode === "string" ? (p.mode as "visual") : "visual";
+		const session = yield* sessions.create(mode);
+		yield* sessions.setActive(session.id);
+	});
 
-		return withTracing(BROWSING_SERVICE, {
-			createSession: ({ mode }: { readonly mode: "visual" }) =>
-				sessions.create(mode).pipe(Effect.tap((s) => sessions.setActive(s.id))),
-			removeSession: ({ id }: { readonly id: string }) => sessions.remove(id),
-			navigate: ({ id, input }: { readonly id: string; readonly input: string }) =>
-				Effect.gen(function* () {
-					const { url, query } = yield* omnibox.resolve(input);
-					return yield* sessions
-						.navigate(id, url)
-						.pipe(Effect.tap(() => history.record(url, null, query).pipe(Effect.ignore)));
-				}),
-			goBack: ({ id }: { readonly id: string }) => sessions.goBack(id),
-			goForward: ({ id }: { readonly id: string }) => sessions.goForward(id),
-			getSessions: () => sessions.getAll(),
-			setActive: ({ id }: { readonly id: string }) => sessions.setActive(id),
-			updateTitle: ({ id, title }: { readonly id: string; readonly title: string }) =>
-				sessions.updateTitle(id, title),
-			reportNavigation: ({ id, url }: { readonly id: string; readonly url: string }) =>
-				Effect.gen(function* () {
-					const session = yield* sessions.updateUrl(id, url);
-					yield* history.record(url, null, null).pipe(Effect.ignore);
-					return session;
-				}),
-			// Bookmark handlers
-			getBookmarks: () => bookmarks.getAll(),
-			addBookmark: ({ url, title }: { readonly url: string; readonly title: string | null }) =>
-				bookmarks.create(url, title),
-			removeBookmark: ({ id }: { readonly id: string }) => bookmarks.remove(id),
-			isBookmarked: ({ url }: { readonly url: string }) => bookmarks.isBookmarked(url),
-			// History handlers
-			getHistory: () => history.getAll(),
-			clearHistory: () => history.clear(),
-			// Combined stream
-			browsingChanges: () => {
-				const s$ = Stream.concat(
-					Stream.fromEffect(sessions.getAll().pipe(Effect.orDie)),
-					sessions.changes,
-				);
-				const b$ = Stream.concat(
-					Stream.fromEffect(bookmarks.getAll().pipe(Effect.orDie)),
-					bookmarks.changes,
-				);
-				const h$ = Stream.concat(
-					Stream.fromEffect(history.getAll().pipe(Effect.orDie)),
-					history.changes,
-				);
-				return Stream.zipLatest(Stream.zipLatest(s$, b$), h$).pipe(
-					Stream.map(
-						([[s, b], h]): BrowsingState => ({
-							sessions: s,
-							bookmarks: b,
-							history: h,
-						}),
-					),
-				);
-			},
+const handleSessionClose = (p: Payload) =>
+	Effect.gen(function* () {
+		const sessions = yield* SessionFeature;
+		yield* sessions.remove(p.id as string);
+	});
+
+const handleSessionActivate = (p: Payload) =>
+	Effect.gen(function* () {
+		const sessions = yield* SessionFeature;
+		yield* sessions.setActive(p.id as string);
+	});
+
+const handleNavNavigate = (p: Payload) =>
+	Effect.gen(function* () {
+		const sessions = yield* SessionFeature;
+		const omnibox = yield* OmniboxFeature;
+		const history = yield* HistoryFeature;
+		const { url, query } = yield* omnibox.resolve(p.input as string);
+		yield* sessions.navigate(p.id as string, url);
+		yield* history.record(url, null, query).pipe(Effect.ignore);
+	});
+
+const handleNavBack = (p: Payload) =>
+	Effect.gen(function* () {
+		const sessions = yield* SessionFeature;
+		yield* sessions.goBack(p.id as string);
+	});
+
+const handleNavForward = (p: Payload) =>
+	Effect.gen(function* () {
+		const sessions = yield* SessionFeature;
+		yield* sessions.goForward(p.id as string);
+	});
+
+const handleNavReport = (p: Payload) =>
+	Effect.gen(function* () {
+		const sessions = yield* SessionFeature;
+		const history = yield* HistoryFeature;
+		yield* sessions.updateUrl(p.id as string, p.url as string);
+		yield* history.record(p.url as string, null, null).pipe(Effect.ignore);
+	});
+
+const handleNavUpdateTitle = (p: Payload) =>
+	Effect.gen(function* () {
+		const sessions = yield* SessionFeature;
+		yield* sessions.updateTitle(p.id as string, p.title as string);
+	});
+
+const handleBmAdd = (p: Payload) =>
+	Effect.gen(function* () {
+		const bookmarks = yield* BookmarkFeature;
+		yield* bookmarks.create(p.url as string, (p.title as string | null) ?? null);
+	});
+
+const handleBmRemove = (p: Payload) =>
+	Effect.gen(function* () {
+		const bookmarks = yield* BookmarkFeature;
+		yield* bookmarks.remove(p.id as string);
+	});
+
+const handleDiagPing = () =>
+	Effect.gen(function* () {
+		const bus = yield* EventBus;
+		yield* bus.publish({
+			type: "event",
+			name: DIAG_PONG,
+			timestamp: Date.now(),
+			payload: { message: "EventBus alive" },
+			causedBy: DIAG_PING,
 		});
+	});
+
+// -- Dispatch table -----------------------------------------------------------
+
+type Services = BookmarkFeature | EventBus | HistoryFeature | OmniboxFeature | SessionFeature;
+type HandlerFn = (p: Payload) => Effect.Effect<void, unknown, Services>;
+
+const handlers: Record<string, HandlerFn | undefined> = {
+	[SESSION_CREATE]: (p) => handleSessionCreate(p),
+	[SESSION_CLOSE]: (p) => (p.id ? handleSessionClose(p) : Effect.void),
+	[SESSION_ACTIVATE]: (p) => (p.id ? handleSessionActivate(p) : Effect.void),
+	[NAV_NAVIGATE]: (p) => (p.id && p.input ? handleNavNavigate(p) : Effect.void),
+	[NAV_BACK]: (p) => (p.id ? handleNavBack(p) : Effect.void),
+	[NAV_FORWARD]: (p) => (p.id ? handleNavForward(p) : Effect.void),
+	[NAV_REPORT]: (p) => (p.id && p.url ? handleNavReport(p) : Effect.void),
+	[NAV_UPDATE_TITLE]: (p) => (p.id && p.title ? handleNavUpdateTitle(p) : Effect.void),
+	[BM_ADD]: (p) => (p.url ? handleBmAdd(p) : Effect.void),
+	[BM_REMOVE]: (p) => (p.id ? handleBmRemove(p) : Effect.void),
+	[DIAG_PING]: () => handleDiagPing(),
+};
+
+const dispatch = (cmd: AppCommand) => {
+	const handler = handlers[cmd.action];
+	if (!handler) return Effect.void;
+	const effect = handler((cmd.payload as Payload) ?? {});
+	if (MUTATION_TAGS.has(cmd.action)) {
+		return effect.pipe(Effect.andThen(publishSnapshot));
+	}
+	return effect;
+};
+
+/**
+ * BrowsingServiceLive listens to EventBus commands and dispatches to domain
+ * features. After mutations, publishes state.snapshot events with full
+ * browsing state (sessions + bookmarks + history).
+ */
+export const BrowsingServiceLive = Layer.scopedDiscard(
+	Effect.gen(function* () {
+		const bus = yield* EventBus;
+
+		// Listen for commands and dispatch
+		yield* bus.commands.pipe(
+			Stream.runForEach((cmd) =>
+				dispatch(cmd).pipe(
+					Effect.catchAllCause((cause) => {
+						if (Cause.isFailure(cause)) {
+							console.error(`[${BROWSING_SERVICE}] ${cmd.action}:`, Cause.pretty(cause));
+						}
+						return Effect.void;
+					}),
+				),
+			),
+			Effect.forkScoped,
+		);
+
+		// Publish initial state snapshot
+		yield* publishSnapshot;
+
+		console.info(`[bun] ${BROWSING_SERVICE} started`);
 	}),
 );
