@@ -15,6 +15,8 @@ import {
 	BrowsingServiceLive,
 	NavigationHandlers,
 	SessionHandlers,
+	SystemHandlers,
+	UIHandlers,
 	WorkspaceHandlers,
 } from "@ctrl/domain.service.browsing";
 import { WorkspaceHandlersLive } from "@ctrl/domain.service.workspace";
@@ -55,6 +57,13 @@ const HandlersLive = Layer.mergeAll(
 	),
 	BookmarkHandlers.pipe(Layer.provide(BookmarkFeatureLayer)),
 	WorkspaceHandlers.pipe(Layer.provide(LayoutFeatureLayer)),
+	SystemHandlers.pipe(
+		Layer.provide(SessionFeatureLayer),
+		Layer.provide(BookmarkFeatureLayer),
+		Layer.provide(HistoryFeatureLayer),
+		Layer.provide(EventBusLive),
+	),
+	UIHandlers,
 );
 
 const EventLogLive = EventLog.layer(AppEvents).pipe(

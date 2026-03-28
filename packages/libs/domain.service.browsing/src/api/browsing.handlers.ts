@@ -5,6 +5,8 @@ import {
 	EventBus,
 	NavigationEvents,
 	SessionEvents,
+	SystemEvents,
+	UIEvents,
 	WorkspaceEvents,
 } from "@ctrl/core.port.event-bus";
 import { BookmarkFeature } from "@ctrl/domain.feature.bookmark";
@@ -249,6 +251,30 @@ export const WorkspaceHandlers = EventLog.group(WorkspaceEvents, (h) =>
 		),
 );
 
+// -- System + UI EventLog handlers --------------------------------------------
+
+export const SystemHandlers = EventLog.group(SystemEvents, (h) =>
+	h
+		.handle("state.request", () => publishSnapshot)
+		.handle("state.snapshot", () => Effect.void)
+		.handle("diag.ping", () =>
+			Effect.gen(function* () {
+				const bus = yield* EventBus;
+				yield* bus.publish({
+					type: "event",
+					name: SystemEvents.events["diag.pong"].tag,
+					payload: { message: "EventBus alive" },
+					timestamp: Date.now(),
+				});
+			}),
+		)
+		.handle("diag.pong", () => Effect.void),
+);
+
+export const UIHandlers = EventLog.group(UIEvents, (h) =>
+	h.handle("ui.toggle-omnibox", () => Effect.void).handle("ui.toggle-sidebar", () => Effect.void),
+);
+
 // -- Snapshot publishing ------------------------------------------------------
 
 const publishSnapshot = Effect.gen(function* () {
@@ -259,7 +285,7 @@ const publishSnapshot = Effect.gen(function* () {
 	const [s, b, h] = yield* Effect.all([sessions.getAll(), bookmarks.getAll(), history.getAll()]);
 	yield* bus.publish({
 		type: "event",
-		name: "state.snapshot",
+		name: SystemEvents.events["state.snapshot"].tag,
 		payload: { sessions: s, bookmarks: b, history: h } satisfies BrowsingState,
 		timestamp: Date.now(),
 	});
@@ -267,20 +293,20 @@ const publishSnapshot = Effect.gen(function* () {
 
 // -- Commands that trigger snapshot -------------------------------------------
 
-const MUTATION_ACTIONS = new Set([
-	"session.create",
-	"session.close",
-	"session.activate",
-	"nav.navigate",
-	"nav.back",
-	"nav.forward",
-	"nav.report",
-	"nav.update-title",
-	"bm.add",
-	"bm.remove",
-	"ws.split-panel",
-	"ws.move-panel",
-	"ws.close-panel",
+const MUTATION_ACTIONS: Set<string> = new Set([
+	SessionEvents.events["session.create"].tag,
+	SessionEvents.events["session.close"].tag,
+	SessionEvents.events["session.activate"].tag,
+	NavigationEvents.events["nav.navigate"].tag,
+	NavigationEvents.events["nav.back"].tag,
+	NavigationEvents.events["nav.forward"].tag,
+	NavigationEvents.events["nav.report"].tag,
+	NavigationEvents.events["nav.update-title"].tag,
+	BookmarkEvents.events["bm.add"].tag,
+	BookmarkEvents.events["bm.remove"].tag,
+	WorkspaceEvents.events["ws.split-panel"].tag,
+	WorkspaceEvents.events["ws.move-panel"].tag,
+	WorkspaceEvents.events["ws.close-panel"].tag,
 ]);
 
 // -- BrowsingServiceLive — bridges EventBus commands to EventLog dispatch -----
@@ -289,7 +315,14 @@ export const BrowsingServiceLive = Layer.scopedDiscard(
 	Effect.gen(function* () {
 		const bus = yield* EventBus;
 		const client = yield* EventLog.makeClient(
-			EventLog.schema(SessionEvents, NavigationEvents, BookmarkEvents, WorkspaceEvents),
+			EventLog.schema(
+				SessionEvents,
+				NavigationEvents,
+				BookmarkEvents,
+				WorkspaceEvents,
+				UIEvents,
+				SystemEvents,
+			),
 		);
 
 		yield* bus.commands.pipe(
@@ -298,7 +331,6 @@ export const BrowsingServiceLive = Layer.scopedDiscard(
 				const payload = (cmd.payload ?? {}) as Record<string, unknown>;
 
 				const effect = Effect.gen(function* () {
-					// Try to dispatch via EventLog typed client
 					yield* (client as (tag: string, p: unknown) => Effect.Effect<unknown, unknown>)(
 						action,
 						payload,
@@ -311,11 +343,6 @@ export const BrowsingServiceLive = Layer.scopedDiscard(
 						return Effect.void;
 					}),
 				);
-
-				// state.request — UI asks for current state on mount
-				if (action === "state.request") {
-					return publishSnapshot;
-				}
 
 				if (MUTATION_ACTIONS.has(action)) {
 					return effect.pipe(Effect.andThen(publishSnapshot));

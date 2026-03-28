@@ -6,14 +6,12 @@
 
 ### Before
 ```
-<!-- Paste relevant section from docs/architecture/GENERATED.md BEFORE changes -->
-<!-- Or describe the package/flow structure that existed -->
+<!-- Package structure / data flow BEFORE changes -->
 ```
 
 ### After
 ```
-<!-- Paste the updated structure AFTER changes -->
-<!-- Show what packages were added/removed/moved -->
+<!-- Package structure / data flow AFTER changes -->
 ```
 
 ## Test plan
@@ -21,6 +19,4 @@
 - [ ] `bun run test` — all tests pass
 - [ ] `bunx grit check .` — 0 violations
 - [ ] App smoke test (if UI changes)
-- [ ] No `.js` artifacts in `src/`
-- [ ] No stale imports from deleted packages
 - [ ] CLAUDE.md updated (if architecture changed)

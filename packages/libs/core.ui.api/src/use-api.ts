@@ -3,6 +3,7 @@ import {
 	type AppEvent,
 	type AppEvents,
 	EventBusRpcs,
+	SystemEvents,
 } from "@ctrl/core.port.event-bus";
 import type { Event } from "@effect/experimental/Event";
 import type { EventGroup } from "@effect/experimental/EventGroup";
@@ -67,12 +68,10 @@ export function useApi() {
 
 		// Request initial state — delay to ensure eventStream listener is active
 		requestAnimationFrame(() => {
-			const cmd: AppCommand = {
-				type: "command",
-				action: "state.request",
-				meta: { source: "ui" },
-			};
-			void runtime.runPromise(client.dispatch({ command: cmd }));
+			dispatch(
+				SystemEvents.events["state.request"].tag as Parameters<typeof dispatch>[0],
+				{} as never,
+			);
 		});
 	});
 

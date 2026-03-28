@@ -1,6 +1,6 @@
 import type { Bookmark, HistoryEntry, Page, Session } from "@ctrl/core.base.model";
 import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
-import { AppEvents, EventBus, EventBusLive } from "@ctrl/core.port.event-bus";
+import { AppEvents, EventBus, EventBusLive, SystemEvents } from "@ctrl/core.port.event-bus";
 import { BookmarkRepository, HistoryRepository, SessionRepository } from "@ctrl/core.port.storage";
 import { BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
@@ -15,6 +15,8 @@ import {
 	BrowsingServiceLive,
 	NavigationHandlers,
 	SessionHandlers,
+	SystemHandlers,
+	UIHandlers,
 	WorkspaceHandlers,
 } from "./browsing.handlers";
 
@@ -163,6 +165,13 @@ const makeMockLayers = () => {
 		),
 		BookmarkHandlers.pipe(Layer.provide(BookmarkLayer)),
 		WorkspaceHandlers.pipe(Layer.provide(MockLayoutFeature)),
+		SystemHandlers.pipe(
+			Layer.provide(SessionLayer),
+			Layer.provide(BookmarkLayer),
+			Layer.provide(HistoryLayer),
+			Layer.provide(EventBusLive),
+		),
+		UIHandlers,
 	);
 	const EventLogLive = EventLogMod.layer(AppEvents).pipe(
 		Layer.provide(HandlersLive),
@@ -196,7 +205,7 @@ const runWithService = <A, E>(effect: Effect.Effect<A, E, EventBus>) =>
 const sendAndWaitSnapshot = (bus: EventBus["Type"], action: string, payload?: unknown) =>
 	Effect.gen(function* () {
 		const fiber = yield* bus
-			.on("state.snapshot")
+			.on(SystemEvents.events["state.snapshot"].tag)
 			.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
 		yield* Effect.sleep(Duration.millis(10)); // let listener start
 		yield* bus.send({ type: "command", action, payload, meta: { source: "ui" } });
@@ -218,10 +227,10 @@ describe("BrowsingServiceLive — EventBus integration", () => {
 				const bus = yield* EventBus;
 				yield* Effect.sleep(Duration.millis(50));
 				const fiber = yield* bus
-					.on("diag.pong")
+					.on(SystemEvents.events["diag.pong"].tag)
 					.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
 				yield* Effect.sleep(Duration.millis(10));
-				yield* bus.send({ type: "command", action: "diag.ping" });
+				yield* bus.send({ type: "command", action: SystemEvents.events["diag.ping"].tag });
 				yield* Effect.sleep(Duration.millis(100));
 				const events = Chunk.toArray(yield* Fiber.join(fiber));
 				expect(events).toHaveLength(1);
@@ -298,10 +307,10 @@ describe("BrowsingServiceLive — EventBus integration", () => {
 				const bus = yield* EventBus;
 				yield* Effect.sleep(Duration.millis(50));
 				const fiber = yield* bus
-					.on("diag.pong")
+					.on(SystemEvents.events["diag.pong"].tag)
 					.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
 				yield* Effect.sleep(Duration.millis(10));
-				yield* bus.send({ type: "command", action: "diag.ping" });
+				yield* bus.send({ type: "command", action: SystemEvents.events["diag.ping"].tag });
 				yield* Effect.sleep(Duration.millis(100));
 				const events = Chunk.toArray(yield* Fiber.join(fiber));
 				expect(events).toHaveLength(1);

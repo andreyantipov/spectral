@@ -1,13 +1,7 @@
 import { DatabaseError } from "@ctrl/core.base.errors";
+import { PanelRefSchema } from "@ctrl/core.base.model";
 import { EventGroup } from "@effect/experimental";
 import { Schema } from "effect";
-
-const PanelRefPayload = Schema.Struct({
-	id: Schema.String,
-	type: Schema.Literal("session", "tool"),
-	sessionId: Schema.optional(Schema.String),
-	toolId: Schema.optional(Schema.String),
-});
 
 export const WorkspaceEvents = EventGroup.empty
 	.add({
@@ -16,7 +10,7 @@ export const WorkspaceEvents = EventGroup.empty
 		payload: Schema.Struct({
 			panelId: Schema.String,
 			direction: Schema.Literal("horizontal", "vertical"),
-			newPanel: PanelRefPayload,
+			newPanel: PanelRefSchema,
 		}),
 		success: Schema.Void,
 	})

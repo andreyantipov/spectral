@@ -1,7 +1,7 @@
 import type { Session } from "@ctrl/core.base.model";
 import { withWebTracing } from "@ctrl/core.base.tracing";
 import { currentUrl } from "@ctrl/core.base.types";
-import { type BrowsingState, DEFAULT_SHORTCUTS } from "@ctrl/core.port.event-bus";
+import { type BrowsingState, DEFAULT_SHORTCUTS, SystemEvents } from "@ctrl/core.port.event-bus";
 import {
 	AppShellTemplate,
 	ContextMenu,
@@ -42,7 +42,7 @@ export type SidebarFeatureProps = {
 
 export function SidebarFeature(props: SidebarFeatureProps) {
 	const api = useApi();
-	const state = api.on<BrowsingState>("state.snapshot");
+	const state = api.on<BrowsingState>(SystemEvents.events["state.snapshot"].tag);
 	const [omniboxQuery, setOmniboxQuery] = createSignal("");
 
 	let autoCreated = false;
@@ -109,7 +109,42 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 
 	const headerInput = () => activeUrl() ?? "Search or enter URL...";
 
-	// Keyboard shortcuts — dispatch via EventBus
+	// Actions that need the active session's ID as their payload
+	const SESSION_ID_ACTIONS = new Set(["session.close", "nav.back", "nav.forward"]);
+
+	const resolveActivatePayload = (binding: (typeof DEFAULT_SHORTCUTS)[number]) => {
+		const idx = Number.parseInt(binding.shortcut.replace("Cmd+", ""), 10) - 1;
+		const sessions = state()?.sessions;
+		if (!sessions || idx < 0 || idx >= sessions.length) return null;
+		return { action: binding.action, payload: { id: sessions[idx].id } };
+	};
+
+	const resolveSplitPayload = (binding: (typeof DEFAULT_SHORTCUTS)[number]) => {
+		const session = activeSession();
+		if (!session) return null;
+		const direction = (binding.payload?.direction as "horizontal" | "vertical") ?? "horizontal";
+		return {
+			action: binding.action,
+			payload: {
+				panelId: session.id,
+				direction,
+				newPanel: { id: crypto.randomUUID(), type: "session", sessionId: session.id },
+			},
+		};
+	};
+
+	type Resolved = { action: string; payload: Record<string, unknown> };
+
+	const resolveShortcutPayload = (binding: (typeof DEFAULT_SHORTCUTS)[number]): Resolved | null => {
+		if (binding.action === "session.activate") return resolveActivatePayload(binding);
+		if (binding.action === "ws.split-panel") return resolveSplitPayload(binding);
+		if (SESSION_ID_ACTIONS.has(binding.action)) {
+			const session = activeSession();
+			return session ? { action: binding.action, payload: { id: session.id } } : null;
+		}
+		return { action: binding.action, payload: {} };
+	};
+
 	const handleKeyDown = (e: KeyboardEvent) => {
 		const shortcutStr = toShortcutString(e);
 		const binding = DEFAULT_SHORTCUTS.find(
@@ -118,63 +153,9 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		if (!binding) return;
 		e.preventDefault();
 
-		// session.activate needs the Nth session's ID
-		if (binding.action === "session.activate") {
-			const idx = Number.parseInt(binding.shortcut.replace("Cmd+", ""), 10) - 1;
-			const sessions = state()?.sessions;
-			if (!sessions || idx < 0 || idx >= sessions.length) return;
-			api.dispatch(
-				"session.activate" as Parameters<typeof api.dispatch>[0],
-				{
-					id: sessions[idx].id,
-				} as never,
-			);
-			return;
-		}
-
-		// session.close needs the active session's ID
-		if (binding.action === "session.close") {
-			const session = activeSession();
-			if (!session) return;
-			api.dispatch(
-				"session.close" as Parameters<typeof api.dispatch>[0],
-				{
-					id: session.id,
-				} as never,
-			);
-			return;
-		}
-
-		// nav.back/nav.forward need the active session's ID
-		if (binding.action === "nav.back" || binding.action === "nav.forward") {
-			const session = activeSession();
-			if (!session) return;
-			api.dispatch(
-				binding.action as Parameters<typeof api.dispatch>[0],
-				{
-					id: session.id,
-				} as never,
-			);
-			return;
-		}
-
-		// ws.split-right/ws.split-down need the active session context
-		if (binding.action === "ws.split-right" || binding.action === "ws.split-down") {
-			const session = activeSession();
-			if (!session) return;
-			const direction = binding.action === "ws.split-right" ? "horizontal" : "vertical";
-			api.dispatch(
-				"ws.split-panel" as Parameters<typeof api.dispatch>[0],
-				{
-					panelId: session.id,
-					direction,
-					newPanel: { id: crypto.randomUUID(), type: "session", sessionId: session.id },
-				} as never,
-			);
-			return;
-		}
-
-		api.dispatch(binding.action as Parameters<typeof api.dispatch>[0], {} as never);
+		const resolved = resolveShortcutPayload(binding);
+		if (!resolved) return;
+		api.dispatch(resolved.action as Parameters<typeof api.dispatch>[0], resolved.payload as never);
 	};
 
 	// Context menu

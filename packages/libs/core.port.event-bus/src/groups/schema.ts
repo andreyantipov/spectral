@@ -2,6 +2,8 @@ import { EventLog } from "@effect/experimental";
 import { BookmarkEvents } from "./bookmark";
 import { NavigationEvents } from "./navigation";
 import { SessionEvents } from "./session";
+import { SystemEvents } from "./system";
+import { UIEvents } from "./ui";
 import { WorkspaceEvents } from "./workspace";
 
 export const AppEvents = EventLog.schema(
@@ -9,4 +11,6 @@ export const AppEvents = EventLog.schema(
 	NavigationEvents,
 	BookmarkEvents,
 	WorkspaceEvents,
+	UIEvents,
+	SystemEvents,
 );
