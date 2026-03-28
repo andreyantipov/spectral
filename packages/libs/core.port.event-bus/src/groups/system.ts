@@ -28,12 +28,3 @@ export const SystemEvents = EventGroup.empty
 		success: Schema.Void,
 	})
 	.addError(DatabaseError);
-
-/** @deprecated Use SystemEvents.events["state.snapshot"].tag instead */
-export const STATE_SNAPSHOT = SystemEvents.events["state.snapshot"].tag;
-/** @deprecated Use SystemEvents.events["state.request"].tag instead */
-export const STATE_REQUEST = SystemEvents.events["state.request"].tag;
-/** @deprecated Use SystemEvents.events["diag.ping"].tag instead */
-export const DIAG_PING = SystemEvents.events["diag.ping"].tag;
-/** @deprecated Use SystemEvents.events["diag.pong"].tag instead */
-export const DIAG_PONG = SystemEvents.events["diag.pong"].tag;

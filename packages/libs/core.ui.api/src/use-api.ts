@@ -3,7 +3,6 @@ import {
 	type AppEvent,
 	type AppEvents,
 	EventBusRpcs,
-	SystemEvents,
 } from "@ctrl/core.port.event-bus";
 import type { Event } from "@effect/experimental/Event";
 import type { EventGroup } from "@effect/experimental/EventGroup";
@@ -13,18 +12,17 @@ import { Effect, Exit, Fiber, type ManagedRuntime, PubSub, Scope, Stream } from 
 import { type Accessor, createSignal, getOwner, onCleanup, onMount, runWithOwner } from "solid-js";
 import { useRuntime } from "./use-runtime";
 
-/**
- * Typed dispatch function — types derived from EventGroup at compile time.
- * No EventLog needed. Just wraps send() with tag + payload type checking.
- */
-type TypedDispatch<Groups extends EventGroup.Any> = <
-	Tag extends Event.Tag<EventGroup.Events<Groups>>,
->(
-	tag: Tag,
-	payload: Event.PayloadWithTag<EventGroup.Events<Groups>, Tag>,
-) => void;
+/** All event tags from AppEvents — union of all possible tags */
+type AllTags = Event.Tag<EventGroup.Events<(typeof AppEvents)["groups"][number]>>;
+
+/** Payload for a specific tag */
+type PayloadFor<T extends AllTags> = Event.PayloadWithTag<
+	EventGroup.Events<(typeof AppEvents)["groups"][number]>,
+	T
+>;
 
 export function useApi() {
+	// Runtime boundary cast — SolidJS Context is untyped, actual runtime has Protocol + Scope
 	const runtime = useRuntime() as unknown as ManagedRuntime.ManagedRuntime<
 		Protocol | Scope.Scope,
 		never
@@ -37,16 +35,27 @@ export function useApi() {
 		RpcClient.make(EventBusRpcs).pipe(Effect.provideService(Scope.Scope, scope)),
 	) as RpcClient.FromGroup<typeof EventBusRpcs>;
 
-	// Typed dispatch — sends command through carrier, types from EventGroup
-	const dispatch: TypedDispatch<(typeof AppEvents)["groups"][number]> = (tag, payload) => {
+	/** Send a typed command through EventBus carrier */
+	function dispatch<T extends AllTags>(tag: T, payload: PayloadFor<T>): void {
 		const cmd: AppCommand = {
 			type: "command",
 			action: tag,
-			payload: payload as unknown,
+			payload,
 			meta: { source: "ui" },
 		};
 		void runtime.runPromise(client.dispatch({ command: cmd }));
-	};
+	}
+
+	/** Send an untyped command (for dynamic dispatch from shortcuts) */
+	function send(action: string, payload?: unknown): void {
+		const cmd: AppCommand = {
+			type: "command",
+			action,
+			payload,
+			meta: { source: "ui" },
+		};
+		void runtime.runPromise(client.dispatch({ command: cmd }));
+	}
 
 	// Event subscription — single shared stream, fan out to per-event signals
 	const owner = getOwner();
@@ -66,12 +75,9 @@ export function useApi() {
 		);
 		onCleanup(() => runtime.runFork(Fiber.interrupt(fiber)));
 
-		// Request initial state — delay to ensure eventStream listener is active
+		// Request initial state
 		requestAnimationFrame(() => {
-			dispatch(
-				SystemEvents.events["state.request"].tag as Parameters<typeof dispatch>[0],
-				{} as never,
-			);
+			dispatch("state.request", {});
 		});
 	});
 
@@ -100,5 +106,5 @@ export function useApi() {
 		return value as Accessor<T | undefined>;
 	}
 
-	return { dispatch, on };
+	return { dispatch, send, on };
 }

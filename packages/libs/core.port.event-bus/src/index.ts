@@ -13,13 +13,7 @@ export { BookmarkEvents } from "./groups/bookmark";
 export { NavigationEvents } from "./groups/navigation";
 export { AppEvents } from "./groups/schema";
 export { SessionEvents } from "./groups/session";
-export {
-	DIAG_PING,
-	DIAG_PONG,
-	STATE_REQUEST,
-	STATE_SNAPSHOT,
-	SystemEvents,
-} from "./groups/system";
+export { SystemEvents } from "./groups/system";
 export { UIEvents } from "./groups/ui";
 export { WorkspaceEvents } from "./groups/workspace";
 export { DEFAULT_SHORTCUTS, type ShortcutBinding } from "./shortcuts";

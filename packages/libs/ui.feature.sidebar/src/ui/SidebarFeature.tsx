@@ -155,7 +155,7 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 
 		const resolved = resolveShortcutPayload(binding);
 		if (!resolved) return;
-		api.dispatch(resolved.action as Parameters<typeof api.dispatch>[0], resolved.payload as never);
+		api.send(resolved.action, resolved.payload);
 	};
 
 	// Context menu
