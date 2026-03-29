@@ -1,4 +1,4 @@
-import type { AppCommand } from "@ctrl/domain.service.native";
+import type { AppCommand } from "@ctrl/domain.adapter.carrier";
 import type { ManagedRuntime } from "effect";
 import { render } from "solid-js/web";
 import App from "./App";

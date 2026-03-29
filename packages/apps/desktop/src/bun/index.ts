@@ -6,17 +6,12 @@ import rootPkg from "../../../../../package.json";
 
 const APP_VERSION = rootPkg.version;
 
-import { EventBusRpcs } from "@ctrl/core.port.event-bus";
+import type { ElectrobunRpcHandle } from "@ctrl/domain.adapter.carrier";
+import { createIpcBridge, type ElectrobunHandle } from "@ctrl/domain.adapter.carrier";
 import { ensureSchema } from "@ctrl/domain.adapter.db";
 import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/domain.adapter.otel";
-import {
-	createIpcBridge,
-	type ElectrobunHandle,
-	type ElectrobunRpcHandle,
-	ElectrobunServerProtocol,
-} from "@ctrl/domain.service.native";
-import { WorkspaceRpcs } from "@ctrl/domain.service.workspace";
-import { RpcSerialization, RpcServer } from "@effect/rpc";
+import { AllRpcs, createCarrierServer } from "@ctrl/domain.runtime.bun";
+import { RpcServer } from "@effect/rpc";
 import { Layer, ManagedRuntime, Runtime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
 import { type AppLayer, DesktopLive } from "./layers";
@@ -86,26 +81,17 @@ const win = new BrowserWindow({
 	rpc: mainRPC,
 });
 
-// Start the Effect RPC server over the Electrobun IPC tunnel.
+// Start RPC server over Electrobun IPC — carrier connects Bun ↔ Webview
 const rpcHandle = win.webview.rpc as unknown as ElectrobunRpcHandle;
-
-const SerializationLive = RpcSerialization.layerJson;
-
-const ServerProtocolLive = Layer.scoped(
-	RpcServer.Protocol,
-	ElectrobunServerProtocol(rpcHandle),
-).pipe(Layer.provide(SerializationLive));
-
+const CarrierServerLive = createCarrierServer(rpcHandle);
 const HandlersFromRuntime = Layer.succeedContext(rt.context) as Layer.Layer<AppLayer, never, never>;
 
-const AllRpcs = WorkspaceRpcs.merge(EventBusRpcs);
 const ServerLive = RpcServer.layer(AllRpcs).pipe(
-	Layer.provide(ServerProtocolLive),
+	Layer.provide(CarrierServerLive),
 	Layer.provide(HandlersFromRuntime),
 	Layer.provide(OtelLive(OTEL_SERVICE_NAMES.main)),
 ) as Layer.Layer<never, never, never>;
 
-// Fork the RPC server — runs for the lifetime of the app
 const rpcServerRuntime = ManagedRuntime.make(ServerLive);
 await rpcServerRuntime.runtime();
 

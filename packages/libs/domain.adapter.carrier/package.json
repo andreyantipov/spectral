@@ -1,5 +1,5 @@
 {
-	"name": "@ctrl/domain.service.native",
+	"name": "@ctrl/domain.adapter.carrier",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",

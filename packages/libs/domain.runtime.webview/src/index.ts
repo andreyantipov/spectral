@@ -1,4 +1,4 @@
-import { ElectrobunClientProtocol, type ElectrobunRpcHandle } from "@ctrl/domain.service.native";
+import { ElectrobunClientProtocol, type ElectrobunRpcHandle } from "@ctrl/domain.adapter.carrier";
 import { RpcClient, RpcSerialization } from "@effect/rpc";
 import { Layer } from "effect";
 
