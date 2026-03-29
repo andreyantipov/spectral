@@ -1,3 +1,10 @@
+## [0.16.2](https://github.com/andreyantipov/spectral/compare/v0.16.1...v0.16.2) (2026-03-29)
+
+
+### Bug Fixes
+
+* infra: add dev icon, EventCatalog content, and allowUnfree in flake ([#24](https://github.com/andreyantipov/spectral/issues/24)) ([72788fe](https://github.com/andreyantipov/spectral/commit/72788fe836956d50f62f5a4690d2c9f714931f94))
+
 ## [0.16.1](https://github.com/andreyantipov/spectral/compare/v0.16.0...v0.16.1) (2026-03-29)
 
 
