@@ -701,39 +701,39 @@
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M1128.76,-526.56C1019.77,-504.6 724.35,-445.05 606.01,-421.2"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="606.73,-419.21 600.43,-420.08 605.9,-423.32 606.73,-419.21"/>
 </g>
-<!-- packages/libs/ui.scenes -->
+<!-- packages/libs/ui.scene.browser -->
 <g id="node24" class="node">
-<title>packages/libs/ui.scenes</title>
-<g id="a_node24"><a xlink:href="packages/libs/ui.scenes" xlink:title="ui.scenes">
-<polygon fill="#e0f7fa" stroke="black" points="1469.5,-670.5 1416.47,-670.5 1414.5,-668.53 1414.5,-652.75 1467.53,-652.75 1469.5,-654.72 1469.5,-670.5"/>
-<polyline fill="none" stroke="black" points="1467.53,-668.53 1414.5,-668.53"/>
-<polyline fill="none" stroke="black" points="1467.53,-668.53 1467.53,-652.75"/>
-<polyline fill="none" stroke="black" points="1467.53,-668.53 1469.5,-670.5"/>
-<text xml:space="preserve" text-anchor="start" x="1422.5" y="-659" font-family="Helvetica,sans-Serif" font-size="9.00">ui.scenes</text>
+<title>packages/libs/ui.scene.browser</title>
+<g id="a_node24"><a xlink:href="packages/libs/ui.scene.browser" xlink:title="ui.scene.browser">
+<polygon fill="#e0f7fa" stroke="black" points="1484.88,-670.5 1401.1,-670.5 1399.12,-668.53 1399.12,-652.75 1482.9,-652.75 1484.88,-654.72 1484.88,-670.5"/>
+<polyline fill="none" stroke="black" points="1482.9,-668.53 1399.12,-668.53"/>
+<polyline fill="none" stroke="black" points="1482.9,-668.53 1482.9,-652.75"/>
+<polyline fill="none" stroke="black" points="1482.9,-668.53 1484.88,-670.5"/>
+<text xml:space="preserve" text-anchor="start" x="1407.12" y="-659" font-family="Helvetica,sans-Serif" font-size="9.00">ui.scene.browser</text>
 </a>
 </g>
 </g>
-<!-- packages/libs/ui.scenes&#45;&gt;packages/libs/core.base.types -->
+<!-- packages/libs/ui.scene.browser&#45;&gt;packages/libs/core.base.types -->
 <g id="edge62" class="edge">
-<title>packages/libs/ui.scenes&#45;&gt;packages/libs/core.base.types</title>
+<title>packages/libs/ui.scene.browser&#45;&gt;packages/libs/core.base.types</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M1435.48,-652.52C1412.44,-623.28 1334.87,-519.64 1309,-419 1289.26,-342.21 1449,-347.13 1415,-275.5 1391.06,-225.07 1333.25,-189.34 1299.23,-171.85"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1300.54,-170.16 1294.24,-169.35 1298.66,-173.91 1300.54,-170.16"/>
 </g>
-<!-- packages/libs/ui.scenes&#45;&gt;packages/libs/core.ui.components -->
+<!-- packages/libs/ui.scene.browser&#45;&gt;packages/libs/core.ui.components -->
 <g id="edge63" class="edge">
-<title>packages/libs/ui.scenes&#45;&gt;packages/libs/core.ui.components</title>
+<title>packages/libs/ui.scene.browser&#45;&gt;packages/libs/core.ui.components</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M1461.87,-652.26C1503.24,-634.54 1601.18,-591.04 1678,-544.75 1742.8,-505.71 1813.69,-450.24 1845.24,-424.81"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1846.36,-426.61 1849.7,-421.21 1843.71,-423.35 1846.36,-426.61"/>
 </g>
-<!-- packages/libs/ui.scenes&#45;&gt;packages/libs/ui.feature.sidebar -->
+<!-- packages/libs/ui.scene.browser&#45;&gt;packages/libs/ui.feature.sidebar -->
 <g id="edge64" class="edge">
-<title>packages/libs/ui.scenes&#45;&gt;packages/libs/ui.feature.sidebar</title>
+<title>packages/libs/ui.scene.browser&#45;&gt;packages/libs/ui.feature.sidebar</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M1452.95,-652.31C1480.55,-631.35 1553.21,-576.19 1587.11,-550.46"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1588.18,-552.28 1591.69,-546.98 1585.64,-548.94 1588.18,-552.28"/>
 </g>
-<!-- packages/libs/ui.scenes&#45;&gt;packages/libs/ui.feature.workspace -->
+<!-- packages/libs/ui.scene.browser&#45;&gt;packages/libs/ui.feature.workspace -->
 <g id="edge65" class="edge">
-<title>packages/libs/ui.scenes&#45;&gt;packages/libs/ui.feature.workspace</title>
+<title>packages/libs/ui.scene.browser&#45;&gt;packages/libs/ui.feature.workspace</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M1423.73,-652.31C1376.7,-630.91 1251.29,-573.86 1196.37,-548.87"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1197.28,-546.98 1190.94,-546.4 1195.54,-550.8 1197.28,-546.98"/>
 </g>

@@ -4,17 +4,11 @@
 
 ## Architecture Changes
 
-<!-- Generated from real imports via dep-cruiser. Run:
-  1. git stash && git checkout main && bun run docs:deps && cp docs/architecture/dependency-graph.svg /tmp/before.svg && git checkout - && git stash pop
-  2. bun run docs:deps && cp docs/architecture/dependency-graph.svg /tmp/after.svg
-  3. Attach both SVGs below
--->
-
 ### Before
-<!-- Drag & drop /tmp/before.svg here -->
+<!-- bun run docs:deps on main → attach SVG -->
 
 ### After
-<!-- Drag & drop /tmp/after.svg here -->
+<!-- bun run docs:deps on branch → attach SVG -->
 
 ## Test plan
 - [ ] `bun run check` — all typecheck pass

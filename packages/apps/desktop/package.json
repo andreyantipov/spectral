@@ -17,7 +17,7 @@
 		"@ctrl/domain.service.native": "workspace:*",
 		"@ctrl/domain.runtime.bun": "workspace:*",
 		"@ctrl/domain.runtime.webview": "workspace:*",
-		"@ctrl/ui.scenes": "workspace:*",
+		"@ctrl/ui.scene.browser": "workspace:*",
 		"electrobun": "1.15.1"
 	},
 	"scripts": {
