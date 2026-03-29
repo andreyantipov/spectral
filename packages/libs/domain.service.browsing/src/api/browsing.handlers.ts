@@ -217,6 +217,18 @@ const insertPanelIntoGroup = (
 
 export const WorkspaceHandlers = EventLog.group(WorkspaceEvents, (h) =>
 	h
+		.handle("ws.get-layout", () =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				return (yield* layout.getLayout()) as unknown;
+			}),
+		)
+		.handle("ws.update-layout", ({ payload }) =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				yield* layout.updateLayout(payload.layout);
+			}),
+		)
 		.handle("ws.split-panel", ({ payload }) =>
 			Effect.gen(function* () {
 				const layout = yield* LayoutFeature;
@@ -282,11 +294,17 @@ const publishSnapshot = Effect.gen(function* () {
 	const sessions = yield* SessionFeature;
 	const bookmarks = yield* BookmarkFeature;
 	const history = yield* HistoryFeature;
-	const [s, b, h] = yield* Effect.all([sessions.getAll(), bookmarks.getAll(), history.getAll()]);
+	const layout = yield* LayoutFeature;
+	const [s, b, h, l] = yield* Effect.all([
+		sessions.getAll(),
+		bookmarks.getAll(),
+		history.getAll(),
+		layout.getLayout().pipe(Effect.catchAll(() => Effect.succeed(undefined))),
+	]);
 	yield* bus.publish({
 		type: "event",
 		name: SystemEvents.events["state.snapshot"].tag,
-		payload: { sessions: s, bookmarks: b, history: h } satisfies BrowsingState,
+		payload: { sessions: s, bookmarks: b, history: h, layout: l } satisfies BrowsingState,
 		timestamp: Date.now(),
 	});
 });

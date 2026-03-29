@@ -5,6 +5,23 @@ import { Schema } from "effect";
 
 export const WorkspaceEvents = EventGroup.empty
 	.add({
+		tag: "ws.get-layout",
+		primaryKey: () => "global",
+		payload: Schema.Struct({}),
+		success: Schema.Unknown,
+	})
+	.add({
+		tag: "ws.update-layout",
+		primaryKey: () => "global",
+		payload: Schema.Struct({
+			layout: Schema.Struct({
+				version: Schema.Number,
+				dockviewState: Schema.Unknown,
+			}),
+		}),
+		success: Schema.Void,
+	})
+	.add({
 		tag: "ws.split-panel",
 		primaryKey: (p) => p.panelId,
 		payload: Schema.Struct({

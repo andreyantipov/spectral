@@ -23,7 +23,7 @@ export type WorkspaceRootProps = {
 
 export function WorkspaceRoot(props: WorkspaceRootProps) {
 	const $ = workspace();
-	const { initialLayout, onReady } = useWorkspace();
+	const { state, onReady } = useWorkspace();
 
 	const components = {
 		session: SessionPanel,
@@ -32,7 +32,7 @@ export function WorkspaceRoot(props: WorkspaceRootProps) {
 
 	return (
 		<div class={$.root}>
-			<Show when={!initialLayout.loading} fallback={props.children}>
+			<Show when={state()} fallback={props.children}>
 				<DockviewProvider components={components} onReady={onReady} />
 			</Show>
 		</div>
