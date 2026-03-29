@@ -1,0 +1,20 @@
+import { Schema } from "effect";
+
+export const AppCommandSchema = Schema.Struct({
+	type: Schema.Literal("command"),
+	action: Schema.String,
+	payload: Schema.optional(Schema.Unknown),
+	meta: Schema.optional(
+		Schema.Struct({
+			source: Schema.Literal("keyboard", "menu", "agent", "ui", "system"),
+		}),
+	),
+});
+
+export const AppEventSchema = Schema.Struct({
+	type: Schema.Literal("event"),
+	name: Schema.String,
+	payload: Schema.optional(Schema.Unknown),
+	timestamp: Schema.Number,
+	causedBy: Schema.optional(Schema.String),
+});

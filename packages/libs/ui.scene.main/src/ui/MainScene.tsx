@@ -1,5 +1,6 @@
-import { currentUrl } from "@ctrl/core.base.types";
-import { BlankPage } from "@ctrl/core.ui.components";
+import { currentUrl } from "@ctrl/base.type";
+import { BlankPage } from "@ctrl/ui.base.components";
+import { KeyboardProvider } from "@ctrl/ui.feature.keyboard-provider";
 import { SidebarFeature, type WebviewBindings } from "@ctrl/ui.feature.sidebar";
 import type { PanelProps } from "@ctrl/ui.feature.workspace";
 import { DockviewProvider } from "@ctrl/ui.feature.workspace";
@@ -12,13 +13,15 @@ const BindingsContext = createContext<WebviewBindings>();
 
 export function MainScene() {
 	return (
-		<SidebarFeature>
-			{(bindings: WebviewBindings) => (
-				<BindingsContext.Provider value={bindings}>
-					<WorkspaceContent />
-				</BindingsContext.Provider>
-			)}
-		</SidebarFeature>
+		<KeyboardProvider>
+			<SidebarFeature>
+				{(bindings: WebviewBindings) => (
+					<BindingsContext.Provider value={bindings}>
+						<WorkspaceContent />
+					</BindingsContext.Provider>
+				)}
+			</SidebarFeature>
+		</KeyboardProvider>
 	);
 }
 
@@ -105,16 +108,15 @@ function WorkspaceContent() {
 		requestAnimationFrame(() => syncAllWebviewDimensions());
 	}
 
-	function addMissingSessions(dockApi: DockviewApi, ids: string[]) {
+	function syncPanels(dockApi: DockviewApi, ids: string[]) {
 		const existing = new Set(dockApi.panels.map((p) => p.id));
 		for (const id of ids) {
 			if (!existing.has(id)) {
 				dockApi.addPanel({ id, component: "session", params: { sessionId: id } });
 			}
 		}
-	}
-
-	function removeStaleSessions(dockApi: DockviewApi, ids: string[]) {
+		// Only remove session panels that no longer exist in state
+		// Keep empty panels (they start with "empty-")
 		for (const panel of [...dockApi.panels]) {
 			const isEmptyPanel = panel.id.startsWith("empty-");
 			if (!isEmptyPanel && !ids.includes(panel.id)) {
@@ -131,11 +133,7 @@ function WorkspaceContent() {
 	createEffect(() => {
 		const ids = sessionIds();
 		if (!api || !initialized) return;
-
-		addMissingSessions(api, ids);
-		// Only remove session panels that no longer exist in state
-		// Keep empty panels (they start with "empty-")
-		removeStaleSessions(api, ids);
+		syncPanels(api, ids);
 		scheduleSync();
 	});
 

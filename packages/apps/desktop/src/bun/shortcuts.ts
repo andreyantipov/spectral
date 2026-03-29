@@ -1,4 +1,5 @@
-import { type AppCommand, DEFAULT_SHORTCUTS, EventBus } from "@ctrl/core.port.event-bus";
+import { type AppCommand, EventBus } from "@ctrl/core.contract.event-bus";
+import { DEFAULT_SHORTCUTS } from "@ctrl/domain.feature.settings";
 import type { ManagedRuntime } from "effect";
 import { Effect } from "effect";
 

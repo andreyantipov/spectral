@@ -1,6 +1,6 @@
-import { withTracing } from "@ctrl/core.base.tracing";
-import { LayoutRepository } from "@ctrl/core.port.storage";
-import { Context, Effect, Layer, PubSub, Stream } from "effect";
+import { withTracing } from "@ctrl/base.tracing";
+import { LayoutRepository } from "@ctrl/core.contract.storage";
+import { Context, Effect, Layer } from "effect";
 import { LAYOUT_FEATURE } from "../lib/constants";
 import type { LayoutNode, PersistedLayout } from "../model/layout.validators";
 
@@ -16,7 +16,6 @@ export class LayoutFeature extends Context.Tag(LAYOUT_FEATURE)<
 		readonly getLayout: () => Effect.Effect<LayoutNode>;
 		readonly getPersistedLayout: () => Effect.Effect<PersistedLayout | null>;
 		readonly updateLayout: (layout: PersistedLayout) => Effect.Effect<void>;
-		readonly changes: Stream.Stream<PersistedLayout>;
 	}
 >() {}
 
@@ -24,7 +23,6 @@ export const LayoutFeatureLive = Layer.effect(
 	LayoutFeature,
 	Effect.gen(function* () {
 		const repo = yield* LayoutRepository;
-		const pubsub = yield* PubSub.unbounded<PersistedLayout>();
 
 		return withTracing(LAYOUT_FEATURE, {
 			getLayout: () =>
@@ -38,12 +36,7 @@ export const LayoutFeatureLive = Layer.effect(
 			getPersistedLayout: () => repo.getLayout().pipe(Effect.catchAll(() => Effect.succeed(null))),
 
 			updateLayout: (layout: PersistedLayout) =>
-				repo.saveLayout(layout).pipe(
-					Effect.tap(() => PubSub.publish(pubsub, layout)),
-					Effect.catchAll(() => Effect.void),
-				),
-
-			changes: Stream.fromPubSub(pubsub),
+				repo.saveLayout(layout).pipe(Effect.catchAll(() => Effect.void)),
 		});
 	}),
 );

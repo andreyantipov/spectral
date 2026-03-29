@@ -1,0 +1,25 @@
+id: port-no-implementation-layer
+language: typescript
+rule:
+  any:
+    - pattern: Layer.effect($$$)
+    - pattern: Layer.scoped($$$)
+    - pattern: Layer.succeed($$$)
+    - pattern: Layer.scopedDiscard($$$)
+files:
+  - "packages/libs/core.contract.*/src/**/*.ts"
+message: "Contract packages must not contain Layer implementations. Move to core.impl.*"
+severity: error
+---
+id: port-no-implementation-layer-tsx
+language: tsx
+rule:
+  any:
+    - pattern: Layer.effect($$$)
+    - pattern: Layer.scoped($$$)
+    - pattern: Layer.succeed($$$)
+    - pattern: Layer.scopedDiscard($$$)
+files:
+  - "packages/libs/core.contract.*/src/**/*.tsx"
+message: "Contract packages must not contain Layer implementations. Move to core.impl.*"
+severity: error

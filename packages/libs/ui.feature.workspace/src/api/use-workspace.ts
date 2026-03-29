@@ -1,6 +1,5 @@
-import type { PanelRef } from "@ctrl/core.base.model";
-import type { BrowsingState } from "@ctrl/core.port.event-bus";
-import { useApi } from "@ctrl/core.ui.api";
+import type { BrowsingState, PanelRef } from "@ctrl/base.schema";
+import { useApi } from "@ctrl/ui.base.api";
 import type { DockviewApi, SerializedDockview } from "dockview-core";
 import { createSignal, onCleanup } from "solid-js";
 

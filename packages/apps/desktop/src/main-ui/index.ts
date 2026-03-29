@@ -1,9 +1,8 @@
 import {
-	createIpcBridge,
-	type ElectrobunHandle,
-	type ElectrobunRpcHandle,
-} from "@ctrl/domain.adapter.carrier";
-import { initGlobalWebTracer, OTEL_SERVICE_NAMES } from "@ctrl/domain.adapter.otel/web";
+	type ElectrobunIpcHandle,
+	initGlobalWebTracer,
+	OTEL_SERVICE_NAMES,
+} from "@ctrl/wire.desktop.ui";
 import { ManagedRuntime } from "effect";
 import { createDesktopWebviewLive } from "./layers";
 import { mount } from "./mount";
@@ -24,18 +23,14 @@ async function initApp() {
 	new Electroview({ rpc });
 
 	// Build the webview Effect layer with the Electrobun RPC handle.
-	// The Electrobun RPC handle is structurally compatible with ElectrobunRpcHandle
-	// but the Electrobun types are opaque, so we cast.
-	const WebviewLive = createDesktopWebviewLive(rpc as unknown as ElectrobunRpcHandle);
+	// The Electrobun RPC handle is structurally compatible with ElectrobunIpcHandle.
+	const WebviewLive = createDesktopWebviewLive(rpc as unknown as ElectrobunIpcHandle);
 	const runtime = ManagedRuntime.make(WebviewLive);
 
-	// Ensure the runtime (and RPC client protocol) is initialized before rendering
+	// Ensure the runtime (and EventBus IPC bridge) is initialized before rendering
 	await runtime.runtime();
 
-	// Create IPC bridge for app commands (same handle as effect-rpc)
-	const ipcBridge = createIpcBridge(rpc as unknown as ElectrobunHandle);
-
-	mount(runtime, ipcBridge);
+	mount(runtime);
 }
 
 function waitForGlobal(name: string, timeout: number): Promise<void> {

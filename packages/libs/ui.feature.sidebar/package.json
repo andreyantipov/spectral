@@ -11,12 +11,12 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@ctrl/core.base.model": "workspace:*",
-		"@ctrl/core.base.tracing": "workspace:*",
-		"@ctrl/core.base.types": "workspace:*",
-		"@ctrl/core.port.event-bus": "workspace:*",
-		"@ctrl/core.ui.components": "workspace:*",
-		"@ctrl/core.ui.api": "workspace:*",
+		"@ctrl/base.schema": "workspace:*",
+		"@ctrl/base.tracing": "workspace:*",
+		"@ctrl/base.type": "workspace:*",
+		"@ctrl/core.contract.event-bus": "workspace:*",
+		"@ctrl/ui.base.components": "workspace:*",
+		"@ctrl/ui.base.api": "workspace:*",
 		"@ctrl/domain.feature.session": "workspace:*"
 	}
 }

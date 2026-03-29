@@ -1,21 +1,12 @@
-import { APP_NAME } from "@ctrl/core.base.types";
+import { APP_NAME } from "@ctrl/base.type";
 import rootPkg from "../../../../../package.json";
 
 const APP_VERSION = rootPkg.version;
 
-import { Effect, type Runtime, Schema } from "effect";
+type EffectRpcMessage = unknown;
 
-const GetAppInfoParams = Schema.Struct({});
-type GetAppInfoParams = typeof GetAppInfoParams.Type;
-
-const GetAppInfoResponse = Schema.Struct({
-	name: Schema.String,
-	version: Schema.String,
-});
-type GetAppInfoResponse = typeof GetAppInfoResponse.Type;
-
-const EffectRpcMessage = Schema.Unknown;
-type EffectRpcMessage = typeof EffectRpcMessage.Type;
+type GetAppInfoParams = Record<string, never>;
+type GetAppInfoResponse = { name: string; version: string };
 
 type MainRPCSchema = {
 	bun: {
@@ -40,19 +31,16 @@ type MainRPCSchema = {
 };
 
 import { BrowserView } from "electrobun/bun";
-import type { AppLayer } from "./layers";
-import { makeRpcHandler } from "./rpc-handler";
 
-export function createMainRPC(runtime: Runtime.Runtime<AppLayer>) {
+/**
+ * Create Electrobun RPC definition.
+ * The getAppInfo handler returns static app metadata and needs no runtime.
+ */
+export function createMainRPC() {
 	return BrowserView.defineRPC<MainRPCSchema>({
 		handlers: {
 			requests: {
-				getAppInfo: makeRpcHandler(runtime, GetAppInfoParams, GetAppInfoResponse, () =>
-					Effect.succeed({
-						name: APP_NAME,
-						version: APP_VERSION,
-					}),
-				),
+				getAppInfo: (_raw: unknown) => Promise.resolve({ name: APP_NAME, version: APP_VERSION }),
 			},
 			messages: {
 				"effect-rpc": () => {},

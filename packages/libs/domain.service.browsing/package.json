@@ -11,16 +11,17 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@ctrl/core.base.errors": "workspace:*",
-		"@ctrl/core.base.model": "workspace:*",
-		"@ctrl/core.base.tracing": "workspace:*",
-		"@ctrl/core.base.types": "workspace:*",
-		"@ctrl/core.port.event-bus": "workspace:*",
-		"@ctrl/core.port.storage": "workspace:*",
+		"@ctrl/base.error": "workspace:*",
+		"@ctrl/base.schema": "workspace:*",
+		"@ctrl/base.tracing": "workspace:*",
+		"@ctrl/base.type": "workspace:*",
+		"@ctrl/core.contract.event-bus": "workspace:*",
+		"@ctrl/core.contract.storage": "workspace:*",
 		"@ctrl/domain.feature.bookmark": "workspace:*",
 		"@ctrl/domain.feature.history": "workspace:*",
 		"@ctrl/domain.feature.layout": "workspace:*",
 		"@ctrl/domain.feature.omnibox": "workspace:*",
-		"@ctrl/domain.feature.session": "workspace:*"
+		"@ctrl/domain.feature.session": "workspace:*",
+		"@ctrl/domain.feature.settings": "workspace:*"
 	}
 }

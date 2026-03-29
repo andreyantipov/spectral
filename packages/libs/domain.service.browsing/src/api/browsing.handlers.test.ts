@@ -1,14 +1,26 @@
-import type { Bookmark, HistoryEntry, Page, Session } from "@ctrl/core.base.model";
-import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
-import { AppEvents, EventBus, EventBusLive, SystemEvents } from "@ctrl/core.port.event-bus";
-import { BookmarkRepository, HistoryRepository, SessionRepository } from "@ctrl/core.port.storage";
+import type { Bookmark, HistoryEntry, Page, Session } from "@ctrl/base.schema";
+import { DEFAULT_TAB_URL } from "@ctrl/base.type";
+import type { AppCommand, AppEvent } from "@ctrl/core.contract.event-bus";
+import {
+	AppEvents,
+	EventBus,
+	SettingsEvents,
+	SystemEvents,
+	WorkspaceEvents,
+} from "@ctrl/core.contract.event-bus";
+import {
+	BookmarkRepository,
+	HistoryRepository,
+	SessionRepository,
+} from "@ctrl/core.contract.storage";
 import { BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
 import { LayoutFeature } from "@ctrl/domain.feature.layout";
 import { OmniboxFeature } from "@ctrl/domain.feature.omnibox";
 import { SessionFeatureLive } from "@ctrl/domain.feature.session";
+import { SettingsFeature, SettingsFeatureLive } from "@ctrl/domain.feature.settings";
 import { EventJournal, EventLog as EventLogMod } from "@effect/experimental";
-import { Chunk, Duration, Effect, Fiber, Layer, Stream } from "effect";
+import { Chunk, Duration, Effect, Fiber, Layer, PubSub, Stream } from "effect";
 import { describe, expect, it } from "vitest";
 import {
 	BookmarkHandlers,
@@ -17,10 +29,24 @@ import {
 	SessionHandlers,
 	SystemHandlers,
 	UIHandlers,
-	WorkspaceHandlers,
 } from "./browsing.handlers";
 
 // -- Test helpers -------------------------------------------------------------
+
+const TestEventBusLive = Layer.effect(
+	EventBus,
+	Effect.gen(function* () {
+		const commandPub = yield* PubSub.unbounded<AppCommand>();
+		const eventPub = yield* PubSub.unbounded<AppEvent>();
+		return {
+			send: (cmd: AppCommand) => PubSub.publish(commandPub, cmd).pipe(Effect.asVoid),
+			publish: (evt: AppEvent) => PubSub.publish(eventPub, evt).pipe(Effect.asVoid),
+			commands: Stream.fromPubSub(commandPub),
+			events: Stream.fromPubSub(eventPub),
+			on: (name: string) => Stream.fromPubSub(eventPub).pipe(Stream.filter((e) => e.name === name)),
+		};
+	}),
+);
 
 let nextId = 0;
 const makePage = (url: string): Page => ({ url, title: null, loadedAt: new Date().toISOString() });
@@ -150,12 +176,28 @@ const makeMockLayers = () => {
 		getLayout: () => Effect.succeed({ type: "group" as const, panels: [], activePanel: "" }),
 		getPersistedLayout: () => Effect.succeed(null),
 		updateLayout: () => Effect.void,
-		changes: Stream.empty,
 	});
 
 	// EventLog layers (required by BrowsingServiceLive)
 	const IdentityLive = Layer.succeed(EventLogMod.Identity, EventLogMod.Identity.makeRandom());
 	const JournalLive = EventJournal.layerMemory;
+	const SettingsHandlers = EventLogMod.group(SettingsEvents, (h) =>
+		h.handle("settings.shortcuts", () =>
+			Effect.gen(function* () {
+				const feature = yield* SettingsFeature;
+				return yield* feature.getShortcuts();
+			}),
+		),
+	);
+	// Inline stub for WorkspaceHandlers — real implementation lives in domain.service.workspace
+	const TestWorkspaceHandlers = EventLogMod.group(WorkspaceEvents, (h) =>
+		h
+			.handle("ws.update-layout", () => Effect.void)
+			.handle("ws.split-panel", () => Effect.void)
+			.handle("ws.move-panel", () => Effect.void)
+			.handle("ws.close-panel", () => Effect.void),
+	);
+
 	const HandlersLive = Layer.mergeAll(
 		SessionHandlers.pipe(Layer.provide(SessionLayer)),
 		NavigationHandlers.pipe(
@@ -164,14 +206,15 @@ const makeMockLayers = () => {
 			Layer.provide(HistoryLayer),
 		),
 		BookmarkHandlers.pipe(Layer.provide(BookmarkLayer)),
-		WorkspaceHandlers.pipe(Layer.provide(MockLayoutFeature)),
+		TestWorkspaceHandlers,
 		SystemHandlers.pipe(
 			Layer.provide(SessionLayer),
 			Layer.provide(BookmarkLayer),
 			Layer.provide(HistoryLayer),
-			Layer.provide(EventBusLive),
+			Layer.provide(TestEventBusLive),
 		),
 		UIHandlers,
+		SettingsHandlers.pipe(Layer.provide(SettingsFeatureLive)),
 	);
 	const EventLogLive = EventLogMod.layer(AppEvents).pipe(
 		Layer.provide(HandlersLive),
@@ -186,7 +229,7 @@ const makeMockLayers = () => {
 		Layer.provide(HistoryLayer),
 		Layer.provide(MockLayoutFeature),
 		Layer.provide(MockOmnibox),
-		Layer.provide(EventBusLive),
+		Layer.provide(TestEventBusLive),
 	);
 
 	return Layer.mergeAll(
@@ -194,7 +237,7 @@ const makeMockLayers = () => {
 		BookmarkLayer,
 		HistoryLayer,
 		MockOmnibox,
-		EventBusLive,
+		TestEventBusLive,
 		ServiceLayer,
 	);
 };

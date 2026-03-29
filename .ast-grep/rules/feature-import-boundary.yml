@@ -1,0 +1,19 @@
+id: feature-no-adapter-import
+language: typescript
+rule:
+  any:
+    - pattern: import $$$_ from "@ctrl/core.impl.$$$"
+    - pattern: 'export { $$$ } from "@ctrl/core.impl.$$$"'
+    - pattern: 'export * from "@ctrl/core.impl.$$$"'
+    - pattern: 'export * as $$_ from "@ctrl/core.impl.$$$"'
+files:
+  - "packages/libs/domain.feature.*/src/**/*.ts"
+message: "domain.feature.* cannot import core.impl.* directly. Use port tags via DI."
+severity: error
+---
+id: no-deleted-service-factory
+language: typescript
+rule:
+  pattern: import $$$_ from "@ctrl/core.base.service-factory"
+message: "core.base.service-factory has been deleted. Services should use EventLog handlers directly."
+severity: error

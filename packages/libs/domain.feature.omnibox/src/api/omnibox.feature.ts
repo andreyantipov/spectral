@@ -1,4 +1,4 @@
-import { withTracing } from "@ctrl/core.base.tracing";
+import { withTracing } from "@ctrl/base.tracing";
 import { Effect, Layer } from "effect";
 import { OMNIBOX_FEATURE } from "../lib/constants";
 import { resolveInput } from "../lib/resolve";

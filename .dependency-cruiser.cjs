@@ -46,7 +46,7 @@ module.exports = {
 			severity: "error",
 			from: {
 				path: "^packages/libs/([^/]+)/src/index\\.ts$",
-				pathNot: "^packages/libs/domain\\.runtime",
+				pathNot: "^packages/libs/wire\\.desktop",
 			},
 			to: {
 				path: "^packages/libs/(?!$1/)",
@@ -69,20 +69,20 @@ module.exports = {
 					graph: { rankdir: "TB" },
 					modules: [
 						{
-							criteria: { source: "core\\.base" },
+							criteria: { source: "base\\." },
 							attributes: { fillcolor: "#e8f5e9" },
 						},
 						{
-							criteria: { source: "core\\.port" },
+							criteria: { source: "core\\.contract" },
 							attributes: { fillcolor: "#e3f2fd" },
 						},
 						{
-							criteria: { source: "core\\.ui" },
-							attributes: { fillcolor: "#f3e5f5" },
+							criteria: { source: "core\\.impl" },
+							attributes: { fillcolor: "#fff3e0" },
 						},
 						{
-							criteria: { source: "domain\\.adapter" },
-							attributes: { fillcolor: "#fff3e0" },
+							criteria: { source: "core\\.middleware" },
+							attributes: { fillcolor: "#fbe9e7" },
 						},
 						{
 							criteria: { source: "domain\\.feature" },
@@ -91,6 +91,10 @@ module.exports = {
 						{
 							criteria: { source: "domain\\.service" },
 							attributes: { fillcolor: "#fff9c4" },
+						},
+						{
+							criteria: { source: "wire\\.desktop" },
+							attributes: { fillcolor: "#f3e5f5" },
 						},
 						{
 							criteria: { source: "ui\\." },
