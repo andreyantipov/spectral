@@ -1,0 +1,43 @@
+# Effect-specific rules
+# GritQL equivalents: effect_no_raw_promises.md, no_manual_withspan.md, domain_requires_tracing.md
+
+id: no-async-in-bun-layer
+language: TypeScript
+severity: error
+message: "No raw async/await in Effect bun layer — use Effect.gen"
+files:
+  - "packages/*/src/bun/**/*.ts"
+rule:
+  pattern: async function $NAME($$$ARGS) { $$$BODY }
+
+---
+
+id: no-manual-withspan
+language: TypeScript
+severity: error
+message: "No manual Effect.withSpan — use withTracing() wrapper"
+files:
+  - "packages/libs/**/*.ts"
+ignores:
+  - "**/with-tracing.ts"
+rule:
+  pattern: Effect.withSpan($$$ARGS)
+
+---
+
+id: domain-requires-tracing
+language: TypeScript
+severity: error
+message: "Domain layers must wrap service impl with withTracing()"
+files:
+  - "packages/libs/domain.*/src/**/*.ts"
+ignores:
+  - "**/*.test.*"
+  - "**/*test-utils*"
+  - "**/*.test-utils.*"
+rule:
+  pattern: Layer.succeed($TAG, $OBJ)
+  not:
+    has:
+      pattern: withTracing($$$ARGS)
+      stopBy: end

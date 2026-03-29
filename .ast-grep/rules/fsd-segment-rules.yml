@@ -1,0 +1,25 @@
+# Feature-Sliced Design segment conventions
+# GritQL equivalent: fsd_segment_rules.md
+
+id: model-no-api-import
+language: TypeScript
+severity: error
+message: "model/ must not import from api/ — models are dependencies, not dependents"
+files:
+  - "packages/libs/*/src/model/**/*.ts"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "/api/"
+
+---
+
+id: lib-no-yield
+language: TypeScript
+severity: error
+message: "lib/ must be pure — no yield* (use api/ for Effect service code)"
+files:
+  - "packages/libs/*/src/lib/**/*.ts"
+rule:
+  pattern: yield* $EXPR

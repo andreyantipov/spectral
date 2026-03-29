@@ -1,0 +1,13 @@
+# JSX must be in .tsx files
+# GritQL equivalent: solid_tsx_only.md
+# NOTE: ast-grep TypeScript parser doesn't parse JSX — need tsx language.
+# This rule cannot catch JSX in .ts files because ast-grep parses .ts as TypeScript (no JSX).
+# GritQL uses a single "js" language for both. This is a limitation of ast-grep.
+# Workaround: rename .ts files with JSX to .tsx (enforced by biome/editor).
+
+id: jsx-in-tsx-only-note
+language: Tsx
+severity: hint
+message: "JSX/TSX rule note: ast-grep cannot detect JSX in .ts files — parser limitation"
+rule:
+  pattern: PLACEHOLDER_NEVER_MATCHES_$$$
