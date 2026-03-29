@@ -17,7 +17,6 @@
 		"@ctrl/core.base.types": "workspace:*",
 		"@ctrl/core.port.event-bus": "workspace:*",
 		"@ctrl/core.port.storage": "workspace:*",
-		"@ctrl/domain.adapter.otel": "workspace:*",
 		"@ctrl/domain.feature.bookmark": "workspace:*",
 		"@ctrl/domain.feature.history": "workspace:*",
 		"@ctrl/domain.feature.layout": "workspace:*",

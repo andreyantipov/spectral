@@ -10,6 +10,7 @@
 		"check": "tsgo --noEmit"
 	},
 	"dependencies": {
+		"@ctrl/domain.adapter.carrier": "workspace:*",
 		"@ctrl/core.port.event-bus": "workspace:*",
 		"@ctrl/core.port.storage": "workspace:*",
 		"@ctrl/domain.adapter.db": "workspace:*",

@@ -26,10 +26,6 @@ The second level of `domain.*.*` encodes the hexagonal layer:
 
 Alphabetical `a → f → s` matches dependency direction within `domain`.
 
-### Special adapter: `domain.adapter.rpc`
-
-`domain.adapter.rpc` is a **generic Electrobun IPC tunnel** — it has no knowledge of sessions, browsing, or any other domain concept. It exports `ElectrobunServerProtocol` (Bun/main-process side) and `ElectrobunClientProtocol` (webview side), each implementing the corresponding `@effect/rpc` protocol interface. The domain contract (`BrowsingRpcs`) lives in `domain.service.browsing` and is separate from the transport layer.
-
 ## UI Tiers (`a → f → s`)
 
 The second level of `ui.*.*` encodes the presentation layer:
@@ -38,25 +34,27 @@ The second level of `ui.*.*` encodes the presentation layer:
 |------|---------------|------|------------|
 | adapter | `ui.adapter.<name>` | Driven adapter (platform integration, e.g. Electrobun) | `core.shared` + external |
 | feature | `ui.feature.<name>` | Wires a domain service to a component | `domain.service.*` + `core.ui` + `core.shared` |
-| scenes | `ui.scenes` | Single package containing all scene compositions | `ui.feature.*` + `ui.adapter.*` + `core.ui` |
+| scene | `ui.scene.<name>` | Scene composition package per concern | `ui.feature.*` + `ui.adapter.*` + `core.ui.components` |
 
-Scenes are thin compositions (~20 lines each) and don't need package isolation. All scenes live in a single `ui.scenes` package. Alphabetical `a → f → s` matches dependency direction within `ui`.
+Scenes are thin compositions (~20 lines each). Each scene gets a `ui.scene.<name>` package (e.g. `ui.scene.browser`).
 
 ## Core Packages (always 2-level)
 
 | Package | Purpose |
 |---------|---------|
 | `core.shared` | Ports (`Context.Tag`), domain types, shared errors, `withTracing`, `spanName` |
-| `core.ui` | Component toolkit (atoms → molecules → organisms → templates) + `useStream`/`useService`/`useDomainService` |
+| `core.ui.design` | CSS tokens, Panda config, styled-system output |
+| `core.ui.components` | Component toolkit (atoms, molecules, organisms, templates) |
+| `core.ui.api` | Hooks (`useApi`, `useRuntime`, `RuntimeProvider`, `useStream`, `useService`) |
 
-`core.shared` and `core.ui` have no dependency on each other.
+`core.shared`, `core.ui.design`, `core.ui.components`, and `core.ui.api` have no circular dependencies.
 
 ## Two Public Surfaces
 
 Only two tiers are importable from outside their own namespace:
 
 - **`domain.service.*`** — the public API of all business logic (imported by `ui.feature.*`)
-- **`ui.scenes`** — the public API of all UI (imported by `packages/apps/*`)
+- **`ui.scene.*`** — the public API of all UI (imported by `packages/apps/*`)
 
 Everything else is internal. GritQL enforces this — see `docs/architecture/dependency-matrix.md`.
 
@@ -70,6 +68,6 @@ Everything else is internal. GritQL enforces this — see `docs/architecture/dep
 Examples:
 - A new DB-backed repository for bookmarks → `domain.adapter.bookmark` → `@ctrl/domain.adapter.bookmark`
 - Atomic business logic for bookmarks → `domain.feature.bookmark` → `@ctrl/domain.feature.bookmark`
-- A new page composed from features → add it to `ui.scenes` → `@ctrl/ui.scenes`
+- A new page composed from features → add it to `ui.scene.browser` → `@ctrl/ui.scene.browser`
 
 For deep details see `docs/superpowers/specs/2026-03-14-domain-architecture-design.md` (Sections 2–3).

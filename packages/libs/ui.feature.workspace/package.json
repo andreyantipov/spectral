@@ -10,8 +10,8 @@
 		"check": "tsgo --noEmit"
 	},
 	"dependencies": {
-		"@ctrl/core.ui": "workspace:*",
-		"@ctrl/core.ui.api": "workspace:*",
-		"@ctrl/domain.service.workspace": "workspace:*"
+		"@ctrl/core.base.model": "workspace:*",
+		"@ctrl/core.port.event-bus": "workspace:*",
+		"@ctrl/core.ui.api": "workspace:*"
 	}
 }

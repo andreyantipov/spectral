@@ -3,7 +3,7 @@ import { defineConfig } from "@pandacss/dev";
 export default defineConfig({
 	preflight: true,
 	jsxFramework: "solid",
-	include: ["./src/**/*.{ts,tsx}"],
+	include: ["./src/**/*.{ts,tsx}", "../core.ui.components/src/**/*.{ts,tsx}"],
 	exclude: [],
 	outdir: "styled-system",
 

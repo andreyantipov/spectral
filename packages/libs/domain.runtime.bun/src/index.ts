@@ -1,4 +1,10 @@
-import { AppEvents, EventBusHandlersLive, EventBusLive } from "@ctrl/core.port.event-bus";
+import {
+	AppEvents,
+	EventBusHandlersLive,
+	EventBusLive,
+	EventBusRpcs,
+} from "@ctrl/core.port.event-bus";
+import { type ElectrobunRpcHandle, ElectrobunServerProtocol } from "@ctrl/domain.adapter.carrier";
 import {
 	BookmarkRepositoryLive,
 	HistoryRepositoryLive,
@@ -19,8 +25,9 @@ import {
 	UIHandlers,
 	WorkspaceHandlers,
 } from "@ctrl/domain.service.browsing";
-import { WorkspaceHandlersLive } from "@ctrl/domain.service.workspace";
+import { WorkspaceHandlersLive, WorkspaceRpcs } from "@ctrl/domain.service.workspace";
 import { EventJournal, EventLog } from "@effect/experimental";
+import { RpcSerialization, RpcServer } from "@effect/rpc";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { Effect, Layer } from "effect";
 
@@ -88,6 +95,19 @@ const BrowsingServiceLayer = BrowsingServiceLive.pipe(
 	Layer.provide(EventBusLive),
 );
 
+// -- Carrier: RPC server over Electrobun IPC ----------------------------------
+
+const AllRpcs = WorkspaceRpcs.merge(EventBusRpcs);
+
+export const createCarrierServer = (rpcHandle: ElectrobunRpcHandle) => {
+	const SerializationLive = RpcSerialization.layerJson;
+	const ServerProtocolLive = Layer.scoped(
+		RpcServer.Protocol,
+		ElectrobunServerProtocol(rpcHandle),
+	).pipe(Layer.provide(SerializationLive));
+	return ServerProtocolLive;
+};
+
 // -- Compose ------------------------------------------------------------------
 // Requires from app: SqlClient (LibsqlClient) + Tracer (OTEL)
 
@@ -97,3 +117,5 @@ export const BunLive = Layer.mergeAll(
 	EventBusHandlersLayer,
 	BrowsingServiceLayer,
 );
+
+export { AllRpcs };

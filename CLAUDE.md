@@ -116,9 +116,9 @@ Key differences from `dev:desktop`:
 - No `Effect.withSpan()` — use `withTracing()` from `@ctrl/core.base.tracing`
 - No hardcoded strings for span names or service identifiers
 - GritQL enforces all boundaries — run `bunx grit check .` before committing
-- Two public surfaces: `domain.service.*` (for UI) and `ui.scenes` (for apps)
+- Two public surfaces: `domain.service.*` (for UI) and `ui.scene.*` (for apps)
 - **`BrowsingServiceLive`** listens to EventBus commands and dispatches to domain features via EventLog. All business operations (browsing + workspace) flow through EventBus commands.
-- **`domain.service.native`** consolidates Electrobun RPC protocol and IPC bridge (previously `domain.adapter.rpc` + `domain.adapter.electrobun`).
+- **`domain.service.native`** consolidates Electrobun RPC protocol and IPC bridge.
 - **`Model.Class` (extending Effect Schema) is the single source of truth** for domain types — derive TypeScript types from schemas, never duplicate them.
 - The browsing unit of work is a **session** — use `domain.feature.session` not `domain.feature.tab`. Constants use `SESSION_FEATURE`, not `TAB_FEATURE`.
 
@@ -142,15 +142,24 @@ Rules:
 Three-tier core structure, each level can only import levels above it:
 
 ```
-Level 1: core.port.*    → pure interfaces (Context.Tag + type signatures), zero deps
-Level 2: core.base.*     → schemas, errors, utilities (imports core.port.*)
-Level 3: core.ui         → components, hooks (imports core.base.* + core.port.*)
+Level 0: core.port.*         → pure interfaces (Context.Tag + type signatures), zero deps
+Level 1: core.base.*         → schemas, errors, utilities (imports core.port.*)
+Level 2: core.ui.design      → CSS tokens, Panda config, styled-system output
+         core.ui.components  → presentational components (no direct imports from design — uses tsconfig path alias @styled-system/*)
+         core.ui.api         → hooks, RuntimeProvider (imports core.port.*)
 ```
 
-Ports are **atomic packages** — one per concern:
-- `core.port.storage` → SessionRepository, BookmarkRepository, HistoryRepository, LayoutRepository
-- `core.port.event-bus` → EventBus
-- Each adapter imports only the ports it implements
+Level 2 sub-levels: `design` is foundation, `components` uses design via path alias, `api` is independent. No peer imports between them.
+
+### Ports and Adapters
+Every adapter implements a port. Port = interface, adapter = implementation. Port can be our package or an external library.
+
+- `core.port.storage` → `domain.adapter.db` (SQLite/Drizzle)
+- `core.port.event-bus` → EventBusLive (in-package)
+- `@effect/rpc` (RpcServer.Protocol, RpcClient.Protocol) → `domain.adapter.carrier` (Electrobun IPC/RPC)
+- `@opentelemetry/api` (TracerProvider) → `domain.adapter.otel` (OTLP exporter)
+
+No custom port when external library already provides the interface.
 
 ### Carrier + EventBus
 Two concerns for cross-process communication:
@@ -218,6 +227,7 @@ Files touched: 4-5. No new packages unless new domain concept.
 
 ## Recent Architecture Changes
 
+- Clean split (Mar 29): core.ui split into core.ui.design + core.ui.components + core.ui.api; ui.scenes renamed to ui.scene.main; domain.adapter.rpc and domain.adapter.electrobun removed
 - Phase 6 (Mar 28): Workspace migrated to EventBus, adapters consolidated into domain.service.native, tags.ts deleted
 - Phase 5 (Mar 28): Typed useApi() client, BrowsingRpcs removed, state via EventBus snapshots
 - Phase 2-3 (Mar 25): core.shared deleted → split into core.base.*, EventLog migration

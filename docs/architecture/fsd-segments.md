@@ -31,7 +31,7 @@ domain.feature.*            ✓        ✓       ✓
 domain.service.*            ✓        ✓
 ui.adapter.*                         ✓       ✓
 ui.feature.*                ✓        ✓               ✓
-ui.scenes                                             ✓
+ui.scene.*                                             ✓
 ```
 
 ## What Goes Where — Examples
@@ -59,7 +59,7 @@ ui.scenes                                             ✓
 - Component atoms/molecules/organisms in `core.ui/src/ui/`
 - Feature composition components in `ui.feature.sidebar/src/ui/SidebarFeature.tsx`
 - Stories in `ui.feature.sidebar/src/ui/SidebarFeature.stories.tsx`
-- Page compositions in `ui.scenes/src/ui/MainPage.tsx`
+- Page compositions in `ui.scene.*/src/ui/MainPage.tsx`
 
 For GritQL rules that enforce these segment boundaries, see `docs/architecture/dependency-matrix.md`.
 For deep details see `docs/superpowers/specs/2026-03-14-domain-architecture-design.md` (Section 3).

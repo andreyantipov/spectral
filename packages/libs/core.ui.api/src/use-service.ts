@@ -1,5 +1,5 @@
 import type { Context, ManagedRuntime } from "effect";
-import { useRuntime } from "./runtime-provider";
+import { useRuntime } from "./use-runtime";
 
 export function useService<I, S>(tag: Context.Tag<I, S>): S {
 	const runtime = useRuntime();

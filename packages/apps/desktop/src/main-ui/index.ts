@@ -1,9 +1,9 @@
-import { initGlobalWebTracer, OTEL_SERVICE_NAMES } from "@ctrl/domain.adapter.otel/web";
 import {
 	createIpcBridge,
 	type ElectrobunHandle,
 	type ElectrobunRpcHandle,
-} from "@ctrl/domain.service.native";
+} from "@ctrl/domain.adapter.carrier";
+import { initGlobalWebTracer, OTEL_SERVICE_NAMES } from "@ctrl/domain.adapter.otel/web";
 import { ManagedRuntime } from "effect";
 import { createDesktopWebviewLive } from "./layers";
 import { mount } from "./mount";

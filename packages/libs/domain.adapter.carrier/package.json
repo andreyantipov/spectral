@@ -1,0 +1,13 @@
+{
+	"name": "@ctrl/domain.adapter.carrier",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check": "tsgo --noEmit",
+		"test": "vitest run"
+	}
+}

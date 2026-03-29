@@ -22,7 +22,7 @@ if (!result.success) {
 }
 
 // Combine core.ui styles + dockview CSS + theme overrides
-const coreStyles = readFileSync("../../libs/core.ui/build/styles.css", "utf8");
+const coreStyles = readFileSync("../../libs/core.ui.design/build/styles.css", "utf8");
 const dockviewCss = readFileSync(
 	"../../../node_modules/dockview-core/dist/styles/dockview.css",
 	"utf8",

@@ -1,5 +1,5 @@
 {
-	"name": "@ctrl/domain.runtime.webview",
+	"name": "@ctrl/core.port.carrier",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -8,8 +8,5 @@
 	},
 	"scripts": {
 		"check": "tsgo --noEmit"
-	},
-	"dependencies": {
-		"@ctrl/domain.adapter.carrier": "workspace:*"
 	}
 }

@@ -1,5 +1,5 @@
 import { currentUrl } from "@ctrl/core.base.types";
-import { BlankPage } from "@ctrl/core.ui";
+import { BlankPage } from "@ctrl/core.ui.components";
 import { SidebarFeature, type WebviewBindings } from "@ctrl/ui.feature.sidebar";
 import type { PanelProps } from "@ctrl/ui.feature.workspace";
 import { DockviewProvider } from "@ctrl/ui.feature.workspace";

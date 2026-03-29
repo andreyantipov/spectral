@@ -7,8 +7,8 @@ tags: [architecture, hexagonal]
 # Domain boundary rules
 
 Enforces hexagonal architecture layer boundaries:
-- `ui.*` can only import `domain.service.*` (not `domain.feature.*` or `domain.adapter.*`)
-- `apps/*` can only import `ui.scenes` (not `ui.feature.*`)
+- `ui.*` cannot import `domain.*` at all — UI communicates only through `core.ui.api` (EventBus)
+- `apps/*` can only import `ui.scene.*` (not `ui.feature.*`)
 - `domain.feature.*` cannot import `domain.service.*` or `domain.adapter.*`
 - `domain.service.*` cannot import `domain.adapter.*` or other `domain.service.*`
 - `domain.adapter.*` cannot import `domain.feature.*` or `domain.service.*`
@@ -21,10 +21,10 @@ language js
   // Test files are exempt from boundary rules — they need cross-layer access for mocks and test utilities
   $filename <: not includes ".test.",
   or {
-    // ui.* cannot import domain.feature.* or domain.adapter.*
+    // ui.* cannot import domain.* at all — UI uses core.ui.api (EventBus)
     and {
       $filename <: includes "packages/libs/ui.",
-      $path <: or { includes "domain.feature.", includes "domain.adapter." }
+      $path <: includes "domain."
     },
     // apps/* can only import ui.scenes (not ui.feature.*)
     and {
@@ -54,7 +54,7 @@ language js
     // core.* cannot import domain.* or ui.*
     and {
       $filename <: includes "packages/libs/core.",
-      $path <: or { includes "domain.feature.", includes "domain.service.", includes "domain.adapter.", includes "ui.feature.", includes "ui.scenes" }
+      $path <: or { includes "domain.feature.", includes "domain.service.", includes "domain.adapter.", includes "ui.feature.", includes "ui.scene." }
     }
   }
 }
