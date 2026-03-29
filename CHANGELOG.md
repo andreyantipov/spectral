@@ -1,3 +1,10 @@
+# [0.16.0](https://github.com/andreyantipov/spectral/compare/v0.15.0...v0.16.0) (2026-03-29)
+
+
+### Features
+
+* arch: split core.ui + rename ui.scene.main + remove UI→domain deps ([#19](https://github.com/andreyantipov/spectral/issues/19)) ([1425cf1](https://github.com/andreyantipov/spectral/commit/1425cf1c6f34d8867a02b7ef15b15b1107821caf))
+
 # [0.15.0](https://github.com/andreyantipov/spectral/compare/v0.14.0...v0.15.0) (2026-03-28)
 
 
