@@ -142,17 +142,24 @@ Rules:
 Three-tier core structure, each level can only import levels above it:
 
 ```
-Level 1: core.port.*         → pure interfaces (Context.Tag + type signatures), zero deps
-Level 2: core.base.*         → schemas, errors, utilities (imports core.port.*)
-Level 3: core.ui.design      → CSS tokens, Panda config, styled-system output
-         core.ui.components  → presentational components (imports core.ui.design only)
+Level 0: core.port.*         → pure interfaces (Context.Tag + type signatures), zero deps
+Level 1: core.base.*         → schemas, errors, utilities (imports core.port.*)
+Level 2: core.ui.design      → CSS tokens, Panda config, styled-system output
+         core.ui.components  → presentational components (no direct imports from design — uses tsconfig path alias @styled-system/*)
          core.ui.api         → hooks, RuntimeProvider (imports core.port.*)
 ```
 
-Ports are **atomic packages** — one per concern:
-- `core.port.storage` → SessionRepository, BookmarkRepository, HistoryRepository, LayoutRepository
-- `core.port.event-bus` → EventBus
-- Each adapter imports only the ports it implements
+Level 2 sub-levels: `design` is foundation, `components` uses design via path alias, `api` is independent. No peer imports between them.
+
+### Ports and Adapters
+Every `domain.adapter.*` implements a `core.port.*`. Port = interface, adapter = implementation.
+
+- `core.port.storage` → `domain.adapter.db` (SQLite/Drizzle)
+- `core.port.event-bus` → EventBusLive (in-package)
+- `core.port.carrier` → `domain.adapter.carrier` (Electrobun IPC/RPC)
+- `core.port.otel` → `domain.adapter.otel` (OpenTelemetry)
+
+Each adapter imports only the port it implements. No adapter without a port.
 
 ### Carrier + EventBus
 Two concerns for cross-process communication:
