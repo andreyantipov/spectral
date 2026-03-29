@@ -6,7 +6,7 @@ tags: [quality, monorepo]
 
 # Index files only at package root or component folders
 
-Each package should have an `index.ts` at `src/index.ts`. Inside `core.ui`, per-component `index.ts` files are also allowed (for encapsulation). No other nested `index.ts` barrels.
+Each package should have an `index.ts` at `src/index.ts`. Inside `core.ui.components`, per-component `index.ts` files are also allowed (for encapsulation). No other nested `index.ts` barrels.
 
 ```grit
 language js

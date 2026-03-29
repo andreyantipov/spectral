@@ -1,5 +1,5 @@
 import type { Preview } from "storybook-solidjs";
-import "../build/styles.css";
+import "../../core.ui.design/build/styles.css";
 
 const preview: Preview = {
 	parameters: {

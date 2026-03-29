@@ -1,7 +1,7 @@
 import type { Session } from "@ctrl/core.base.model";
 import { currentPage } from "@ctrl/core.base.types";
 import type { BrowsingState } from "@ctrl/core.port.event-bus";
-import type { CommandCenterItem, OmniBoxSuggestion } from "@ctrl/core.ui";
+import type { CommandCenterItem, OmniBoxSuggestion } from "@ctrl/core.ui.components";
 
 export type SidebarItem = {
 	readonly id: string;

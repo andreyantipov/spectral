@@ -1,4 +1,4 @@
-import { RuntimeContext, useRuntime } from "@ctrl/core.ui.api";
+import { RuntimeContext, useRuntime } from "./use-runtime";
 import type { ManagedRuntime } from "effect";
 import type { ParentProps } from "solid-js";
 

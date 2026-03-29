@@ -16,7 +16,7 @@ or {
   `cva($args)`,
   `css($args)`
 } where {
-  $filename <: includes "packages/libs/core.ui/",
+  $filename <: includes "packages/libs/core.ui.components/",
   $filename <: includes ".tsx"
 }
 ```

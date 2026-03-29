@@ -1,6 +1,6 @@
-import { useRuntime } from "@ctrl/core.ui";
-import { useApi } from "@ctrl/core.ui.api";
-import { type PanelRef, WorkspaceRpcs } from "@ctrl/domain.service.workspace";
+import { useApi, useRuntime } from "@ctrl/core.ui.api";
+import type { PanelRef } from "@ctrl/core.base.model";
+import { WorkspaceRpcs } from "@ctrl/domain.service.workspace";
 import { RpcClient } from "@effect/rpc";
 import type { Protocol } from "@effect/rpc/RpcClient";
 import type { DockviewApi, SerializedDockview } from "dockview-core";

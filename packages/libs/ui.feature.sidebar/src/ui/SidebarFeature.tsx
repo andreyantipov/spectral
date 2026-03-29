@@ -1,14 +1,20 @@
 import type { Session } from "@ctrl/core.base.model";
 import { withWebTracing } from "@ctrl/core.base.tracing";
 import { currentUrl } from "@ctrl/core.base.types";
-import { type BrowsingState, DEFAULT_SHORTCUTS, SystemEvents } from "@ctrl/core.port.event-bus";
+import {
+	type BrowsingState,
+	DEFAULT_SHORTCUTS,
+	NavigationEvents,
+	SessionEvents,
+	SystemEvents,
+} from "@ctrl/core.port.event-bus";
 import {
 	AppShellTemplate,
 	ContextMenu,
 	type ContextMenuItem,
 	type SidebarItem as CoreSidebarItem,
 	type OmniBoxSuggestion,
-} from "@ctrl/core.ui";
+} from "@ctrl/core.ui.components";
 import { useApi } from "@ctrl/core.ui.api";
 import { createEffect, createMemo, createSignal, type JSX } from "solid-js";
 import { SIDEBAR_FEATURE } from "../lib/constants";
@@ -110,7 +116,11 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 	const headerInput = () => activeUrl() ?? "Search or enter URL...";
 
 	// Actions that need the active session's ID as their payload
-	const SESSION_ID_ACTIONS = new Set(["session.close", "nav.back", "nav.forward"]);
+	const SESSION_ID_ACTIONS: ReadonlySet<string> = new Set([
+		SessionEvents.events["session.close"].tag,
+		NavigationEvents.events["nav.back"].tag,
+		NavigationEvents.events["nav.forward"].tag,
+	]);
 
 	const resolveActivatePayload = (binding: (typeof DEFAULT_SHORTCUTS)[number]) => {
 		const idx = Number.parseInt(binding.shortcut.replace("Cmd+", ""), 10) - 1;

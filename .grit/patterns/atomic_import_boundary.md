@@ -6,7 +6,7 @@ tags: [quality, core-ui, architecture]
 
 # Atomic design import boundary
 
-Enforces one-way import dependencies in core.ui:
+Enforces one-way import dependencies in core.ui.components:
 - atoms cannot import from molecules, organisms, or templates
 - molecules cannot import from organisms or templates
 - organisms cannot import from templates
@@ -15,7 +15,7 @@ Enforces one-way import dependencies in core.ui:
 language js
 
 `import $_ from $path` where {
-  $filename <: includes "packages/libs/core.ui/",
+  $filename <: includes "packages/libs/core.ui.components/",
   or {
     and {
       $filename <: includes "/atoms/",

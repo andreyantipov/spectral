@@ -44,6 +44,13 @@ After pushing a PR:
 6. **Re-request review** if changes were made
 7. **CI must be green** — if build fails, fix it before merge
 
+### Verification Rules (non-negotiable)
+
+- **Never claim something works without testing it.** If you wrote code for Cmd+1-9, launch the app and verify Cmd+1-9 actually works. Screenshot or it didn't happen.
+- **Never say "should work" or "agent did it".** Verify yourself.
+- **Smoke test after every functional change.** `bun run dev:desktop:agentic` → test the feature → screenshot → then commit.
+- **If you can't test it (e.g. no display), say so explicitly.** Don't silently skip.
+
 ## Ollama
 
 A local Ollama instance is available via MCP tools (`ollama_chat`, `ollama_generate`, etc.). Use it to offload work that doesn't require Claude-level reasoning — code generation from simple prompts, boilerplate, format conversions, summaries — to save API tokens and reduce latency when appropriate.
@@ -144,7 +151,7 @@ Three-tier core structure, each level can only import levels above it:
 ```
 Level 1: core.port.*    → pure interfaces (Context.Tag + type signatures), zero deps
 Level 2: core.base.*     → schemas, errors, utilities (imports core.port.*)
-Level 3: core.ui         → components, hooks (imports core.base.* + core.port.*)
+Level 3: core.ui.*       → core.ui.design (tokens/CSS), core.ui.components (UI), core.ui.api (hooks)
 ```
 
 Ports are **atomic packages** — one per concern:

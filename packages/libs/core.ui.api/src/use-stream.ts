@@ -1,6 +1,6 @@
 import { Effect, Fiber, Stream } from "effect";
 import { type Accessor, createSignal, getOwner, onCleanup, onMount, runWithOwner } from "solid-js";
-import { useRuntime } from "./runtime-provider";
+import { useRuntime } from "./use-runtime";
 
 export function useStream<A>(stream: Stream.Stream<A, unknown, never>, initial: A): Accessor<A> {
 	const [value, setValue] = createSignal(initial);
