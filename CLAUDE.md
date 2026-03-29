@@ -152,14 +152,14 @@ Level 2: core.ui.design      → CSS tokens, Panda config, styled-system output
 Level 2 sub-levels: `design` is foundation, `components` uses design via path alias, `api` is independent. No peer imports between them.
 
 ### Ports and Adapters
-Every `domain.adapter.*` implements a `core.port.*`. Port = interface, adapter = implementation.
+Every adapter implements a port. Port = interface, adapter = implementation. Port can be our package or an external library.
 
 - `core.port.storage` → `domain.adapter.db` (SQLite/Drizzle)
 - `core.port.event-bus` → EventBusLive (in-package)
-- `core.port.carrier` → `domain.adapter.carrier` (Electrobun IPC/RPC)
-- `core.port.otel` → `domain.adapter.otel` (OpenTelemetry)
+- `@effect/rpc` (RpcServer.Protocol, RpcClient.Protocol) → `domain.adapter.carrier` (Electrobun IPC/RPC)
+- `@opentelemetry/api` (TracerProvider) → `domain.adapter.otel` (OTLP exporter)
 
-Each adapter imports only the port it implements. No adapter without a port.
+No custom port when external library already provides the interface.
 
 ### Carrier + EventBus
 Two concerns for cross-process communication:
