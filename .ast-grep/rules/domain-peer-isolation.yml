@@ -7,6 +7,7 @@ severity: error
 message: "domain.feature.* cannot import other domain.feature.*"
 files:
   - "packages/libs/domain.feature.*/src/**/*.ts"
+  - "packages/libs/domain.feature.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
@@ -23,6 +24,7 @@ severity: error
 message: "domain.adapter.* cannot import other domain.adapter.*"
 files:
   - "packages/libs/domain.adapter.*/src/**/*.ts"
+  - "packages/libs/domain.adapter.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
@@ -39,22 +41,6 @@ severity: error
 message: "ui.feature.* cannot import other ui.feature.*"
 files:
   - "packages/libs/ui.feature.*/src/**/*.ts"
-ignores:
-  - "**/*.test.*"
-  - "**/*.tsx"
-rule:
-  pattern: import $_ from "$PATH"
-constraints:
-  PATH:
-    regex: "ui\\.feature\\."
-
----
-
-id: ui-feature-no-peer-tsx
-language: Tsx
-severity: error
-message: "ui.feature.* cannot import other ui.feature.*"
-files:
   - "packages/libs/ui.feature.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"

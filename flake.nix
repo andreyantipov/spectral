@@ -41,6 +41,8 @@
             pkgs.lazygit
             pkgs.opentelemetry-collector-contrib
             otel-tui.defaultPackage.${system}
+            pkgs.ast-grep
+            pkgs.uv
           ];
         };
       }

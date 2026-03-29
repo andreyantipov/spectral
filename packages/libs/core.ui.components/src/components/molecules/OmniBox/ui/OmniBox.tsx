@@ -102,6 +102,16 @@ export function OmniBox(props: OmniBoxProps) {
 		});
 	};
 
+	const selectedSuggestion = (): OmniBoxSuggestion | undefined =>
+		selectedIndex() >= 0 ? suggestions()[selectedIndex()] : undefined;
+
+	const handleDeleteKey = (e: KeyboardEvent) => {
+		if (!e.shiftKey) return;
+		e.preventDefault();
+		const sel = selectedSuggestion();
+		if (sel) props.onDeleteSuggestion?.(sel);
+	};
+
 	const handleKeyDown = (e: KeyboardEvent) => {
 		switch (e.key) {
 			case "ArrowDown":
@@ -113,23 +123,16 @@ export function OmniBox(props: OmniBoxProps) {
 				navigateSuggestions(-1);
 				break;
 			case "Enter":
+			case "Tab":
 				e.preventDefault();
-				handleSubmit(selectedIndex() >= 0 ? suggestions()[selectedIndex()] : undefined);
+				handleSubmit(selectedSuggestion());
 				break;
 			case "Escape":
 				e.preventDefault();
 				props.onCancel?.();
 				break;
 			case "Delete":
-				if (e.shiftKey) {
-					e.preventDefault();
-					const sel = selectedIndex() >= 0 ? suggestions()[selectedIndex()] : undefined;
-					if (sel) props.onDeleteSuggestion?.(sel);
-				}
-				break;
-			case "Tab":
-				e.preventDefault();
-				handleSubmit(selectedIndex() >= 0 ? suggestions()[selectedIndex()] : undefined);
+				handleDeleteKey(e);
 				break;
 		}
 	};

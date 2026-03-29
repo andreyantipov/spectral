@@ -48,6 +48,38 @@ After pushing a PR:
 
 A local Ollama instance is available via MCP tools (`ollama_chat`, `ollama_generate`, etc.). Use it to offload work that doesn't require Claude-level reasoning — code generation from simple prompts, boilerplate, format conversions, summaries — to save API tokens and reduce latency when appropriate.
 
+## Development Environment
+
+All CLI sessions and agents must run inside `nix develop` to ensure tools are available (ast-grep, tsgo, bun, etc.).
+
+## ast-grep — structural code linting
+
+Architecture boundaries are enforced by ast-grep rules in `.ast-grep/rules/`.
+
+```bash
+# Scan for violations
+ast-grep scan
+
+# Search for a pattern
+ast-grep --lang typescript -p 'import $_ from "$PATH"'
+
+# Debug AST structure
+ast-grep --lang typescript -p 'YOUR_PATTERN' --debug-query=ast
+```
+
+- Full docs for LLM context: https://ast-grep.github.io/llms-full.txt
+- MCP server available: `ast-grep` in `.mcp.json` (dump_syntax_tree, test_match_code_rule, find_code, find_code_by_rule)
+- Claude Code skill installed: `.claude/skills/ast-grep/`
+
+### Creating rules
+
+1. Write target code example
+2. Use `dump_syntax_tree` (MCP) or `--debug-query=ast` to understand AST
+3. Start with simple `pattern:` or `kind:`
+4. Compose via `all:`, `has:`, `inside:`, `constraints:`
+5. Test via `test_match_code_rule` (MCP) or `ast-grep test`
+6. Always add `stopBy: end` in relational rules (`has:`, `inside:`)
+
 ## Code Style
 
 - Use consistent formatting
@@ -115,7 +147,7 @@ Key differences from `dev:desktop`:
 - `type` only, never `interface` in packages/libs/
 - No `Effect.withSpan()` — use `withTracing()` from `@ctrl/core.base.tracing`
 - No hardcoded strings for span names or service identifiers
-- GritQL enforces all boundaries — run `bunx grit check .` before committing
+- ast-grep enforces all boundaries — run `ast-grep scan` before committing
 - Two public surfaces: `domain.service.*` (for UI) and `ui.scene.*` (for apps)
 - **`BrowsingServiceLive`** listens to EventBus commands and dispatches to domain features via EventLog. All business operations (browsing + workspace) flow through EventBus commands.
 - **`domain.service.native`** consolidates Electrobun RPC protocol and IPC bridge.

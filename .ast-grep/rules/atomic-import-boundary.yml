@@ -2,10 +2,11 @@
 # GritQL equivalent: atomic_import_boundary.md
 
 id: atoms-no-higher-import
-language: Tsx
+language: TypeScript
 severity: error
 message: "atoms cannot import from molecules, organisms, or templates"
 files:
+  - "packages/libs/core.ui/src/components/atoms/**/*.ts"
   - "packages/libs/core.ui/src/components/atoms/**/*.tsx"
 rule:
   pattern: import $_ from "$PATH"
@@ -15,27 +16,12 @@ constraints:
 
 ---
 
-id: atoms-no-higher-import-ts
-language: TypeScript
-severity: error
-message: "atoms cannot import from molecules, organisms, or templates"
-files:
-  - "packages/libs/core.ui/src/components/atoms/**/*.ts"
-ignores:
-  - "**/*.tsx"
-rule:
-  pattern: import $_ from "$PATH"
-constraints:
-  PATH:
-    regex: "(molecules|organisms|templates)"
-
----
-
 id: molecules-no-higher-import
-language: Tsx
+language: TypeScript
 severity: error
 message: "molecules cannot import from organisms or templates"
 files:
+  - "packages/libs/core.ui/src/components/molecules/**/*.ts"
   - "packages/libs/core.ui/src/components/molecules/**/*.tsx"
 rule:
   pattern: import $_ from "$PATH"
@@ -45,44 +31,13 @@ constraints:
 
 ---
 
-id: molecules-no-higher-import-ts
-language: TypeScript
-severity: error
-message: "molecules cannot import from organisms or templates"
-files:
-  - "packages/libs/core.ui/src/components/molecules/**/*.ts"
-ignores:
-  - "**/*.tsx"
-rule:
-  pattern: import $_ from "$PATH"
-constraints:
-  PATH:
-    regex: "(organisms|templates)"
-
----
-
 id: organisms-no-template-import
-language: Tsx
-severity: error
-message: "organisms cannot import from templates"
-files:
-  - "packages/libs/core.ui/src/components/organisms/**/*.tsx"
-rule:
-  pattern: import $_ from "$PATH"
-constraints:
-  PATH:
-    regex: "templates"
-
----
-
-id: organisms-no-template-import-ts
 language: TypeScript
 severity: error
 message: "organisms cannot import from templates"
 files:
   - "packages/libs/core.ui/src/components/organisms/**/*.ts"
-ignores:
-  - "**/*.tsx"
+  - "packages/libs/core.ui/src/components/organisms/**/*.tsx"
 rule:
   pattern: import $_ from "$PATH"
 constraints:

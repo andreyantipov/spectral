@@ -1,10 +1,10 @@
 # Enforces hexagonal architecture layer boundaries
 # GritQL equivalent: domain_boundary_rules.md
 
-id: ui-no-feature-or-adapter
+id: ui-no-domain
 language: TypeScript
 severity: error
-message: "ui.* cannot import domain.feature.* or domain.adapter.*"
+message: "ui.* cannot import domain.* — use core.ui.api (EventBus)"
 files:
   - "packages/libs/ui.*/src/**/*.ts"
   - "packages/libs/ui.*/src/**/*.tsx"
@@ -14,14 +14,14 @@ rule:
   pattern: import $_ from "$PATH"
 constraints:
   PATH:
-    regex: "domain\\.(feature|adapter)\\."
+    regex: "domain\\."
 
 ---
 
 id: apps-no-ui-feature
 language: TypeScript
 severity: error
-message: "apps/* cannot import ui.feature.* directly (use ui.scenes)"
+message: "apps/* cannot import ui.feature.* directly (use ui.scene.*)"
 files:
   - "packages/apps/*/src/**/*.ts"
   - "packages/apps/*/src/**/*.tsx"
@@ -41,6 +41,7 @@ severity: error
 message: "domain.feature.* cannot import domain.service.* or domain.adapter.*"
 files:
   - "packages/libs/domain.feature.*/src/**/*.ts"
+  - "packages/libs/domain.feature.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
@@ -57,6 +58,7 @@ severity: error
 message: "domain.service.* cannot import domain.adapter.*"
 files:
   - "packages/libs/domain.service.*/src/**/*.ts"
+  - "packages/libs/domain.service.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
@@ -73,6 +75,7 @@ severity: error
 message: "domain.service.* cannot import other domain.service.*"
 files:
   - "packages/libs/domain.service.*/src/**/*.ts"
+  - "packages/libs/domain.service.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
@@ -89,6 +92,7 @@ severity: error
 message: "domain.adapter.* cannot import domain.feature.* or domain.service.*"
 files:
   - "packages/libs/domain.adapter.*/src/**/*.ts"
+  - "packages/libs/domain.adapter.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
@@ -112,21 +116,4 @@ rule:
   pattern: import $_ from "$PATH"
 constraints:
   PATH:
-    regex: "(domain\\.(feature|service|adapter)\\.|ui\\.(feature|scenes))"
-
----
-
-# TSX variant — ast-grep needs separate language for .tsx files
-id: ui-no-feature-or-adapter-tsx
-language: Tsx
-severity: error
-message: "ui.* cannot import domain.feature.* or domain.adapter.*"
-files:
-  - "packages/libs/ui.*/src/**/*.tsx"
-ignores:
-  - "**/*.test.*"
-rule:
-  pattern: import $_ from "$PATH"
-constraints:
-  PATH:
-    regex: "domain\\.(feature|adapter)\\."
+    regex: "(domain\\.(feature|service|adapter)\\.|ui\\.(feature|scene)\\b)"

@@ -65,22 +65,18 @@ const DOMAINS = [
 	{ id: "Infrastructure", services: ["EventBus", "DatabaseService"] },
 ];
 
-async function main() {
-	if (!existsSync(METADATA_PATH)) {
-		process.stderr.write("metadata.json not found. Run: bun run docs:meta\n");
-		process.exit(1);
-	}
-
-	// Clean generated directories to allow idempotent regeneration
+function cleanCatalog() {
 	for (const dir of ["domains", "services", "commands", "events"]) {
 		const fullPath = resolve(CATALOG_DIR, dir);
 		if (existsSync(fullPath)) rmSync(fullPath, { recursive: true });
 	}
+}
 
-	const sdk = catalogFactory(CATALOG_DIR);
-	const meta: AppMetadata = JSON.parse(readFileSync(METADATA_PATH, "utf-8"));
-	const version = "0.14.0";
-
+async function writeDomains(
+	sdk: ReturnType<typeof catalogFactory>,
+	meta: AppMetadata,
+	version: string,
+) {
 	for (const domain of DOMAINS) {
 		await sdk.writeDomain({
 			id: domain.id,
@@ -103,7 +99,13 @@ async function main() {
 			await sdk.addServiceToDomain(domain.id, { id: svc.name, version });
 		}
 	}
+}
 
+async function writeEvents(
+	sdk: ReturnType<typeof catalogFactory>,
+	meta: AppMetadata,
+	version: string,
+) {
 	for (const event of meta.events) {
 		const payload = event.payloadFields.map((f) => `- \`${f.name}\`: ${f.type}`).join("\n");
 		const markdown = `**Group:** ${event.group}\n\n**Primary Key:** \`${event.primaryKey}\`\n\n**Payload:**\n${payload || "none"}\n\n**Response:** ${event.successType}`;
@@ -114,6 +116,22 @@ async function main() {
 			await sdk.writeEvent({ id: event.tag, name: event.tag, version, markdown });
 		}
 	}
+}
+
+async function main() {
+	if (!existsSync(METADATA_PATH)) {
+		process.stderr.write("metadata.json not found. Run: bun run docs:meta\n");
+		process.exit(1);
+	}
+
+	cleanCatalog();
+
+	const sdk = catalogFactory(CATALOG_DIR);
+	const meta: AppMetadata = JSON.parse(readFileSync(METADATA_PATH, "utf-8"));
+	const version = "0.14.0";
+
+	await writeDomains(sdk, meta, version);
+	await writeEvents(sdk, meta, version);
 
 	process.stdout.write(
 		`EventCatalog generated: ${DOMAINS.length} domains, ${meta.services.length} services, ${meta.events.length} events/commands\n`,

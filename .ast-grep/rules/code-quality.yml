@@ -1,6 +1,6 @@
 # General code quality rules
 # GritQL equivalents: ban_console_log.md, no_lint_ignores.md, type_consistency.md,
-#                     no_declare_module.md, solid_tsx_only.md, no_raw_sql.md
+#                     no_declare_module.md
 
 id: ban-console-log
 language: TypeScript
@@ -29,7 +29,9 @@ severity: error
 message: "No declare module in application code"
 files:
   - "packages/libs/**/*.ts"
+  - "packages/libs/**/*.tsx"
   - "packages/apps/**/*.ts"
+  - "packages/apps/**/*.tsx"
 rule:
   pattern: declare module $_ { $$$BODY }
 

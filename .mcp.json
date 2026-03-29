@@ -8,6 +8,10 @@
 			"command": "bun",
 			"args": ["run", "packages/tools/mcp-architecture.ts"]
 		},
+		"ast-grep": {
+			"command": "uvx",
+			"args": ["--from", "git+https://github.com/ast-grep/ast-grep-mcp@main", "ast-grep-server"]
+		},
 		"ollama": {
 			"command": "npx",
 			"args": ["-y", "ollama-mcp"],

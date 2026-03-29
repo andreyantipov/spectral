@@ -8,18 +8,6 @@ severity: error
 message: "No cva in core.ui — use sva only"
 files:
   - "packages/libs/core.ui/**/*.ts"
-ignores:
-  - "**/*.tsx"
-rule:
-  pattern: cva($$$ARGS)
-
----
-
-id: no-cva-in-core-ui-tsx
-language: Tsx
-severity: error
-message: "No cva in core.ui — use sva only"
-files:
   - "packages/libs/core.ui/**/*.tsx"
 rule:
   pattern: cva($$$ARGS)
@@ -32,21 +20,6 @@ severity: error
 message: "No relative styled-system imports — use @styled-system alias"
 files:
   - "packages/**/*.ts"
-ignores:
-  - "**/*.tsx"
-rule:
-  pattern: import $_ from "$PATH"
-constraints:
-  PATH:
-    regex: "\\.\\./.*styled-system/"
-
----
-
-id: no-relative-styled-system-tsx
-language: Tsx
-severity: error
-message: "No relative styled-system imports — use @styled-system alias"
-files:
   - "packages/**/*.tsx"
 rule:
   pattern: import $_ from "$PATH"
@@ -57,7 +30,7 @@ constraints:
 ---
 
 id: styles-in-style-file-only
-language: Tsx
+language: TypeScript
 severity: error
 message: "No sva/cva/css declarations in .tsx files — use .style.ts"
 files:
