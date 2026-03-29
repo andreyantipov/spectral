@@ -1,0 +1,17 @@
+{
+	"name": "@ctrl/wire.desktop.ui",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check": "tsgo --noEmit"
+	},
+	"dependencies": {
+		"@ctrl/core.impl.event-bus": "workspace:*",
+		"@ctrl/core.impl.ipc-bridge": "workspace:*",
+		"@ctrl/core.middleware.otel": "workspace:*"
+	}
+}

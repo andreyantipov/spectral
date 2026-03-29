@@ -4,25 +4,24 @@
 
 | Package | Can import |
 |---------|-----------|
-| `core.base.*` | External packages only (`effect`, `@effect/schema`) |
-| `core.port.*` | `core.base.*` + external packages |
-| `core.ui.design` | External (Panda CSS) |
-| `core.ui.components` | `core.ui.design` (via tsconfig path alias only) |
-| `core.ui.api` | `core.port.event-bus` |
-| `domain.adapter.*` | `core.port.*` + `core.base.*` + external infrastructure libs |
-| `domain.feature.*` | `core.port.*` + `core.base.*` (ports via DI — never adapters) |
-| `domain.service.*` | `domain.feature.*` + `core.port.*` + `core.base.*` |
-| `domain.runtime.*` | ALL domain + core packages (composition only) |
-| `ui.feature.*` | `core.ui.components` + `core.ui.api` + `core.base.*` + `core.port.*` |
-| `ui.scene.*` | `ui.feature.*` + `core.ui.components` |
-| `packages/apps/*` | `domain.runtime.*` + `domain.adapter.carrier` + `ui.scene.*` |
+| `base.*` | External packages only (`effect`, `@effect/schema`) |
+| `core.contract.*` | `base.*` + external packages |
+| `core.impl.*` | `core.contract.*` + `base.*` + external infrastructure libs |
+| `ui.base.components` | External (Panda CSS, styled-system generated internally) |
+| `ui.base.api` | `core.contract.event-bus` |
+| `domain.feature.*` | `core.contract.*` + `base.*` (contracts via DI — never impls) |
+| `domain.service.*` | `domain.feature.*` + `core.contract.*` + `base.*` |
+| `wire.desktop.*` | ALL domain + core + base packages (composition only) |
+| `ui.feature.*` | `ui.base.components` + `ui.base.api` + `base.*` + `core.contract.*` |
+| `ui.scene.*` | `ui.feature.*` + `ui.base.components` |
+| `packages/apps/*` | `wire.desktop.*` + `ui.scene.*` |
 
 ## Key Rules
 
-- **UI cannot import domain**: `ui.*` packages never import `domain.*` — they use `core.ui.api` (EventBus)
+- **UI cannot import domain**: `ui.*` packages never import `domain.*` — they use `ui.base.api` (EventBus)
 - **No re-exports**: barrel `index.ts` only exports from within its own package
-- **Ports and adapters**: every `domain.adapter.*` implements a port (`core.port.*` or external lib interface)
-- **Runtime = composition**: `domain.runtime.*` packages compose layers, exempt from barrel re-export rule
+- **Contracts and implementations**: every `core.impl.*` implements a contract (`core.contract.*` or external lib interface)
+- **Wiring = composition**: `wire.desktop.*` packages compose layers, exempt from barrel re-export rule
 
 ## Peer Isolation Rule
 
@@ -30,5 +29,5 @@ No package may import a peer at the same tier.
 
 - `domain.feature.*` packages cannot import each other
 - `domain.service.*` packages cannot import each other
-- `domain.adapter.*` packages cannot import each other
+- `core.impl.*` packages cannot import each other
 - `ui.feature.*` packages cannot import each other

@@ -1,0 +1,30 @@
+# impl-single-layer — review rule (not machine-enforceable)
+#
+# Rule: each core.impl.* package MUST export exactly ONE Layer.
+# This ensures 1:1 mapping between impl packages and Layer exports,
+# keeping the dependency graph readable and boundaries clear.
+#
+# Why ast-grep cannot enforce this:
+# ast-grep matches patterns within individual files. It cannot count
+# occurrences across a package or enforce "at most one match per directory."
+# A package with two files each containing one Layer.effect call would pass
+# any single-file rule but violate the intent.
+#
+# Enforcement: code review (human + Copilot). See:
+# - .github/copilot-review-instructions.md
+# - docs/architecture/package-naming.md
+# - CLAUDE.md (Package Levels section)
+#
+# This file exists as documentation so `sg scan` reminds reviewers
+# the rule exists even though it produces no violations.
+
+id: impl-single-layer-reminder
+language: typescript
+rule:
+  # Intentionally matches nothing — this rule is documentation only.
+  # It reminds reviewers that each core.impl.* package must export one Layer.
+  pattern: __IMPL_SINGLE_LAYER_PLACEHOLDER_NEVER_MATCHES__
+files:
+  - "packages/libs/core.impl.*/src/index.ts"
+message: "Review rule: each core.impl.* package should export exactly one Layer."
+severity: hint

@@ -1,0 +1,18 @@
+{
+	"name": "@ctrl/domain.feature.settings",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check": "tsgo --noEmit",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@ctrl/base.schema": "workspace:*",
+		"@ctrl/base.tracing": "workspace:*",
+		"@ctrl/core.contract.event-bus": "workspace:*"
+	}
+}

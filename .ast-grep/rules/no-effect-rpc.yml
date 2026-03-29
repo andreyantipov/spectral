@@ -1,0 +1,12 @@
+id: no-effect-rpc-import
+language: typescript
+rule:
+  any:
+    - pattern: import $$$_ from "@effect/rpc$$$"
+    - pattern: 'export { $$$ } from "@effect/rpc$$$"'
+    - pattern: 'export * from "@effect/rpc$$$"'
+    - pattern: 'export * as $$_ from "@effect/rpc$$$"'
+files:
+  - "packages/libs/**/*.ts"
+message: "@effect/rpc has been removed. Use EventBus over IPC instead."
+severity: error

@@ -19,27 +19,27 @@
 <path fill="#ffffff" stroke="black" stroke-width="2" d="M28,-16C28,-16 1858,-16 1858,-16 1864,-16 1870,-22 1870,-28 1870,-28 1870,-684.25 1870,-684.25 1870,-690.25 1864,-696.25 1858,-696.25 1858,-696.25 28,-696.25 28,-696.25 22,-696.25 16,-690.25 16,-684.25 16,-684.25 16,-28 16,-28 16,-22 22,-16 28,-16"/>
 <text xml:space="preserve" text-anchor="middle" x="943" y="-683.7" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="9.00">libs</text>
 </g>
-<!-- packages/libs/core.base.errors -->
+<!-- packages/libs/core.base.error -->
 <g id="node1" class="node">
-<title>packages/libs/core.base.errors</title>
-<g id="a_node1"><a xlink:href="packages/libs/core.base.errors" xlink:title="core.base.errors">
+<title>packages/libs/core.base.error</title>
+<g id="a_node1"><a xlink:href="packages/libs/core.base.error" xlink:title="core.base.error">
 <polygon fill="#e8f5e9" stroke="black" points="662.38,-41.75 581.6,-41.75 579.62,-39.78 579.62,-24 660.4,-24 662.38,-25.97 662.38,-41.75"/>
 <polyline fill="none" stroke="black" points="660.4,-39.78 579.62,-39.78"/>
 <polyline fill="none" stroke="black" points="660.4,-39.78 660.4,-24"/>
 <polyline fill="none" stroke="black" points="660.4,-39.78 662.38,-41.75"/>
-<text xml:space="preserve" text-anchor="start" x="587.62" y="-30.25" font-family="Helvetica,sans-Serif" font-size="9.00">core.base.errors</text>
+<text xml:space="preserve" text-anchor="start" x="587.62" y="-30.25" font-family="Helvetica,sans-Serif" font-size="9.00">core.base.error</text>
 </a>
 </g>
 </g>
-<!-- packages/libs/core.base.model -->
+<!-- packages/libs/core.base.schema -->
 <g id="node2" class="node">
-<title>packages/libs/core.base.model</title>
-<g id="a_node2"><a xlink:href="packages/libs/core.base.model" xlink:title="core.base.model">
+<title>packages/libs/core.base.schema</title>
+<g id="a_node2"><a xlink:href="packages/libs/core.base.schema" xlink:title="core.base.schema">
 <polygon fill="#e8f5e9" stroke="black" points="825.12,-41.75 742.85,-41.75 740.88,-39.78 740.88,-24 823.15,-24 825.12,-25.97 825.12,-41.75"/>
 <polyline fill="none" stroke="black" points="823.15,-39.78 740.88,-39.78"/>
 <polyline fill="none" stroke="black" points="823.15,-39.78 823.15,-24"/>
 <polyline fill="none" stroke="black" points="823.15,-39.78 825.12,-41.75"/>
-<text xml:space="preserve" text-anchor="start" x="748.88" y="-30.25" font-family="Helvetica,sans-Serif" font-size="9.00">core.base.model</text>
+<text xml:space="preserve" text-anchor="start" x="748.88" y="-30.25" font-family="Helvetica,sans-Serif" font-size="9.00">core.base.schema</text>
 </a>
 </g>
 </g>
@@ -55,15 +55,15 @@
 </a>
 </g>
 </g>
-<!-- packages/libs/core.base.types -->
+<!-- packages/libs/core.base.type -->
 <g id="node4" class="node">
-<title>packages/libs/core.base.types</title>
-<g id="a_node4"><a xlink:href="packages/libs/core.base.types" xlink:title="core.base.types">
+<title>packages/libs/core.base.type</title>
+<g id="a_node4"><a xlink:href="packages/libs/core.base.type" xlink:title="core.base.type">
 <polygon fill="#e8f5e9" stroke="black" points="1564.25,-167.5 1485.72,-167.5 1483.75,-165.53 1483.75,-149.75 1562.28,-149.75 1564.25,-151.72 1564.25,-167.5"/>
 <polyline fill="none" stroke="black" points="1562.28,-165.53 1483.75,-165.53"/>
 <polyline fill="none" stroke="black" points="1562.28,-165.53 1562.28,-149.75"/>
 <polyline fill="none" stroke="black" points="1562.28,-165.53 1564.25,-167.5"/>
-<text xml:space="preserve" text-anchor="start" x="1491.75" y="-156" font-family="Helvetica,sans-Serif" font-size="9.00">core.base.types</text>
+<text xml:space="preserve" text-anchor="start" x="1491.75" y="-156" font-family="Helvetica,sans-Serif" font-size="9.00">core.base.type</text>
 </a>
 </g>
 </g>
@@ -79,15 +79,15 @@
 </a>
 </g>
 </g>
-<!-- packages/libs/core.port.event&#45;bus&#45;&gt;packages/libs/core.base.errors -->
+<!-- packages/libs/core.port.event&#45;bus&#45;&gt;packages/libs/core.base.error -->
 <g id="edge2" class="edge">
-<title>packages/libs/core.port.event&#45;bus&#45;&gt;packages/libs/core.base.errors</title>
+<title>packages/libs/core.port.event&#45;bus&#45;&gt;packages/libs/core.base.error</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M257.19,-149.31C325.52,-127.63 509.21,-69.35 586.24,-44.9"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="586.69,-46.96 591.78,-43.15 585.42,-42.96 586.69,-46.96"/>
 </g>
-<!-- packages/libs/core.port.event&#45;bus&#45;&gt;packages/libs/core.base.model -->
+<!-- packages/libs/core.port.event&#45;bus&#45;&gt;packages/libs/core.base.schema -->
 <g id="edge1" class="edge">
-<title>packages/libs/core.port.event&#45;bus&#45;&gt;packages/libs/core.base.model</title>
+<title>packages/libs/core.port.event&#45;bus&#45;&gt;packages/libs/core.base.schema</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M268.08,-149.31C365.77,-127.41 630.06,-68.16 737.08,-44.17"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="737.37,-46.26 742.77,-42.89 736.46,-42.16 737.37,-46.26"/>
 </g>
@@ -103,15 +103,15 @@
 </a>
 </g>
 </g>
-<!-- packages/libs/core.port.storage&#45;&gt;packages/libs/core.base.errors -->
+<!-- packages/libs/core.port.storage&#45;&gt;packages/libs/core.base.error -->
 <g id="edge4" class="edge">
-<title>packages/libs/core.port.storage&#45;&gt;packages/libs/core.base.errors</title>
+<title>packages/libs/core.port.storage&#45;&gt;packages/libs/core.base.error</title>
 <path fill="none" stroke="#000000" stroke-opacity="0.200000" d="M772.12,-149.31C744.34,-128.09 670.64,-71.8 637.52,-46.5"/>
 <polygon fill="none" stroke="#000000" stroke-opacity="0.200000" points="639.08,-45.04 633.04,-43.07 636.53,-48.38 639.08,-45.04"/>
 </g>
-<!-- packages/libs/core.port.storage&#45;&gt;packages/libs/core.base.model -->
+<!-- packages/libs/core.port.storage&#45;&gt;packages/libs/core.base.schema -->
 <g id="edge5" class="edge">
-<title>packages/libs/core.port.storage&#45;&gt;packages/libs/core.base.model</title>
+<title>packages/libs/core.port.storage&#45;&gt;packages/libs/core.base.schema</title>
 <path fill="none" stroke="#000000" stroke-opacity="0.200000" d="M783,-149.51C783,-129.23 783,-76.12 783,-49.52"/>
 <polygon fill="none" stroke="#000000" stroke-opacity="0.200000" points="785.1,-49.7 783,-43.7 780.9,-49.7 785.1,-49.7"/>
 </g>
@@ -169,15 +169,15 @@
 </a>
 </g>
 </g>
-<!-- packages/libs/domain.adapter.db&#45;&gt;packages/libs/core.base.errors -->
+<!-- packages/libs/domain.adapter.db&#45;&gt;packages/libs/core.base.error -->
 <g id="edge9" class="edge">
-<title>packages/libs/domain.adapter.db&#45;&gt;packages/libs/core.base.errors</title>
+<title>packages/libs/domain.adapter.db&#45;&gt;packages/libs/core.base.error</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M1375.05,-275.07C1259.03,-237.96 787.78,-87.22 655.61,-44.95"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="656.29,-42.96 649.93,-43.13 655.01,-46.96 656.29,-42.96"/>
 </g>
-<!-- packages/libs/domain.adapter.db&#45;&gt;packages/libs/core.base.model -->
+<!-- packages/libs/domain.adapter.db&#45;&gt;packages/libs/core.base.schema -->
 <g id="edge10" class="edge">
-<title>packages/libs/domain.adapter.db&#45;&gt;packages/libs/core.base.model</title>
+<title>packages/libs/domain.adapter.db&#45;&gt;packages/libs/core.base.schema</title>
 <path fill="none" stroke="#000000" stroke-opacity="0.200000" d="M1388.71,-275.11C1354.55,-252.43 1255.02,-188.33 1165,-149.75 1046.91,-99.14 899.53,-61.07 827.21,-43.91"/>
 <polygon fill="none" stroke="#000000" stroke-opacity="0.200000" points="827.82,-41.9 821.5,-42.56 826.86,-45.98 827.82,-41.9"/>
 </g>
@@ -187,9 +187,9 @@
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M1399.8,-275.07C1394.67,-239.48 1374.45,-99.34 1367.42,-50.65"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1369.53,-50.59 1366.6,-44.95 1365.38,-51.19 1369.53,-50.59"/>
 </g>
-<!-- packages/libs/domain.adapter.db&#45;&gt;packages/libs/core.base.types -->
+<!-- packages/libs/domain.adapter.db&#45;&gt;packages/libs/core.base.type -->
 <g id="edge12" class="edge">
-<title>packages/libs/domain.adapter.db&#45;&gt;packages/libs/core.base.types</title>
+<title>packages/libs/domain.adapter.db&#45;&gt;packages/libs/core.base.type</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M1409.07,-275.26C1429.48,-254.72 1483.38,-200.49 1509.46,-174.26"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1510.86,-175.82 1513.6,-170.08 1507.89,-172.86 1510.86,-175.82"/>
 </g>
@@ -223,15 +223,15 @@
 </a>
 </g>
 </g>
-<!-- packages/libs/domain.feature.bookmark&#45;&gt;packages/libs/core.base.errors -->
+<!-- packages/libs/domain.feature.bookmark&#45;&gt;packages/libs/core.base.error -->
 <g id="edge15" class="edge">
-<title>packages/libs/domain.feature.bookmark&#45;&gt;packages/libs/core.base.errors</title>
+<title>packages/libs/domain.feature.bookmark&#45;&gt;packages/libs/core.base.error</title>
 <path fill="none" stroke="#000000" stroke-opacity="0.200000" d="M502.05,-275.27C507.57,-254.03 523.88,-195.19 546,-149.75 564.91,-110.89 594.4,-69.28 610.18,-48.07"/>
 <polygon fill="none" stroke="#000000" stroke-opacity="0.200000" points="611.77,-49.44 613.7,-43.38 608.41,-46.92 611.77,-49.44"/>
 </g>
-<!-- packages/libs/domain.feature.bookmark&#45;&gt;packages/libs/core.base.model -->
+<!-- packages/libs/domain.feature.bookmark&#45;&gt;packages/libs/core.base.schema -->
 <g id="edge13" class="edge">
-<title>packages/libs/domain.feature.bookmark&#45;&gt;packages/libs/core.base.model</title>
+<title>packages/libs/domain.feature.bookmark&#45;&gt;packages/libs/core.base.schema</title>
 <path fill="none" stroke="#000000" stroke-opacity="0.200000" d="M509.42,-275.07C550.88,-238.52 717.39,-91.72 768.2,-46.92"/>
 <polygon fill="none" stroke="#000000" stroke-opacity="0.200000" points="769.3,-48.75 772.41,-43.21 766.52,-45.6 769.3,-48.75"/>
 </g>
@@ -253,15 +253,15 @@
 </a>
 </g>
 </g>
-<!-- packages/libs/domain.feature.history&#45;&gt;packages/libs/core.base.errors -->
+<!-- packages/libs/domain.feature.history&#45;&gt;packages/libs/core.base.error -->
 <g id="edge18" class="edge">
-<title>packages/libs/domain.feature.history&#45;&gt;packages/libs/core.base.errors</title>
+<title>packages/libs/domain.feature.history&#45;&gt;packages/libs/core.base.error</title>
 <path fill="none" stroke="#000000" stroke-opacity="0.200000" d="M670.3,-275.07C662.95,-239.1 633.78,-96.41 624.12,-49.16"/>
 <polygon fill="none" stroke="#000000" stroke-opacity="0.200000" points="626.21,-48.9 622.95,-43.44 622.1,-49.74 626.21,-48.9"/>
 </g>
-<!-- packages/libs/domain.feature.history&#45;&gt;packages/libs/core.base.model -->
+<!-- packages/libs/domain.feature.history&#45;&gt;packages/libs/core.base.schema -->
 <g id="edge16" class="edge">
-<title>packages/libs/domain.feature.history&#45;&gt;packages/libs/core.base.model</title>
+<title>packages/libs/domain.feature.history&#45;&gt;packages/libs/core.base.schema</title>
 <path fill="none" stroke="#000000" stroke-opacity="0.200000" d="M673.65,-275.29C678.15,-254.07 691.65,-195.29 712,-149.75 729.36,-110.9 757.5,-69.28 772.61,-48.08"/>
 <polygon fill="none" stroke="#000000" stroke-opacity="0.200000" points="774.17,-49.5 775.97,-43.4 770.76,-47.05 774.17,-49.5"/>
 </g>
@@ -283,9 +283,9 @@
 </a>
 </g>
 </g>
-<!-- packages/libs/domain.feature.layout&#45;&gt;packages/libs/core.base.model -->
+<!-- packages/libs/domain.feature.layout&#45;&gt;packages/libs/core.base.schema -->
 <g id="edge20" class="edge">
-<title>packages/libs/domain.feature.layout&#45;&gt;packages/libs/core.base.model</title>
+<title>packages/libs/domain.feature.layout&#45;&gt;packages/libs/core.base.schema</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M1065.28,-275.07C1022.85,-238.81 853.47,-94.09 799.57,-48.03"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="800.98,-46.48 795.05,-44.17 798.25,-49.67 800.98,-46.48"/>
 </g>
@@ -331,15 +331,15 @@
 </a>
 </g>
 </g>
-<!-- packages/libs/domain.feature.session&#45;&gt;packages/libs/core.base.errors -->
+<!-- packages/libs/domain.feature.session&#45;&gt;packages/libs/core.base.error -->
 <g id="edge26" class="edge">
-<title>packages/libs/domain.feature.session&#45;&gt;packages/libs/core.base.errors</title>
+<title>packages/libs/domain.feature.session&#45;&gt;packages/libs/core.base.error</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M1220.37,-275.07C1128.52,-238.11 756.56,-88.43 649.79,-45.46"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="650.86,-43.63 644.51,-43.34 649.3,-47.53 650.86,-43.63"/>
 </g>
-<!-- packages/libs/domain.feature.session&#45;&gt;packages/libs/core.base.model -->
+<!-- packages/libs/domain.feature.session&#45;&gt;packages/libs/core.base.schema -->
 <g id="edge23" class="edge">
-<title>packages/libs/domain.feature.session&#45;&gt;packages/libs/core.base.model</title>
+<title>packages/libs/domain.feature.session&#45;&gt;packages/libs/core.base.schema</title>
 <path fill="none" stroke="#000000" stroke-opacity="0.200000" d="M1237.04,-275.08C1225.5,-251.76 1189.51,-185 1140,-149.75 1044.16,-81.52 905.93,-51.89 832.78,-40.36"/>
 <polygon fill="none" stroke="#000000" stroke-opacity="0.200000" points="833.22,-38.3 826.97,-39.46 832.58,-42.45 833.22,-38.3"/>
 </g>
@@ -349,9 +349,9 @@
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M1245.13,-275.07C1262.93,-239.25 1333.34,-97.58 1357.11,-49.75"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1358.85,-50.97 1359.64,-44.67 1355.09,-49.1 1358.85,-50.97"/>
 </g>
-<!-- packages/libs/domain.feature.session&#45;&gt;packages/libs/core.base.types -->
+<!-- packages/libs/domain.feature.session&#45;&gt;packages/libs/core.base.type -->
 <g id="edge24" class="edge">
-<title>packages/libs/domain.feature.session&#45;&gt;packages/libs/core.base.types</title>
+<title>packages/libs/domain.feature.session&#45;&gt;packages/libs/core.base.type</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M1260.01,-275.06C1309.05,-253.62 1439.96,-196.37 1496.91,-171.47"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1497.65,-173.44 1502.3,-169.11 1495.96,-169.59 1497.65,-173.44"/>
 </g>
@@ -487,15 +487,15 @@
 </g>
 <text xml:space="preserve" text-anchor="middle" x="835.15" y="-474.21" font-family="Helvetica,sans-Serif" font-size="9.00" fill="orange">no&#45;barrel&#45;reexports</text>
 </g>
-<!-- packages/libs/domain.service.browsing&#45;&gt;packages/libs/core.base.model -->
+<!-- packages/libs/domain.service.browsing&#45;&gt;packages/libs/core.base.schema -->
 <g id="edge44" class="edge">
-<title>packages/libs/domain.service.browsing&#45;&gt;packages/libs/core.base.model</title>
+<title>packages/libs/domain.service.browsing&#45;&gt;packages/libs/core.base.schema</title>
 <path fill="none" stroke="#000000" stroke-opacity="0.200000" d="M961.07,-400.84C949.37,-368.16 904.33,-245.22 855,-149.75 835.29,-111.61 807.4,-69.39 792.79,-47.99"/>
 <polygon fill="none" stroke="#000000" stroke-opacity="0.200000" points="794.69,-47.05 789.56,-43.29 791.23,-49.42 794.69,-47.05"/>
 </g>
-<!-- packages/libs/domain.service.browsing&#45;&gt;packages/libs/core.base.types -->
+<!-- packages/libs/domain.service.browsing&#45;&gt;packages/libs/core.base.type -->
 <g id="edge45" class="edge">
-<title>packages/libs/domain.service.browsing&#45;&gt;packages/libs/core.base.types</title>
+<title>packages/libs/domain.service.browsing&#45;&gt;packages/libs/core.base.type</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M1023.4,-402.92C1143.61,-389.25 1409.99,-352.9 1477,-293.25 1511.51,-262.53 1520.68,-204.95 1523.12,-176.46"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1525.2,-176.84 1523.52,-170.71 1521.01,-176.55 1525.2,-176.84"/>
 </g>
@@ -541,9 +541,9 @@
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M982.6,-400.81C1030.6,-379.37 1158.74,-322.12 1214.48,-297.22"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1215.09,-299.25 1219.71,-294.89 1213.38,-295.42 1215.09,-299.25"/>
 </g>
-<!-- packages/libs/domain.service.workspace&#45;&gt;packages/libs/core.base.errors -->
+<!-- packages/libs/domain.service.workspace&#45;&gt;packages/libs/core.base.error -->
 <g id="edge48" class="edge">
-<title>packages/libs/domain.service.workspace&#45;&gt;packages/libs/core.base.errors</title>
+<title>packages/libs/domain.service.workspace&#45;&gt;packages/libs/core.base.error</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M733.46,-400.81C640.24,-384.59 449.67,-345.71 411,-293.25 338.66,-195.1 527.16,-83.04 596.54,-46.27"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="597.37,-48.21 601.71,-43.57 595.42,-44.49 597.37,-48.21"/>
 </g>
@@ -615,9 +615,9 @@
 </a>
 </g>
 </g>
-<!-- packages/libs/ui.feature.sidebar&#45;&gt;packages/libs/core.base.model -->
+<!-- packages/libs/ui.feature.sidebar&#45;&gt;packages/libs/core.base.schema -->
 <g id="edge51" class="edge">
-<title>packages/libs/ui.feature.sidebar&#45;&gt;packages/libs/core.base.model</title>
+<title>packages/libs/ui.feature.sidebar&#45;&gt;packages/libs/core.base.schema</title>
 <path fill="none" stroke="#000000" stroke-opacity="0.200000" d="M445.32,-526.62C426.94,-492.98 362.98,-363.94 411,-275.5 484.21,-140.66 668.79,-69.35 747.04,-44.36"/>
 <polygon fill="none" stroke="#000000" stroke-opacity="0.200000" points="747.29,-46.48 752.39,-42.67 746.03,-42.47 747.29,-46.48"/>
 </g>
@@ -627,9 +627,9 @@
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M493.79,-533.43C617.4,-528.34 978.53,-506.47 1263,-419 1384.55,-381.63 1426.95,-379.92 1520,-293.25 1572.36,-244.48 1630.42,-210.74 1593,-149.75 1554.87,-87.6 1471.84,-57.5 1417.21,-43.91"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1417.96,-41.93 1411.64,-42.58 1416.98,-46.02 1417.96,-41.93"/>
 </g>
-<!-- packages/libs/ui.feature.sidebar&#45;&gt;packages/libs/core.base.types -->
+<!-- packages/libs/ui.feature.sidebar&#45;&gt;packages/libs/core.base.type -->
 <g id="edge53" class="edge">
-<title>packages/libs/ui.feature.sidebar&#45;&gt;packages/libs/core.base.types</title>
+<title>packages/libs/ui.feature.sidebar&#45;&gt;packages/libs/core.base.type</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M494.1,-531.24C675.27,-515.38 1359.24,-446.08 1499,-293.25 1528.78,-260.69 1528.4,-204.42 1526.02,-176.44"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1528.15,-176.57 1525.45,-170.81 1523.97,-177 1528.15,-176.57"/>
 </g>
@@ -693,9 +693,9 @@
 </a>
 </g>
 </g>
-<!-- packages/libs/ui.scenes&#45;&gt;packages/libs/core.base.types -->
+<!-- packages/libs/ui.scenes&#45;&gt;packages/libs/core.base.type -->
 <g id="edge60" class="edge">
-<title>packages/libs/ui.scenes&#45;&gt;packages/libs/core.base.types</title>
+<title>packages/libs/ui.scenes&#45;&gt;packages/libs/core.base.type</title>
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M444.97,-658.04C628.34,-640.45 1656.65,-531.82 1831,-293.25 1899.17,-199.97 1676.44,-170.99 1573.42,-162.69"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1573.59,-160.6 1567.45,-162.23 1573.27,-164.78 1573.59,-160.6"/>
 </g>

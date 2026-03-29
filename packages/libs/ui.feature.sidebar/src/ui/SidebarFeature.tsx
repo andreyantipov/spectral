@@ -1,21 +1,20 @@
-import type { Session } from "@ctrl/core.base.model";
-import { withWebTracing } from "@ctrl/core.base.tracing";
-import { currentUrl } from "@ctrl/core.base.types";
+import type { BrowsingState, Session } from "@ctrl/base.schema";
+import { withWebTracing } from "@ctrl/base.tracing";
+import { currentUrl } from "@ctrl/base.type";
 import {
-	type BrowsingState,
 	DEFAULT_SHORTCUTS,
 	NavigationEvents,
 	SessionEvents,
 	SystemEvents,
-} from "@ctrl/core.port.event-bus";
-import { useApi } from "@ctrl/core.ui.api";
+} from "@ctrl/core.contract.event-bus";
+import { useApi } from "@ctrl/ui.base.api";
 import {
 	AppShellTemplate,
 	ContextMenu,
 	type ContextMenuItem,
 	type SidebarItem as CoreSidebarItem,
 	type OmniBoxSuggestion,
-} from "@ctrl/core.ui.components";
+} from "@ctrl/ui.base.components";
 import { createEffect, createMemo, createSignal, type JSX } from "solid-js";
 import { SIDEBAR_FEATURE } from "../lib/constants";
 import { buildOmniBoxSuggestions, mapSessionsToSidebarItems } from "../model/sidebar.bindings";

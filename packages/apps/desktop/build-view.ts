@@ -7,6 +7,9 @@ const result = await Bun.build({
 	entrypoints: ["src/main-ui/index.ts"],
 	outdir: "build/main-ui",
 	target: "browser",
+	// Externalize Node.js-only OTEL packages — they are never loaded in the
+	// browser bundle; OtelLive("web") uses WebSdk (dynamic import) at runtime.
+	external: ["@opentelemetry/sdk-trace-node", "@opentelemetry/context-async-hooks"],
 	plugins: [
 		SolidPlugin({
 			generate: "dom",
@@ -21,8 +24,8 @@ if (!result.success) {
 	process.exit(1);
 }
 
-// Combine core.ui styles + dockview CSS + theme overrides
-const coreStyles = readFileSync("../../libs/core.ui.design/build/styles.css", "utf8");
+// Combine ui.base.components styles + dockview CSS + theme overrides
+const coreStyles = readFileSync("../../libs/ui.base.components/build/styles.css", "utf8");
 const dockviewCss = readFileSync(
 	"../../../node_modules/dockview-core/dist/styles/dockview.css",
 	"utf8",

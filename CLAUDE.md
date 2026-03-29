@@ -145,14 +145,20 @@ Key differences from `dev:desktop`:
 
 ### Key Rules
 - `type` only, never `interface` in packages/libs/
-- No `Effect.withSpan()` — use `withTracing()` from `@ctrl/core.base.tracing`
+- No `Effect.withSpan()` — use `withTracing()` from `@ctrl/base.tracing`
 - No hardcoded strings for span names or service identifiers
 - ast-grep enforces all boundaries — run `ast-grep scan` before committing
 - Two public surfaces: `domain.service.*` (for UI) and `ui.scene.*` (for apps)
 - **`BrowsingServiceLive`** listens to EventBus commands and dispatches to domain features via EventLog. All business operations (browsing + workspace) flow through EventBus commands.
-- **`domain.service.native`** consolidates Electrobun RPC protocol and IPC bridge.
 - **`Model.Class` (extending Effect Schema) is the single source of truth** for domain types — derive TypeScript types from schemas, never duplicate them.
 - The browsing unit of work is a **session** — use `domain.feature.session` not `domain.feature.tab`. Constants use `SESSION_FEATURE`, not `TAB_FEATURE`.
+
+### One Layer Per Impl Package
+Each `core.impl.*` package exports exactly **one Layer**. This keeps the dependency graph readable and makes each implementation a clear, single-purpose unit. Enforced by code review (ast-grep cannot count cross-file occurrences). See `.ast-grep/rules/impl-single-layer.yml` for rationale.
+
+### Feature vs Service Boundary
+- **Features** (`domain.feature.*`) = pure business logic. No EventBus, no PubSub, no Stream, no lifecycle, not singletons. Stateless operations over repositories — just `Layer.effect` + `withTracing`. Never notify or react. Features never import `core.impl.*` or use PubSub/Stream. Only contracts and base utilities.
+- **Services** (`domain.service.*`) = singleton orchestrators with lifecycle. Subscribe to EventBus, coordinate features. Use EventLog handlers for startup/teardown.
 
 ### Package Deprecation
 When a package needs an incompatible rewrite, use the **deprecation fork** pattern. Maximum TWO versions exist at any time:
@@ -170,50 +176,69 @@ Rules:
 - Add `/** @deprecated Use X instead */` to the barrel export
 - An ast-grep rule blocks NEW imports of `-deprecated` packages
 
-### Core Package Levels
-Three-tier core structure, each level can only import levels above it:
+### Package Levels
 
 ```
-Level 0: core.port.*         → pure interfaces (Context.Tag + type signatures), zero deps
-Level 1: core.base.*         → schemas, errors, utilities (imports core.port.*)
-Level 2: core.ui.design      → CSS tokens, Panda config, styled-system output
-         core.ui.components  → presentational components (no direct imports from design — uses tsconfig path alias @styled-system/*)
-         core.ui.api         → hooks, RuntimeProvider (imports core.port.*)
+Level 0: core.contract.*            → pure interfaces (Context.Tag + type signatures), zero deps
+           core.contract.event-bus  → EventBus contract
+           core.contract.native     → Native API contract (Electrobun calls)
+           core.contract.storage    → Storage contract
+
+Level 1: base.*                     → schemas, errors, utilities (imports core.contract.*)
+           base.error              → typed error classes
+           base.schema               → Model.Class (Effect Schema base)
+           base.tracing             → withTracing() wrapper
+           base.type               → shared type utilities
+
+Level 2: core.impl.*               → adapter implementations of contracts (one Layer per package)
+           core.impl.event-bus     → EventBusLive (in-memory PubSub)
+           core.impl.ipc-bridge    → IpcBridgeLive (configurable IPC bridge, "main" | "webview")
+           core.impl.db            → SQLite/Drizzle storage
+           core.impl.native        → Electrobun native API
+
+         core.middleware.*         → cross-cutting infrastructure (observability, etc.)
+           core.middleware.otel    → OTLP exporter + service name constants (OtelLive, OTEL_SERVICE_NAMES)
+
+Level 3: ui.base.components        → design tokens, Panda CSS, styled-system, presentational components (uses @styled-system/* path alias internally)
+         ui.base.api               → hooks, RuntimeProvider (imports core.contract.*)
 ```
 
-Level 2 sub-levels: `design` is foundation, `components` uses design via path alias, `api` is independent. No peer imports between them.
+Level 3 sub-levels: `ui.base.components` includes design tokens and component toolkit as one package. `ui.base.api` is independent. No peer imports between them.
 
-### Ports and Adapters
-Every adapter implements a port. Port = interface, adapter = implementation. Port can be our package or an external library.
+### Contracts and Implementations
+Every implementation fulfills a contract. Contract = interface, impl = implementation. Contract can be our package or an external library.
 
-- `core.port.storage` → `domain.adapter.db` (SQLite/Drizzle)
-- `core.port.event-bus` → EventBusLive (in-package)
-- `@effect/rpc` (RpcServer.Protocol, RpcClient.Protocol) → `domain.adapter.carrier` (Electrobun IPC/RPC)
-- `@opentelemetry/api` (TracerProvider) → `domain.adapter.otel` (OTLP exporter)
+- `core.contract.storage` → `core.impl.db` (SQLite/Drizzle)
+- `core.contract.event-bus` → `core.impl.event-bus` (EventBusLive), `core.impl.ipc-bridge` (IpcBridgeLive, configured per side)
+- `core.contract.native` → `core.impl.native` (Electrobun native API calls)
+- `@opentelemetry/api` (TracerProvider) → `core.middleware.otel` (OTLP exporter + service names)
 
-No custom port when external library already provides the interface.
+No custom contract when external library already provides the interface.
+No `@effect/rpc` — cross-process EventBus delivery is handled by `core.impl.ipc-bridge` (IpcBridgeLive) via Electrobun IPC directly.
 
-### Carrier + EventBus
-Two concerns for cross-process communication:
+### EventBus + IPC Bridge
+One unified mechanism for all communication — local and cross-process:
 
 ```
-Carrier (infrastructure):
-  IPC (needed for Electrobun/Bun) + RPC (needed for Effect)
-  Native ←──IPC──→ Bun ←──RPC──→ Webview
-
-EventBus (business logic):
-  ALL commands and events flow here
+EventBus (business logic — ALL commands and events):
   Commands: session.create, nav.navigate, ws.split, ...
-  Events: session.created, nav.navigated, ...
+  Events:   session.created, nav.navigated, ...
+
+IPC Bridge (infrastructure — transparent cross-process delivery):
+  Main process ←──Electrobun IPC──→ Webview
+  core.impl.event-bus serializes EventBus messages over Electrobun IPC.
+  Business code never touches IPC directly — it only dispatches/subscribes via EventBus.
 ```
 
-- **Carrier** (IPC+RPC) = infrastructure in `domain.service.native`. Serialization, encryption, process boundaries. Invisible to business code.
-- **EventBus** = where ALL business happens. Every command, every event, every subscriber. Features and services never touch the carrier directly — they only speak EventBus.
+- **`core.impl.event-bus`** = `EventBusLive` (in-memory PubSub implementation of EventBus contract).
+- **`core.impl.ipc-bridge`** = `IpcBridgeLive(handle, "main" | "webview")`. One Layer, configured per side. Both sides use `EventBusLive` locally; the bridge syncs between local bus and IPC.
+- **`core.impl.native`** = implements `core.contract.native`. Wraps Electrobun native API calls (window management, menus, etc.) behind a contract so business code stays portable.
+- **EventBus** = where ALL business happens. Every command, every event, every subscriber. Features and services never touch IPC directly — they only speak EventBus.
 - See event catalog: `docs/catalog/` and generated docs: `docs/architecture/GENERATED.md`
 
 ## How to Add a New Command (end-to-end)
 
-1. Define event in `core.port.event-bus/src/groups/{domain}.ts` using `EventGroup`:
+1. Define event in `core.contract.event-bus/src/groups/{domain}.ts` using `EventGroup`:
    ```ts
    export const FooEvents = EventGroup.empty.add({
      tag: "foo.action",
@@ -223,7 +248,7 @@ EventBus (business logic):
    });
    ```
 
-2. Add the group to `AppEvents` in `core.port.event-bus/src/groups/schema.ts`:
+2. Add the group to `AppEvents` in `core.contract.event-bus/src/groups/schema.ts`:
    `export const AppEvents = EventLog.schema(...existing, FooEvents);`
 
 3. Add handler via `EventLog.group()` in `domain.service.browsing/src/api/browsing.handlers.ts`:
@@ -238,7 +263,7 @@ EventBus (business logic):
    );
    ```
 
-4. Wire handler in `domain.runtime.bun/src/index.ts`:
+4. Wire handler in `wire.desktop.main/src/index.ts`:
    `FooHandlers.pipe(Layer.provide(FooFeatureLayer))`
 
 5. Add tag to `MUTATION_ACTIONS` set if it changes state (triggers snapshot).
@@ -259,8 +284,17 @@ Files touched: 4-5. No new packages unless new domain concept.
 
 ## Recent Architecture Changes
 
-- Clean split (Mar 29): core.ui split into core.ui.design + core.ui.components + core.ui.api; ui.scenes renamed to ui.scene.main; domain.adapter.rpc and domain.adapter.electrobun removed
-- Phase 6 (Mar 28): Workspace migrated to EventBus, adapters consolidated into domain.service.native, tags.ts deleted
+- OTEL middleware (Mar 29): Renamed `core.impl.otel` → `core.middleware.otel`, deleted `core.contract.otel`, moved `OTEL_SERVICE_NAMES` into `core.middleware.otel`. New `core.middleware.*` tier for cross-cutting infrastructure.
+- OTEL unification (Mar 29): Merged `core.impl.otel` + `core.impl.otel-web` into single `core.impl.otel` with `OtelLive(serviceName, "node" | "web")`. Runtime configured in wiring.
+- IPC bridge unification (Mar 29): Merged `core.impl.ipc-bridge` + `core.impl.ipc-bridge-web` into single `core.impl.ipc-bridge` with `IpcBridgeLive(handle, "main" | "webview")`. Both sides now use `EventBusLive` locally.
+- Impl split (Mar 29): Split `core.impl.event-bus` into three packages (one Layer each): `core.impl.event-bus` (EventBusLive), `core.impl.ipc-bridge` (IpcBridgeLive), `core.impl.ipc-bridge-web` (deleted, merged into ipc-bridge). Added one-Layer-per-impl rule.
+- Wiring rename (Mar 29): `domain.wiring.main-process` → `wire.desktop.main`, `domain.wiring.ui-process` → `wire.desktop.ui`. Wiring namespace moved out of domain to `wire.desktop.*`.
+- Package rename (Mar 29): Massive rename — `core.base.*` → `base.*`, `core.port.*` → `core.contract.*`, `domain.adapter.*` → `core.impl.*`, `core.ui.*` → `ui.*`, `domain.runtime.*` → `domain.wiring.*`.
+- Feature purity enforcement (Mar 29): Deleted `core.base.service-factory` (no consumers). Added ast-grep rules: `feature-no-reactive` (bans PubSub/Stream in features), `no-deleted-service-factory` (prevents resurrection).
+- Carrier redesign (Mar 29): Replaced IPC+RPC carrier with direct EventBus-over-IPC bridge. New packages: `core.contract.native`, `core.contract.lifecycle`, `core.impl.event-bus`, `core.impl.native`, `domain.feature.settings`, `ui.feature.keyboard-provider`. Runtimes renamed to `domain.wiring.*`.
+- UI base rename (Mar 29): Renamed `ui.api` → `ui.base.api`, `ui.components` → `ui.base.components`, merged `ui.design` into `ui.base.components`
+- Clean split (Mar 29): ui split into ui.design + ui.components + ui.api; ui.scenes renamed to ui.scene.main
+- Phase 6 (Mar 28): Workspace migrated to EventBus, tags.ts deleted
 - Phase 5 (Mar 28): Typed useApi() client, BrowsingRpcs removed, state via EventBus snapshots
 - Phase 2-3 (Mar 25): core.shared deleted → split into core.base.*, EventLog migration
 - Phase 1 (Mar 22): EventBus + typed signals added, core.port.event-bus created

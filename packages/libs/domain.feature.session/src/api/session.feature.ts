@@ -1,8 +1,8 @@
-import { type DatabaseError, ValidationError } from "@ctrl/core.base.errors";
-import type { Session } from "@ctrl/core.base.model";
-import { withTracing } from "@ctrl/core.base.tracing";
-import { SessionRepository } from "@ctrl/core.port.storage";
-import { Context, Effect, Layer, PubSub, Stream } from "effect";
+import { type DatabaseError, ValidationError } from "@ctrl/base.error";
+import type { Session } from "@ctrl/base.schema";
+import { withTracing } from "@ctrl/base.tracing";
+import { SessionRepository } from "@ctrl/core.contract.storage";
+import { Context, Effect, Layer } from "effect";
 import { SESSION_FEATURE } from "../lib/constants";
 import { canGoBack, canGoForward } from "../lib/session.helpers";
 
@@ -27,7 +27,6 @@ export class SessionFeature extends Context.Tag(SESSION_FEATURE)<
 			id: string,
 			url: string,
 		) => Effect.Effect<Session, DatabaseError | ValidationError>;
-		readonly changes: Stream.Stream<Session[]>;
 	}
 >() {}
 
@@ -35,10 +34,6 @@ export const SessionFeatureLive = Layer.effect(
 	SessionFeature,
 	Effect.gen(function* () {
 		const repo = yield* SessionRepository;
-		const pubsub = yield* PubSub.unbounded<Session[]>();
-
-		const notify = () =>
-			repo.getAll().pipe(Effect.flatMap((sessions) => PubSub.publish(pubsub, sessions)));
 
 		const getSessionOrFail = (id: string) =>
 			repo
@@ -54,10 +49,9 @@ export const SessionFeatureLive = Layer.effect(
 		return withTracing(SESSION_FEATURE, {
 			getAll: () => repo.getAll(),
 
-			create: (mode: "visual") =>
-				repo.create(mode).pipe(Effect.tap(() => notify().pipe(Effect.ignore))),
+			create: (mode: "visual") => repo.create(mode),
 
-			remove: (id: string) => repo.remove(id).pipe(Effect.tap(() => notify().pipe(Effect.ignore))),
+			remove: (id: string) => repo.remove(id),
 
 			navigate: (id: string, url: string) =>
 				Effect.gen(function* () {
@@ -65,7 +59,6 @@ export const SessionFeatureLive = Layer.effect(
 					yield* repo.removePagesAfterIndex(id, session.currentIndex);
 					yield* repo.addPage(id, url, session.currentIndex + 1);
 					yield* repo.updateCurrentIndex(id, session.currentIndex + 1);
-					yield* notify().pipe(Effect.ignore);
 					return yield* getSessionOrFail(id);
 				}),
 
@@ -78,7 +71,6 @@ export const SessionFeatureLive = Layer.effect(
 						);
 					}
 					yield* repo.updateCurrentIndex(id, session.currentIndex - 1);
-					yield* notify().pipe(Effect.ignore);
 					return yield* getSessionOrFail(id);
 				}),
 
@@ -91,18 +83,15 @@ export const SessionFeatureLive = Layer.effect(
 						);
 					}
 					yield* repo.updateCurrentIndex(id, session.currentIndex + 1);
-					yield* notify().pipe(Effect.ignore);
 					return yield* getSessionOrFail(id);
 				}),
 
-			setActive: (id: string) =>
-				repo.setActive(id).pipe(Effect.tap(() => notify().pipe(Effect.ignore))),
+			setActive: (id: string) => repo.setActive(id),
 
 			updateTitle: (id: string, title: string) =>
 				Effect.gen(function* () {
 					const session = yield* getSessionOrFail(id);
 					yield* repo.updatePageTitle(id, session.currentIndex, title);
-					yield* notify().pipe(Effect.ignore);
 					return yield* getSessionOrFail(id);
 				}),
 
@@ -110,11 +99,8 @@ export const SessionFeatureLive = Layer.effect(
 				Effect.gen(function* () {
 					const session = yield* getSessionOrFail(id);
 					yield* repo.updatePageUrl(id, session.currentIndex, url);
-					yield* notify().pipe(Effect.ignore);
 					return yield* getSessionOrFail(id);
 				}),
-
-			changes: Stream.fromPubSub(pubsub),
 		});
 	}),
 );

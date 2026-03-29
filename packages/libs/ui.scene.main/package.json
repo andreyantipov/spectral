@@ -11,8 +11,9 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@ctrl/core.base.types": "workspace:*",
-		"@ctrl/core.ui.components": "workspace:*",
+		"@ctrl/base.type": "workspace:*",
+		"@ctrl/ui.base.components": "workspace:*",
+		"@ctrl/ui.feature.keyboard-provider": "workspace:*",
 		"@ctrl/ui.feature.sidebar": "workspace:*",
 		"@ctrl/ui.feature.workspace": "workspace:*"
 	}

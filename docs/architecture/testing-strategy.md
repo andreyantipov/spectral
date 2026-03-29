@@ -77,7 +77,7 @@ Service name constants (`SESSION_FEATURE`, `BROWSING_SERVICE`, etc.) are defined
 const TestLayer = BrowsingHandlersLive.pipe(
   Layer.provide(SessionFeatureLive),
   Layer.provide(MockRepo),
-  Layer.provide(TestSpanExporter.layer),  // from domain.adapter.otel
+  Layer.provide(TestSpanExporter.layer),  // from core.middleware.otel
 )
 ```
 

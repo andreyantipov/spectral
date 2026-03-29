@@ -13,7 +13,7 @@ import { resolve } from "node:path";
 const ROOT = resolve(import.meta.dir, "../..");
 
 const WATCH_DIRS = [
-	"packages/libs/core.port.event-bus/src",
+	"packages/libs/core.contract.event-bus/src",
 	"packages/libs/domain.feature.session/src",
 	"packages/libs/domain.feature.bookmark/src",
 	"packages/libs/domain.feature.history/src",
@@ -21,7 +21,7 @@ const WATCH_DIRS = [
 	"packages/libs/domain.feature.omnibox/src",
 	"packages/libs/domain.service.browsing/src",
 	"packages/libs/domain.service.workspace/src",
-	"packages/libs/core.ui.api/src",
+	"packages/libs/ui.base.api/src",
 ];
 
 function regenerate() {

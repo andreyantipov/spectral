@@ -1,7 +1,7 @@
-import type { Page, Session } from "@ctrl/core.base.model";
-import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
-import { SessionRepository } from "@ctrl/core.port.storage";
-import { Chunk, type Context, Duration, Effect, Fiber, Layer, Stream } from "effect";
+import type { Page, Session } from "@ctrl/base.schema";
+import { DEFAULT_TAB_URL } from "@ctrl/base.type";
+import { SessionRepository } from "@ctrl/core.contract.storage";
+import { type Context, Effect, Layer } from "effect";
 import { describe, expect, it } from "vitest";
 import { SessionFeature, SessionFeatureLive } from "./session.feature";
 
@@ -98,24 +98,15 @@ const runTest = <A, E>(effect: Effect.Effect<A, E, SessionFeature>) =>
 	Effect.runPromise(effect.pipe(Effect.provide(makeTestLayer())));
 
 describe("SessionFeature", () => {
-	it("create() creates session and publishes to changes stream", async () => {
+	it("create() creates session with default page", async () => {
 		const result = await runTest(
 			Effect.gen(function* () {
 				const feature = yield* SessionFeature;
-
-				const fiber = yield* feature.changes.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
-
-				yield* Effect.sleep(Duration.millis(10));
 				const created = yield* feature.create("visual");
-
-				const collected = yield* Fiber.join(fiber);
-				const snapshots = Chunk.toArray(collected);
 
 				expect(created.pages).toHaveLength(1);
 				expect(created.pages[0].url).toBe(DEFAULT_TAB_URL);
 				expect(created.currentIndex).toBe(0);
-				expect(snapshots).toHaveLength(1);
-				expect(snapshots[0]).toHaveLength(1);
 
 				return created;
 			}),
@@ -197,7 +188,7 @@ describe("SessionFeature", () => {
 		expect(result._tag).toBe("Left");
 	});
 
-	it("navigate → back → navigate truncates forward history", async () => {
+	it("navigate -> back -> navigate truncates forward history", async () => {
 		await runTest(
 			Effect.gen(function* () {
 				const feature = yield* SessionFeature;
@@ -231,22 +222,16 @@ describe("SessionFeature", () => {
 		);
 	});
 
-	it("remove(id) removes session and publishes", async () => {
+	it("remove(id) removes session", async () => {
 		await runTest(
 			Effect.gen(function* () {
 				const feature = yield* SessionFeature;
 				const session = yield* feature.create("visual");
 
-				const fiber = yield* feature.changes.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
-
-				yield* Effect.sleep(Duration.millis(10));
 				yield* feature.remove(session.id);
 
-				const collected = yield* Fiber.join(fiber);
-				const snapshots = Chunk.toArray(collected);
-
-				expect(snapshots).toHaveLength(1);
-				expect(snapshots[0]).toHaveLength(0);
+				const all = yield* feature.getAll();
+				expect(all).toHaveLength(0);
 			}),
 		);
 	});
@@ -311,16 +296,13 @@ describe("SessionFeature", () => {
 				yield* feature.navigate(s1.id, "https://youtube.com/watch?v=AAA");
 				yield* feature.navigate(s2.id, "https://youtube.com/watch?v=BBB");
 
-				// Simulate redirect: webview reports a different URL for session 1
 				yield* feature.updateUrl(s1.id, "https://youtube.com/watch?v=AAA&redirected=1");
 
 				const all = yield* feature.getAll();
 				const session1 = all.find((s) => s.id === s1.id);
 				const session2 = all.find((s) => s.id === s2.id);
 
-				// Session 1 should have the redirected URL
 				expect(session1?.pages[1].url).toBe("https://youtube.com/watch?v=AAA&redirected=1");
-				// Session 2 should be unaffected
 				expect(session2?.pages[1].url).toBe("https://youtube.com/watch?v=BBB");
 			}),
 		);
