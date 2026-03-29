@@ -67,10 +67,22 @@
 </a>
 </g>
 </g>
-<!-- packages/libs/core.port.event&#45;bus -->
+<!-- packages/libs/core.port.carrier -->
 <g id="node5" class="node">
+<title>packages/libs/core.port.carrier</title>
+<g id="a_node5"><a xlink:href="packages/libs/core.port.carrier" xlink:title="core.port.carrier">
+<polygon fill="#e3f2fd" stroke="black" points="116.25,-544.75 37.72,-544.75 35.75,-542.78 35.75,-527 114.28,-527 116.25,-528.97 116.25,-544.75"/>
+<polyline fill="none" stroke="black" points="114.28,-542.78 35.75,-542.78"/>
+<polyline fill="none" stroke="black" points="114.28,-542.78 114.28,-527"/>
+<polyline fill="none" stroke="black" points="114.28,-542.78 116.25,-544.75"/>
+<text xml:space="preserve" text-anchor="start" x="43.75" y="-533.25" font-family="Helvetica,sans-Serif" font-size="9.00">core.port.carrier</text>
+</a>
+</g>
+</g>
+<!-- packages/libs/core.port.event&#45;bus -->
+<g id="node6" class="node">
 <title>packages/libs/core.port.event&#45;bus</title>
-<g id="a_node5"><a xlink:href="packages/libs/core.port.event-bus" xlink:title="core.port.event&#45;bus">
+<g id="a_node6"><a xlink:href="packages/libs/core.port.event-bus" xlink:title="core.port.event&#45;bus">
 <polygon fill="#e3f2fd" stroke="black" points="1557.38,-167.5 1464.6,-167.5 1462.62,-165.53 1462.62,-149.75 1555.4,-149.75 1557.38,-151.72 1557.38,-167.5"/>
 <polyline fill="none" stroke="black" points="1555.4,-165.53 1462.62,-165.53"/>
 <polyline fill="none" stroke="black" points="1555.4,-165.53 1555.4,-149.75"/>
@@ -91,10 +103,22 @@
 <path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M1485.48,-149.31C1421.59,-127.65 1249.91,-69.44 1177.71,-44.96"/>
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1178.63,-43.06 1172.28,-43.12 1177.28,-47.04 1178.63,-43.06"/>
 </g>
+<!-- packages/libs/core.port.otel -->
+<g id="node7" class="node">
+<title>packages/libs/core.port.otel</title>
+<g id="a_node7"><a xlink:href="packages/libs/core.port.otel" xlink:title="core.port.otel">
+<polygon fill="#e3f2fd" stroke="black" points="437.62,-544.75 370.35,-544.75 368.38,-542.78 368.38,-527 435.65,-527 437.62,-528.97 437.62,-544.75"/>
+<polyline fill="none" stroke="black" points="435.65,-542.78 368.38,-542.78"/>
+<polyline fill="none" stroke="black" points="435.65,-542.78 435.65,-527"/>
+<polyline fill="none" stroke="black" points="435.65,-542.78 437.62,-544.75"/>
+<text xml:space="preserve" text-anchor="start" x="376.38" y="-533.25" font-family="Helvetica,sans-Serif" font-size="9.00">core.port.otel</text>
+</a>
+</g>
+</g>
 <!-- packages/libs/core.port.storage -->
-<g id="node6" class="node">
+<g id="node8" class="node">
 <title>packages/libs/core.port.storage</title>
-<g id="a_node6"><a xlink:href="packages/libs/core.port.storage" xlink:title="core.port.storage">
+<g id="a_node8"><a xlink:href="packages/libs/core.port.storage" xlink:title="core.port.storage">
 <polygon fill="#e3f2fd" stroke="black" points="725.5,-167.5 642.47,-167.5 640.5,-165.53 640.5,-149.75 723.53,-149.75 725.5,-151.72 725.5,-167.5"/>
 <polyline fill="none" stroke="black" points="723.53,-165.53 640.5,-165.53"/>
 <polyline fill="none" stroke="black" points="723.53,-165.53 723.53,-149.75"/>
@@ -122,9 +146,9 @@
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="540.28,-45.96 534.24,-43.99 537.73,-49.3 540.28,-45.96"/>
 </g>
 <!-- packages/libs/core.ui.api -->
-<g id="node7" class="node">
+<g id="node9" class="node">
 <title>packages/libs/core.ui.api</title>
-<g id="a_node7"><a xlink:href="packages/libs/core.ui.api" xlink:title="core.ui.api">
+<g id="a_node9"><a xlink:href="packages/libs/core.ui.api" xlink:title="core.ui.api">
 <polygon fill="#f3e5f5" stroke="black" points="1862.38,-293.25 1805.6,-293.25 1803.62,-291.28 1803.62,-275.5 1860.4,-275.5 1862.38,-277.47 1862.38,-293.25"/>
 <polyline fill="none" stroke="black" points="1860.4,-291.28 1803.62,-291.28"/>
 <polyline fill="none" stroke="black" points="1860.4,-291.28 1860.4,-275.5"/>
@@ -140,9 +164,9 @@
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1540.78,-169.17 1534.43,-168.98 1539.28,-173.09 1540.78,-169.17"/>
 </g>
 <!-- packages/libs/core.ui.components -->
-<g id="node8" class="node">
+<g id="node10" class="node">
 <title>packages/libs/core.ui.components</title>
-<g id="a_node8"><a xlink:href="packages/libs/core.ui.components" xlink:title="core.ui.components">
+<g id="a_node10"><a xlink:href="packages/libs/core.ui.components" xlink:title="core.ui.components">
 <polygon fill="#f3e5f5" stroke="black" points="2196.12,-293.25 2101.85,-293.25 2099.88,-291.28 2099.88,-275.5 2194.15,-275.5 2196.12,-277.47 2196.12,-293.25"/>
 <polyline fill="none" stroke="black" points="2194.15,-291.28 2099.88,-291.28"/>
 <polyline fill="none" stroke="black" points="2194.15,-291.28 2194.15,-275.5"/>
@@ -152,9 +176,9 @@
 </g>
 </g>
 <!-- packages/libs/core.ui.design -->
-<g id="node9" class="node">
+<g id="node11" class="node">
 <title>packages/libs/core.ui.design</title>
-<g id="a_node9"><a xlink:href="packages/libs/core.ui.design" xlink:title="core.ui.design">
+<g id="a_node11"><a xlink:href="packages/libs/core.ui.design" xlink:title="core.ui.design">
 <polygon fill="#f3e5f5" stroke="black" points="2113.88,-167.5 2042.1,-167.5 2040.12,-165.53 2040.12,-149.75 2111.9,-149.75 2113.88,-151.72 2113.88,-167.5"/>
 <polyline fill="none" stroke="black" points="2111.9,-165.53 2040.12,-165.53"/>
 <polyline fill="none" stroke="black" points="2111.9,-165.53 2111.9,-149.75"/>
@@ -170,9 +194,9 @@
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="2088.08,-174.72 2083.28,-170.56 2084.44,-176.81 2088.08,-174.72"/>
 </g>
 <!-- packages/libs/domain.adapter.carrier -->
-<g id="node10" class="node">
+<g id="node12" class="node">
 <title>packages/libs/domain.adapter.carrier</title>
-<g id="a_node10"><a xlink:href="packages/libs/domain.adapter.carrier" xlink:title="domain.adapter.carrier">
+<g id="a_node12"><a xlink:href="packages/libs/domain.adapter.carrier" xlink:title="domain.adapter.carrier">
 <polygon fill="#fff3e0" stroke="black" points="1385.5,-419 1278.47,-419 1276.5,-417.03 1276.5,-401.25 1383.53,-401.25 1385.5,-403.22 1385.5,-419"/>
 <polyline fill="none" stroke="black" points="1383.53,-417.03 1276.5,-417.03"/>
 <polyline fill="none" stroke="black" points="1383.53,-417.03 1383.53,-401.25"/>
@@ -182,9 +206,9 @@
 </g>
 </g>
 <!-- packages/libs/domain.adapter.db -->
-<g id="node11" class="node">
+<g id="node13" class="node">
 <title>packages/libs/domain.adapter.db</title>
-<g id="a_node11"><a xlink:href="packages/libs/domain.adapter.db" xlink:title="domain.adapter.db">
+<g id="a_node13"><a xlink:href="packages/libs/domain.adapter.db" xlink:title="domain.adapter.db">
 <polygon fill="#fff3e0" stroke="black" points="1205.62,-293.25 1114.35,-293.25 1112.38,-291.28 1112.38,-275.5 1203.65,-275.5 1205.62,-277.47 1205.62,-293.25"/>
 <polyline fill="none" stroke="black" points="1203.65,-291.28 1112.38,-291.28"/>
 <polyline fill="none" stroke="black" points="1203.65,-291.28 1203.65,-275.5"/>
@@ -224,21 +248,21 @@
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="724.41,-168.22 718.07,-168.74 723.35,-172.29 724.41,-168.22"/>
 </g>
 <!-- packages/libs/domain.adapter.otel -->
-<g id="node12" class="node">
+<g id="node14" class="node">
 <title>packages/libs/domain.adapter.otel</title>
-<g id="a_node12"><a xlink:href="packages/libs/domain.adapter.otel" xlink:title="domain.adapter.otel">
-<polygon fill="#fff3e0" stroke="black" points="364.88,-544.75 269.1,-544.75 267.12,-542.78 267.12,-527 362.9,-527 364.88,-528.97 364.88,-544.75"/>
-<polyline fill="none" stroke="black" points="362.9,-542.78 267.12,-542.78"/>
-<polyline fill="none" stroke="black" points="362.9,-542.78 362.9,-527"/>
-<polyline fill="none" stroke="black" points="362.9,-542.78 364.88,-544.75"/>
-<text xml:space="preserve" text-anchor="start" x="275.12" y="-533.25" font-family="Helvetica,sans-Serif" font-size="9.00">domain.adapter.otel</text>
+<g id="a_node14"><a xlink:href="packages/libs/domain.adapter.otel" xlink:title="domain.adapter.otel">
+<polygon fill="#fff3e0" stroke="black" points="690.88,-544.75 595.1,-544.75 593.12,-542.78 593.12,-527 688.9,-527 690.88,-528.97 690.88,-544.75"/>
+<polyline fill="none" stroke="black" points="688.9,-542.78 593.12,-542.78"/>
+<polyline fill="none" stroke="black" points="688.9,-542.78 688.9,-527"/>
+<polyline fill="none" stroke="black" points="688.9,-542.78 690.88,-544.75"/>
+<text xml:space="preserve" text-anchor="start" x="601.12" y="-533.25" font-family="Helvetica,sans-Serif" font-size="9.00">domain.adapter.otel</text>
 </a>
 </g>
 </g>
 <!-- packages/libs/domain.feature.bookmark -->
-<g id="node13" class="node">
+<g id="node15" class="node">
 <title>packages/libs/domain.feature.bookmark</title>
-<g id="a_node13"><a xlink:href="packages/libs/domain.feature.bookmark" xlink:title="domain.feature.bookmark">
+<g id="a_node15"><a xlink:href="packages/libs/domain.feature.bookmark" xlink:title="domain.feature.bookmark">
 <polygon fill="#fce4ec" stroke="black" points="889.12,-293.25 770.85,-293.25 768.88,-291.28 768.88,-275.5 887.15,-275.5 889.12,-277.47 889.12,-293.25"/>
 <polyline fill="none" stroke="black" points="887.15,-291.28 768.88,-291.28"/>
 <polyline fill="none" stroke="black" points="887.15,-291.28 887.15,-275.5"/>
@@ -266,9 +290,9 @@
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="701.05,-172.17 695.12,-169.89 698.33,-175.38 701.05,-172.17"/>
 </g>
 <!-- packages/libs/domain.feature.history -->
-<g id="node14" class="node">
+<g id="node16" class="node">
 <title>packages/libs/domain.feature.history</title>
-<g id="a_node14"><a xlink:href="packages/libs/domain.feature.history" xlink:title="domain.feature.history">
+<g id="a_node16"><a xlink:href="packages/libs/domain.feature.history" xlink:title="domain.feature.history">
 <polygon fill="#fce4ec" stroke="black" points="1054.38,-293.25 949.6,-293.25 947.62,-291.28 947.62,-275.5 1052.4,-275.5 1054.38,-277.47 1054.38,-293.25"/>
 <polyline fill="none" stroke="black" points="1052.4,-291.28 947.62,-291.28"/>
 <polyline fill="none" stroke="black" points="1052.4,-291.28 1052.4,-275.5"/>
@@ -296,9 +320,9 @@
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="713.44,-169.22 707.09,-169 711.92,-173.13 713.44,-169.22"/>
 </g>
 <!-- packages/libs/domain.feature.layout -->
-<g id="node15" class="node">
+<g id="node17" class="node">
 <title>packages/libs/domain.feature.layout</title>
-<g id="a_node15"><a xlink:href="packages/libs/domain.feature.layout" xlink:title="domain.feature.layout">
+<g id="a_node17"><a xlink:href="packages/libs/domain.feature.layout" xlink:title="domain.feature.layout">
 <polygon fill="#fce4ec" stroke="black" points="248.25,-293.25 145.72,-293.25 143.75,-291.28 143.75,-275.5 246.28,-275.5 248.25,-277.47 248.25,-293.25"/>
 <polyline fill="none" stroke="black" points="246.28,-291.28 143.75,-291.28"/>
 <polyline fill="none" stroke="black" points="246.28,-291.28 246.28,-275.5"/>
@@ -326,9 +350,9 @@
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="641.88,-172.24 647.18,-168.73 640.85,-168.17 641.88,-172.24"/>
 </g>
 <!-- packages/libs/domain.feature.omnibox -->
-<g id="node16" class="node">
+<g id="node18" class="node">
 <title>packages/libs/domain.feature.omnibox</title>
-<g id="a_node16"><a xlink:href="packages/libs/domain.feature.omnibox" xlink:title="domain.feature.omnibox">
+<g id="a_node18"><a xlink:href="packages/libs/domain.feature.omnibox" xlink:title="domain.feature.omnibox">
 <polygon fill="#fce4ec" stroke="black" points="481.5,-293.25 368.47,-293.25 366.5,-291.28 366.5,-275.5 479.53,-275.5 481.5,-277.47 481.5,-293.25"/>
 <polyline fill="none" stroke="black" points="479.53,-291.28 366.5,-291.28"/>
 <polyline fill="none" stroke="black" points="479.53,-291.28 479.53,-275.5"/>
@@ -344,9 +368,9 @@
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="516.54,-51.13 516.76,-44.78 512.63,-49.61 516.54,-51.13"/>
 </g>
 <!-- packages/libs/domain.feature.session -->
-<g id="node17" class="node">
+<g id="node19" class="node">
 <title>packages/libs/domain.feature.session</title>
-<g id="a_node17"><a xlink:href="packages/libs/domain.feature.session" xlink:title="domain.feature.session">
+<g id="a_node19"><a xlink:href="packages/libs/domain.feature.session" xlink:title="domain.feature.session">
 <polygon fill="#fce4ec" stroke="black" points="650.62,-293.25 541.35,-293.25 539.38,-291.28 539.38,-275.5 648.65,-275.5 650.62,-277.47 650.62,-293.25"/>
 <polyline fill="none" stroke="black" points="648.65,-291.28 539.38,-291.28"/>
 <polyline fill="none" stroke="black" points="648.65,-291.28 648.65,-275.5"/>
@@ -386,101 +410,69 @@
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="673.57,-176.51 675.34,-170.4 670.15,-174.08 673.57,-176.51"/>
 </g>
 <!-- packages/libs/domain.runtime.bun -->
-<g id="node18" class="node">
+<g id="node20" class="node">
 <title>packages/libs/domain.runtime.bun</title>
-<g id="a_node18"><a xlink:href="packages/libs/domain.runtime.bun" xlink:title="domain.runtime.bun">
-<polygon fill="#ffffcc" stroke="black" points="847.88,-544.75 752.1,-544.75 750.12,-542.78 750.12,-527 845.9,-527 847.88,-528.97 847.88,-544.75"/>
-<polyline fill="none" stroke="black" points="845.9,-542.78 750.12,-542.78"/>
-<polyline fill="none" stroke="black" points="845.9,-542.78 845.9,-527"/>
-<polyline fill="none" stroke="black" points="845.9,-542.78 847.88,-544.75"/>
-<text xml:space="preserve" text-anchor="start" x="758.12" y="-533.25" font-family="Helvetica,sans-Serif" font-size="9.00">domain.runtime.bun</text>
+<g id="a_node20"><a xlink:href="packages/libs/domain.runtime.bun" xlink:title="domain.runtime.bun">
+<polygon fill="#ffffcc" stroke="black" points="894.88,-544.75 799.1,-544.75 797.12,-542.78 797.12,-527 892.9,-527 894.88,-528.97 894.88,-544.75"/>
+<polyline fill="none" stroke="black" points="892.9,-542.78 797.12,-542.78"/>
+<polyline fill="none" stroke="black" points="892.9,-542.78 892.9,-527"/>
+<polyline fill="none" stroke="black" points="892.9,-542.78 894.88,-544.75"/>
+<text xml:space="preserve" text-anchor="start" x="805.12" y="-533.25" font-family="Helvetica,sans-Serif" font-size="9.00">domain.runtime.bun</text>
 </a>
 </g>
 </g>
 <!-- packages/libs/domain.runtime.bun&#45;&gt;packages/libs/core.port.event&#45;bus -->
 <g id="edge28" class="edge">
 <title>packages/libs/domain.runtime.bun&#45;&gt;packages/libs/core.port.event&#45;bus</title>
-<g id="a_edge28"><a xlink:title="no&#45;barrel&#45;reexports">
-<path fill="none" stroke="orange" stroke-width="2" d="M822.84,-526.53C900.21,-498.96 1150.1,-406.13 1338,-293.25 1400.15,-255.91 1465.7,-199.54 1494.68,-173.6"/>
-<polygon fill="orange" stroke="orange" stroke-width="2" points="1495.94,-175.29 1498.99,-169.71 1493.13,-172.17 1495.94,-175.29"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="1138.37" y="-380.18" font-family="Helvetica,sans-Serif" font-size="9.00" fill="orange">no&#45;barrel&#45;reexports</text>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M866.47,-526.61C935.4,-498.41 1164.49,-401.67 1338,-293.25 1399.19,-255.01 1464.73,-199.53 1494.13,-173.76"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1495.42,-175.42 1498.53,-169.88 1492.64,-172.27 1495.42,-175.42"/>
 </g>
 <!-- packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.adapter.carrier -->
 <g id="edge29" class="edge">
 <title>packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.adapter.carrier</title>
-<g id="a_edge29"><a xlink:title="no&#45;barrel&#45;reexports">
-<path fill="none" stroke="orange" stroke-width="2" d="M834.73,-526.56C928.79,-504.68 1183.09,-445.53 1286.43,-421.49"/>
-<polygon fill="orange" stroke="orange" stroke-width="2" points="1286.76,-423.57 1292.13,-420.17 1285.81,-419.48 1286.76,-423.57"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="1025.48" y="-474.23" font-family="Helvetica,sans-Serif" font-size="9.00" fill="orange">no&#45;barrel&#45;reexports</text>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M878.58,-526.56C964.07,-504.75 1194.76,-445.89 1289.51,-421.71"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1290.02,-423.75 1295.31,-420.23 1288.98,-419.68 1290.02,-423.75"/>
 </g>
 <!-- packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.adapter.db -->
 <g id="edge30" class="edge">
 <title>packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.adapter.db</title>
-<g id="a_edge30"><a xlink:title="no&#45;barrel&#45;reexports">
-<path fill="none" stroke="orange" stroke-width="2" d="M810.98,-526.57C863.62,-490.09 1074.68,-343.81 1139.78,-298.69"/>
-<polygon fill="orange" stroke="orange" stroke-width="2" points="1140.75,-300.58 1144.49,-295.43 1138.36,-297.12 1140.75,-300.58"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="1018.39" y="-411.31" font-family="Helvetica,sans-Serif" font-size="9.00" fill="orange">no&#45;barrel&#45;reexports</text>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M856.41,-526.57C902,-490.24 1084.2,-345 1141.59,-299.25"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1142.8,-300.98 1146.18,-295.59 1140.18,-297.69 1142.8,-300.98"/>
 </g>
 <!-- packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.feature.bookmark -->
 <g id="edge31" class="edge">
 <title>packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.feature.bookmark</title>
-<g id="a_edge31"><a xlink:title="no&#45;barrel&#45;reexports">
-<path fill="none" stroke="orange" stroke-width="2" d="M794.65,-526.71C784.07,-505.79 758.65,-448.57 770,-401.25 779.29,-362.51 803.81,-322.12 818.14,-300.77"/>
-<polygon fill="orange" stroke="orange" stroke-width="2" points="819.71,-302.19 821.37,-296.05 816.25,-299.81 819.71,-302.19"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="730.73" y="-392.25" font-family="Helvetica,sans-Serif" font-size="9.00" fill="orange">no&#45;barrel&#45;reexports</text>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M838.16,-526.75C821.64,-509 783.63,-464.64 770,-419 756.58,-374.08 793.31,-324.35 814.76,-300.18"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="816.3,-301.61 818.81,-295.77 813.2,-298.77 816.3,-301.61"/>
 </g>
 <!-- packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.feature.history -->
 <g id="edge32" class="edge">
 <title>packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.feature.history</title>
-<g id="a_edge32"><a xlink:title="no&#45;barrel&#45;reexports">
-<path fill="none" stroke="orange" stroke-width="2" d="M814,-526.63C843.18,-509.91 908.01,-469.31 946,-419 973.87,-382.09 990.13,-329.04 997.04,-302.24"/>
-<polygon fill="orange" stroke="orange" stroke-width="2" points="999.04,-302.9 998.44,-296.57 994.96,-301.89 999.04,-302.9"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="906.63" y="-420.19" font-family="Helvetica,sans-Serif" font-size="9.00" fill="orange">no&#45;barrel&#45;reexports</text>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M854.83,-526.63C873.69,-508.63 918.44,-463.82 946,-419 970.11,-379.79 987.91,-328.15 996.06,-302.03"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="998,-302.88 997.74,-296.53 993.98,-301.66 998,-302.88"/>
 </g>
 <!-- packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.feature.layout -->
 <g id="edge33" class="edge">
 <title>packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.feature.layout</title>
-<g id="a_edge33"><a xlink:title="no&#45;barrel&#45;reexports">
-<path fill="none" stroke="orange" stroke-width="2" d="M778.94,-526.57C689.69,-489.65 328.57,-340.23 224.31,-297.09"/>
-<polygon fill="orange" stroke="orange" stroke-width="2" points="225.28,-295.22 218.94,-294.86 223.68,-299.1 225.28,-295.22"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="458.15" y="-411.34" font-family="Helvetica,sans-Serif" font-size="9.00" fill="orange">no&#45;barrel&#45;reexports</text>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M824.37,-526.57C727.98,-489.57 337.34,-339.63 225.84,-296.83"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="226.89,-294.98 220.53,-294.79 225.38,-298.9 226.89,-294.98"/>
 </g>
 <!-- packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.feature.omnibox -->
 <g id="edge34" class="edge">
 <title>packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.feature.omnibox</title>
-<g id="a_edge34"><a xlink:title="no&#45;barrel&#45;reexports">
-<path fill="none" stroke="orange" stroke-width="2" d="M786.52,-526.57C731.69,-490.09 511.83,-343.81 444.02,-298.69"/>
-<polygon fill="orange" stroke="orange" stroke-width="2" points="445.2,-296.96 439.04,-295.38 442.88,-300.46 445.2,-296.96"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="572.11" y="-411.31" font-family="Helvetica,sans-Serif" font-size="9.00" fill="orange">no&#45;barrel&#45;reexports</text>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M831.96,-526.57C770,-489.94 520.82,-342.62 445.61,-298.15"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="446.93,-296.49 440.7,-295.25 444.8,-300.11 446.93,-296.49"/>
 </g>
 <!-- packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.feature.session -->
 <g id="edge35" class="edge">
 <title>packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.feature.session</title>
-<g id="a_edge35"><a xlink:title="no&#45;barrel&#45;reexports">
-<path fill="none" stroke="orange" stroke-width="2" d="M792.21,-526.57C762.74,-490.53 645.65,-347.32 607.26,-300.37"/>
-<polygon fill="orange" stroke="orange" stroke-width="2" points="608.95,-299.11 603.52,-295.8 605.69,-301.77 608.95,-299.11"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="657.5" y="-411.18" font-family="Helvetica,sans-Serif" font-size="9.00" fill="orange">no&#45;barrel&#45;reexports</text>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M837.65,-526.57C801.24,-490.38 656.12,-346.13 609.5,-299.79"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="611.01,-298.33 605.28,-295.59 608.05,-301.31 611.01,-298.33"/>
 </g>
 <!-- packages/libs/domain.service.browsing -->
-<g id="node19" class="node">
+<g id="node21" class="node">
 <title>packages/libs/domain.service.browsing</title>
-<g id="a_node19"><a xlink:href="packages/libs/domain.service.browsing" xlink:title="domain.service.browsing">
+<g id="a_node21"><a xlink:href="packages/libs/domain.service.browsing" xlink:title="domain.service.browsing">
 <polygon fill="#fff9c4" stroke="black" points="917,-419 800.97,-419 799,-417.03 799,-401.25 915.03,-401.25 917,-403.22 917,-419"/>
 <polyline fill="none" stroke="black" points="915.03,-417.03 799,-417.03"/>
 <polyline fill="none" stroke="black" points="915.03,-417.03 915.03,-401.25"/>
@@ -492,17 +484,13 @@
 <!-- packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.service.browsing -->
 <g id="edge36" class="edge">
 <title>packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.service.browsing</title>
-<g id="a_edge36"><a xlink:title="no&#45;barrel&#45;reexports">
-<path fill="none" stroke="orange" stroke-width="2" d="M802.87,-526.76C812.45,-506.66 837.42,-454.29 850.21,-427.47"/>
-<polygon fill="orange" stroke="orange" stroke-width="2" points="852.05,-428.49 852.73,-422.17 848.26,-426.68 852.05,-428.49"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="789.15" y="-474.14" font-family="Helvetica,sans-Serif" font-size="9.00" fill="orange">no&#45;barrel&#45;reexports</text>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M846.79,-526.76C848.72,-506.83 853.73,-455.19 856.35,-428.17"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="858.41,-428.62 856.9,-422.45 854.23,-428.22 858.41,-428.62"/>
 </g>
 <!-- packages/libs/domain.service.workspace -->
-<g id="node20" class="node">
+<g id="node22" class="node">
 <title>packages/libs/domain.service.workspace</title>
-<g id="a_node20"><a xlink:href="packages/libs/domain.service.workspace" xlink:title="domain.service.workspace">
+<g id="a_node22"><a xlink:href="packages/libs/domain.service.workspace" xlink:title="domain.service.workspace">
 <polygon fill="#fff9c4" stroke="black" points="258.38,-419 135.6,-419 133.62,-417.03 133.62,-401.25 256.4,-401.25 258.38,-403.22 258.38,-419"/>
 <polyline fill="none" stroke="black" points="256.4,-417.03 133.62,-417.03"/>
 <polyline fill="none" stroke="black" points="256.4,-417.03 256.4,-401.25"/>
@@ -514,12 +502,8 @@
 <!-- packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.service.workspace -->
 <g id="edge37" class="edge">
 <title>packages/libs/domain.runtime.bun&#45;&gt;packages/libs/domain.service.workspace</title>
-<g id="a_edge37"><a xlink:title="no&#45;barrel&#45;reexports">
-<path fill="none" stroke="orange" stroke-width="2" d="M758.5,-526.56C651.57,-504.62 361.91,-445.17 245.46,-421.28"/>
-<polygon fill="orange" stroke="orange" stroke-width="2" points="245.99,-419.24 239.69,-420.09 245.14,-423.35 245.99,-419.24"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="458.53" y="-474.28" font-family="Helvetica,sans-Serif" font-size="9.00" fill="orange">no&#45;barrel&#45;reexports</text>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M802.09,-526.51C686.37,-504.48 373.4,-444.9 248.51,-421.12"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="249.11,-419.1 242.82,-420.04 248.32,-423.22 249.11,-419.1"/>
 </g>
 <!-- packages/libs/domain.service.browsing&#45;&gt;packages/libs/core.base.model -->
 <g id="edge45" class="edge">
@@ -600,9 +584,9 @@
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="198.1,-302.71 196,-296.71 193.9,-302.71 198.1,-302.71"/>
 </g>
 <!-- packages/libs/domain.runtime.webview -->
-<g id="node21" class="node">
+<g id="node23" class="node">
 <title>packages/libs/domain.runtime.webview</title>
-<g id="a_node21"><a xlink:href="packages/libs/domain.runtime.webview" xlink:title="domain.runtime.webview">
+<g id="a_node23"><a xlink:href="packages/libs/domain.runtime.webview" xlink:title="domain.runtime.webview">
 <polygon fill="#ffffcc" stroke="black" points="1390,-544.75 1273.97,-544.75 1272,-542.78 1272,-527 1388.03,-527 1390,-528.97 1390,-544.75"/>
 <polyline fill="none" stroke="black" points="1388.03,-542.78 1272,-542.78"/>
 <polyline fill="none" stroke="black" points="1388.03,-542.78 1388.03,-527"/>
@@ -614,17 +598,13 @@
 <!-- packages/libs/domain.runtime.webview&#45;&gt;packages/libs/domain.adapter.carrier -->
 <g id="edge38" class="edge">
 <title>packages/libs/domain.runtime.webview&#45;&gt;packages/libs/domain.adapter.carrier</title>
-<g id="a_edge38"><a xlink:title="no&#45;barrel&#45;reexports">
-<path fill="none" stroke="orange" stroke-width="2" d="M1331,-526.76C1331,-506.83 1331,-455.19 1331,-428.17"/>
-<polygon fill="orange" stroke="orange" stroke-width="2" points="1333.1,-428.46 1331,-422.46 1328.9,-428.46 1333.1,-428.46"/>
-</a>
-</g>
-<text xml:space="preserve" text-anchor="middle" x="1291.62" y="-474.7" font-family="Helvetica,sans-Serif" font-size="9.00" fill="orange">no&#45;barrel&#45;reexports</text>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" d="M1331,-526.76C1331,-506.83 1331,-455.19 1331,-428.17"/>
+<polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="1333.1,-428.46 1331,-422.46 1328.9,-428.46 1333.1,-428.46"/>
 </g>
 <!-- packages/libs/ui.feature.sidebar -->
-<g id="node22" class="node">
+<g id="node24" class="node">
 <title>packages/libs/ui.feature.sidebar</title>
-<g id="a_node22"><a xlink:href="packages/libs/ui.feature.sidebar" xlink:title="ui.feature.sidebar">
+<g id="a_node24"><a xlink:href="packages/libs/ui.feature.sidebar" xlink:title="ui.feature.sidebar">
 <polygon fill="#e0f7fa" stroke="black" points="1994.62,-419 1909.35,-419 1907.38,-417.03 1907.38,-401.25 1992.65,-401.25 1994.62,-403.22 1994.62,-419"/>
 <polyline fill="none" stroke="black" points="1992.65,-417.03 1907.38,-417.03"/>
 <polyline fill="none" stroke="black" points="1992.65,-417.03 1992.65,-401.25"/>
@@ -676,9 +656,9 @@
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="2070.72,-176.71 2071.55,-170.41 2066.98,-174.82 2070.72,-176.71"/>
 </g>
 <!-- packages/libs/ui.feature.workspace -->
-<g id="node23" class="node">
+<g id="node25" class="node">
 <title>packages/libs/ui.feature.workspace</title>
-<g id="a_node23"><a xlink:href="packages/libs/ui.feature.workspace" xlink:title="ui.feature.workspace">
+<g id="a_node25"><a xlink:href="packages/libs/ui.feature.workspace" xlink:title="ui.feature.workspace">
 <polygon fill="#e0f7fa" stroke="black" points="1795.38,-419 1696.6,-419 1694.62,-417.03 1694.62,-401.25 1793.4,-401.25 1795.38,-403.22 1795.38,-419"/>
 <polyline fill="none" stroke="black" points="1793.4,-417.03 1694.62,-417.03"/>
 <polyline fill="none" stroke="black" points="1793.4,-417.03 1793.4,-401.25"/>
@@ -712,9 +692,9 @@
 <polygon fill="#000000" fill-opacity="0.200000" stroke="#000000" stroke-width="2" stroke-opacity="0.200000" points="2031.08,-166.01 2036.77,-163.18 2030.56,-161.84 2031.08,-166.01"/>
 </g>
 <!-- packages/libs/ui.scene.main -->
-<g id="node24" class="node">
+<g id="node26" class="node">
 <title>packages/libs/ui.scene.main</title>
-<g id="a_node24"><a xlink:href="packages/libs/ui.scene.main" xlink:title="ui.scene.main">
+<g id="a_node26"><a xlink:href="packages/libs/ui.scene.main" xlink:title="ui.scene.main">
 <polygon fill="#e0f7fa" stroke="black" points="1884.5,-544.75 1813.47,-544.75 1811.5,-542.78 1811.5,-527 1882.53,-527 1884.5,-528.97 1884.5,-544.75"/>
 <polyline fill="none" stroke="black" points="1882.53,-542.78 1811.5,-542.78"/>
 <polyline fill="none" stroke="black" points="1882.53,-542.78 1882.53,-527"/>

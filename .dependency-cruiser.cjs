@@ -42,9 +42,12 @@ module.exports = {
 		{
 			name: "no-barrel-reexports",
 			comment:
-				"Barrel files must not import/re-export from other @ctrl/* packages directly (amendment #3). TODO: promote to error after fixing domain.service.workspace re-export",
-			severity: "warn",
-			from: { path: "^packages/libs/([^/]+)/src/index\\.ts$" },
+				"Barrel files must not import/re-export from other @ctrl/* packages directly. Runtime packages are exempt (they compose layers).",
+			severity: "error",
+			from: {
+				path: "^packages/libs/([^/]+)/src/index\\.ts$",
+				pathNot: "^packages/libs/domain\\.runtime",
+			},
 			to: {
 				path: "^packages/libs/(?!$1/)",
 			},
