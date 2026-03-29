@@ -33,7 +33,13 @@ export function WorkspaceRoot(props: WorkspaceRootProps) {
 	return (
 		<div class={$.root}>
 			<Show when={state()} fallback={props.children}>
-				<DockviewProvider components={components} onReady={onReady} />
+				<DockviewProvider
+					components={components}
+					onReady={onReady}
+					initialLayout={
+						state()?.layout?.dockviewState as import("dockview-core").SerializedDockview | undefined
+					}
+				/>
 			</Show>
 		</div>
 	);

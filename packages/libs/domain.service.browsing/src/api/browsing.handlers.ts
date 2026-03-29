@@ -217,12 +217,6 @@ const insertPanelIntoGroup = (
 
 export const WorkspaceHandlers = EventLog.group(WorkspaceEvents, (h) =>
 	h
-		.handle("ws.get-layout", () =>
-			Effect.gen(function* () {
-				const layout = yield* LayoutFeature;
-				return (yield* layout.getLayout()) as unknown;
-			}),
-		)
 		.handle("ws.update-layout", ({ payload }) =>
 			Effect.gen(function* () {
 				const layout = yield* LayoutFeature;
@@ -299,7 +293,10 @@ const publishSnapshot = Effect.gen(function* () {
 		sessions.getAll(),
 		bookmarks.getAll(),
 		history.getAll(),
-		layout.getLayout().pipe(Effect.catchAll(() => Effect.succeed(undefined))),
+		layout.getLayout().pipe(
+			Effect.map((node) => ({ version: 1, dockviewState: node as unknown })),
+			Effect.catchAll(() => Effect.succeed(undefined)),
+		),
 	]);
 	yield* bus.publish({
 		type: "event",
