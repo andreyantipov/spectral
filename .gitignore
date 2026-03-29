@@ -26,6 +26,12 @@ docs/superpowers/specs/
 # Generated metadata — rebuilt by docs:build
 metadata.json
 
+# Obsidian workspace cache (user-specific)
+docs/wiki/.obsidian/workspace.json
+docs/wiki/.obsidian/workspace-mobile.json
+docs/wiki/.obsidian/plugins/
+docs/wiki/.obsidian/themes/
+
 # EventCatalog build cache
 .astro
 .eventcatalog-core

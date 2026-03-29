@@ -43,6 +43,8 @@
             otel-tui.defaultPackage.${system}
             pkgs.ast-grep
             pkgs.uv
+            pkgs.obsidian
+            pkgs.graphviz
           ];
         };
       }

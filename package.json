@@ -26,7 +26,10 @@
 		"docs:deps:validate": "bunx depcruise --validate .dependency-cruiser.cjs packages/libs/",
 		"docs:build": "bun run docs:meta && bun run docs:generated && bun run docs:catalog && bun run docs:deps:validate",
 		"docs:catalog:dev": "bun run docs:meta && bun run docs:catalog && turbo dev --filter=@ctrl/dev-docs",
-		"docs:catalog:watch": "bun run packages/tools/watch-catalog.ts"
+		"docs:catalog:watch": "bun run packages/tools/watch-catalog.ts",
+		"docs:wiki": "bun run packages/tools/generate-wiki.ts",
+		"docs:update": "bun run docs:meta && bun run docs:generated && bun run docs:wiki",
+		"docs:open": "open 'obsidian://open?vault=wiki&path=README' || obsidian docs/wiki"
 	},
 	"packageManager": "bun@1.3.9",
 	"dependencies": {
