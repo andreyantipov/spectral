@@ -220,7 +220,7 @@ Files touched: 4-5. No new packages unless new domain concept.
 
 ## Recent Architecture Changes
 
-- Clean split (Mar 29): core.ui split into core.ui.design + core.ui.components + core.ui.api; ui.scenes renamed to ui.scene.browser; domain.adapter.rpc and domain.adapter.electrobun removed
+- Clean split (Mar 29): core.ui split into core.ui.design + core.ui.components + core.ui.api; ui.scenes renamed to ui.scene.main; domain.adapter.rpc and domain.adapter.electrobun removed
 - Phase 6 (Mar 28): Workspace migrated to EventBus, adapters consolidated into domain.service.native, tags.ts deleted
 - Phase 5 (Mar 28): Typed useApi() client, BrowsingRpcs removed, state via EventBus snapshots
 - Phase 2-3 (Mar 25): core.shared deleted → split into core.base.*, EventLog migration

@@ -1,5 +1,5 @@
 {
-	"name": "@ctrl/ui.scene.browser",
+	"name": "@ctrl/ui.scene.main",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",

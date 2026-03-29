@@ -1,5 +1,5 @@
 import { RuntimeProvider } from "@ctrl/core.ui.api";
-import { MainScene } from "@ctrl/ui.scene.browser";
+import { MainScene } from "@ctrl/ui.scene.main";
 import type { ManagedRuntime } from "effect";
 import type { IpcBridgeHandle } from "./mount";
 
