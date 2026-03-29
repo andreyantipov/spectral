@@ -10,7 +10,10 @@
   outputs = { nixpkgs, flake-utils, otel-tui, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = import nixpkgs { inherit system; };
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
 
         tsgo = pkgs.buildGo126Module {
           pname = "tsgo";
