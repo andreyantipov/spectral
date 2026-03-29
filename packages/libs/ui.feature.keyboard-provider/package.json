@@ -1,0 +1,18 @@
+{
+	"name": "@ctrl/ui.feature.keyboard-provider",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check": "tsgo --noEmit",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@ctrl/base.schema": "workspace:*",
+		"@ctrl/ui.base.api": "workspace:*",
+		"solid-js": "*"
+	}
+}

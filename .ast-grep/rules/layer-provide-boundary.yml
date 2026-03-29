@@ -1,0 +1,13 @@
+id: no-layer-provide-in-features
+language: typescript
+rule:
+  pattern: Layer.provide($$$)
+files:
+  - "packages/libs/domain.feature.*/src/**/*.ts"
+  - "packages/libs/core.contract.*/src/**/*.ts"
+  - "packages/libs/base.*/src/**/*.ts"
+ignores:
+  - "**/*.test.ts"
+  - "**/*.spec.ts"
+message: "Layer.provide() only allowed in wire.desktop.*, domain.service.*, and test files."
+severity: error

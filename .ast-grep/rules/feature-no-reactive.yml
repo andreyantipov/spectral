@@ -1,0 +1,17 @@
+id: feature-no-pubsub
+language: typescript
+rule:
+  pattern: PubSub.$_($$$)
+files:
+  - "packages/libs/domain.feature.*/src/**/*.ts"
+message: "domain.feature.* must be pure business logic. No PubSub — reactive behavior belongs in domain.service.*"
+severity: error
+---
+id: feature-no-stream-frompubsub
+language: typescript
+rule:
+  pattern: Stream.fromPubSub($$$)
+files:
+  - "packages/libs/domain.feature.*/src/**/*.ts"
+message: "domain.feature.* must be pure business logic. No Stream.fromPubSub — reactive behavior belongs in domain.service.*"
+severity: error

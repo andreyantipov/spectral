@@ -1,4 +1,4 @@
-import { type PanelRef, PanelRefSchema } from "@ctrl/core.base.model";
+import { type PanelRef, PanelRefSchema } from "@ctrl/base.schema";
 import { Schema } from "effect";
 
 export type { PanelRef };

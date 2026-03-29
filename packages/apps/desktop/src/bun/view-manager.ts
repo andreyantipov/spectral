@@ -1,4 +1,4 @@
-import { DEFAULT_TAB_URL } from "@ctrl/core.base.types";
+import { DEFAULT_TAB_URL } from "@ctrl/base.type";
 import { BrowserView, type BrowserWindow } from "electrobun/bun";
 
 const CHROME_HEIGHT = 0;

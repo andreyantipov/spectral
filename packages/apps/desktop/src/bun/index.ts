@@ -1,20 +1,16 @@
 import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { APP_NAME } from "@ctrl/core.base.types";
+import { APP_NAME } from "@ctrl/base.type";
 import rootPkg from "../../../../../package.json";
 
 const APP_VERSION = rootPkg.version;
 
-import type { ElectrobunRpcHandle } from "@ctrl/domain.adapter.carrier";
-import { createIpcBridge, type ElectrobunHandle } from "@ctrl/domain.adapter.carrier";
-import { ensureSchema } from "@ctrl/domain.adapter.db";
-import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/domain.adapter.otel";
-import { AllRpcs, createCarrierServer } from "@ctrl/domain.runtime.bun";
-import { RpcServer } from "@effect/rpc";
-import { Layer, ManagedRuntime, Runtime } from "effect";
+import { EventBus } from "@ctrl/core.contract.event-bus";
+import { type ElectrobunIpcHandle, ensureSchema } from "@ctrl/wire.desktop.main";
+import { Effect, ManagedRuntime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
-import { type AppLayer, DesktopLive } from "./layers";
+import { createDesktopMainLive } from "./layers";
 import { createMainRPC } from "./rpc";
 
 console.info(`[bun] ${APP_NAME} starting...`);
@@ -22,13 +18,30 @@ console.info(`[bun] ${APP_NAME} starting...`);
 // Ensure data directory exists
 mkdirSync(join(homedir(), ".spectral"), { recursive: true });
 
-const runtime = ManagedRuntime.make(DesktopLive);
+// Electrobun RPC: static handlers only, no runtime needed
+const mainRPC = createMainRPC();
 
-// Initialize Effect runtime (database, services, etc.)
+// Create window
+const win = new BrowserWindow({
+	title: APP_NAME,
+	url: "views://main-ui/index.html",
+	frame: { x: 0, y: 0, width: 1200, height: 800 },
+	titleBarStyle: "hiddenInset",
+	transparent: false,
+	rpc: mainRPC,
+});
+
+// The Electrobun RPC handle doubles as the IPC channel for EventBus bridging
+const rpcHandle = win.webview.rpc as unknown as ElectrobunIpcHandle;
+
+// Initialize Effect runtime with IPC bridge wired to the webview
+const runtime = ManagedRuntime.make(createDesktopMainLive(rpcHandle));
+
+// Ensure runtime is up (database, services, IPC bridge)
 const rt = await runtime.runtime();
 
 // Ensure database schema exists
-await Runtime.runPromise(rt)(ensureSchema);
+await runtime.runPromise(ensureSchema);
 
 ApplicationMenu.setApplicationMenu([
 	{
@@ -68,42 +81,21 @@ ApplicationMenu.setApplicationMenu([
 	},
 ]);
 
-// Create Electrobun RPC (legacy request/response + effect-rpc message channel)
-const mainRPC = createMainRPC(rt);
-
-// Create window
-const win = new BrowserWindow({
-	title: APP_NAME,
-	url: "views://main-ui/index.html",
-	frame: { x: 0, y: 0, width: 1200, height: 800 },
-	titleBarStyle: "hiddenInset",
-	transparent: false,
-	rpc: mainRPC,
-});
-
-// Start RPC server over Electrobun IPC — carrier connects Bun ↔ Webview
-const rpcHandle = win.webview.rpc as unknown as ElectrobunRpcHandle;
-const CarrierServerLive = createCarrierServer(rpcHandle);
-const HandlersFromRuntime = Layer.succeedContext(rt.context) as Layer.Layer<AppLayer, never, never>;
-
-const ServerLive = RpcServer.layer(AllRpcs).pipe(
-	Layer.provide(CarrierServerLive),
-	Layer.provide(HandlersFromRuntime),
-	Layer.provide(OtelLive(OTEL_SERVICE_NAMES.main)),
-) as Layer.Layer<never, never, never>;
-
-const rpcServerRuntime = ManagedRuntime.make(ServerLive);
-await rpcServerRuntime.runtime();
-
-// Create IPC bridge for app commands (uses same handle as effect-rpc)
-const ipcBridge = createIpcBridge(rpcHandle as unknown as ElectrobunHandle);
-
-// Menu accelerator → IPC bridge (no executeJavascript!)
+// Menu accelerator → EventBus command
 ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
 	const data = (event as { data?: { action?: string } })?.data;
 	if (data?.action === "toggle-command-center") {
-		ipcBridge.send({ type: "toggle-command-center" });
+		void runtime.runPromise(
+			EventBus.pipe(
+				Effect.flatMap((bus) =>
+					bus.send({ type: "command", action: "ui.toggle-omnibox", meta: { source: "menu" } }),
+				),
+			),
+		);
 	}
 });
+
+// Keep runtime alive
+void rt;
 
 console.info(`[bun] ${APP_NAME} v${APP_VERSION} started`);

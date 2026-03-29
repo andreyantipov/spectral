@@ -1,6 +1,6 @@
-import type { Bookmark } from "@ctrl/core.base.model";
-import { BookmarkRepository } from "@ctrl/core.port.storage";
-import { Chunk, type Context, Duration, Effect, Fiber, Layer, Stream } from "effect";
+import type { Bookmark } from "@ctrl/base.schema";
+import { BookmarkRepository } from "@ctrl/core.contract.storage";
+import { type Context, Effect, Layer } from "effect";
 import { describe, expect, it } from "vitest";
 import { BookmarkFeature, BookmarkFeatureLive } from "./bookmark.feature";
 
@@ -39,44 +39,31 @@ const runTest = <A, E>(effect: Effect.Effect<A, E, BookmarkFeature>) =>
 	Effect.runPromise(effect.pipe(Effect.provide(makeTestLayer())));
 
 describe("BookmarkFeature", () => {
-	it("create() adds bookmark and publishes to changes stream", async () => {
+	it("create() adds bookmark", async () => {
 		await runTest(
 			Effect.gen(function* () {
 				const feature = yield* BookmarkFeature;
-
-				const fiber = yield* feature.changes.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
-
-				yield* Effect.sleep(Duration.millis(10));
 				const created = yield* feature.create("https://example.com", "Example");
-
-				const collected = yield* Fiber.join(fiber);
-				const snapshots = Chunk.toArray(collected);
 
 				expect(created.url).toBe("https://example.com");
 				expect(created.title).toBe("Example");
-				expect(snapshots).toHaveLength(1);
-				expect(snapshots[0]).toHaveLength(1);
-				expect(snapshots[0][0].url).toBe("https://example.com");
+
+				const all = yield* feature.getAll();
+				expect(all).toHaveLength(1);
+				expect(all[0].url).toBe("https://example.com");
 			}),
 		);
 	});
 
-	it("remove() deletes bookmark and publishes", async () => {
+	it("remove() deletes bookmark", async () => {
 		await runTest(
 			Effect.gen(function* () {
 				const feature = yield* BookmarkFeature;
 				const created = yield* feature.create("https://example.com", "Example");
-
-				const fiber = yield* feature.changes.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
-
-				yield* Effect.sleep(Duration.millis(10));
 				yield* feature.remove(created.id);
 
-				const collected = yield* Fiber.join(fiber);
-				const snapshots = Chunk.toArray(collected);
-
-				expect(snapshots).toHaveLength(1);
-				expect(snapshots[0]).toHaveLength(0);
+				const all = yield* feature.getAll();
+				expect(all).toHaveLength(0);
 			}),
 		);
 	});

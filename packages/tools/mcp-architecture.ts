@@ -244,7 +244,11 @@ server.tool("get_layer_graph", "Show the Layer dependency graph", {}, () => {
 server.tool(
 	"get_package_deps",
 	"Show workspace dependencies for a package",
-	{ name: z.string().describe("Package name (e.g. core.port.storage or @ctrl/core.port.storage)") },
+	{
+		name: z
+			.string()
+			.describe("Package name (e.g. core.contract.storage or @ctrl/core.contract.storage)"),
+	},
 	({ name }) => {
 		return { content: [{ type: "text", text: handleGetPackageDeps(name) }] };
 	},

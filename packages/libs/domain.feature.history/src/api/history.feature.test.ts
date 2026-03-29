@@ -1,6 +1,6 @@
-import type { HistoryEntry } from "@ctrl/core.base.model";
-import { HistoryRepository } from "@ctrl/core.port.storage";
-import { Chunk, type Context, Duration, Effect, Fiber, Layer, Stream } from "effect";
+import type { HistoryEntry } from "@ctrl/base.schema";
+import { HistoryRepository } from "@ctrl/core.contract.storage";
+import { type Context, Effect, Layer } from "effect";
 import { describe, expect, it } from "vitest";
 import { HistoryFeature, HistoryFeatureLive } from "./history.feature";
 
@@ -43,24 +43,18 @@ const runTest = <A, E>(effect: Effect.Effect<A, E, HistoryFeature>) =>
 	Effect.runPromise(effect.pipe(Effect.provide(makeTestLayer())));
 
 describe("HistoryFeature", () => {
-	it("record() adds entry and publishes to changes stream", async () => {
+	it("record() adds entry", async () => {
 		await runTest(
 			Effect.gen(function* () {
 				const feature = yield* HistoryFeature;
-
-				const fiber = yield* feature.changes.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
-
-				yield* Effect.sleep(Duration.millis(10));
 				const entry = yield* feature.record("https://example.com", "Example");
-
-				const collected = yield* Fiber.join(fiber);
-				const snapshots = Chunk.toArray(collected);
 
 				expect(entry.url).toBe("https://example.com");
 				expect(entry.title).toBe("Example");
-				expect(snapshots).toHaveLength(1);
-				expect(snapshots[0]).toHaveLength(1);
-				expect(snapshots[0][0].url).toBe("https://example.com");
+
+				const all = yield* feature.getAll();
+				expect(all).toHaveLength(1);
+				expect(all[0].url).toBe("https://example.com");
 			}),
 		);
 	});
@@ -104,23 +98,14 @@ describe("HistoryFeature", () => {
 		);
 	});
 
-	it("clear() removes all entries and publishes", async () => {
+	it("clear() removes all entries", async () => {
 		await runTest(
 			Effect.gen(function* () {
 				const feature = yield* HistoryFeature;
 				yield* feature.record("https://a.com", "A");
 				yield* feature.record("https://b.com", "B");
 
-				const fiber = yield* feature.changes.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
-
-				yield* Effect.sleep(Duration.millis(10));
 				yield* feature.clear();
-
-				const collected = yield* Fiber.join(fiber);
-				const snapshots = Chunk.toArray(collected);
-
-				expect(snapshots).toHaveLength(1);
-				expect(snapshots[0]).toHaveLength(0);
 
 				const all = yield* feature.getAll();
 				expect(all).toHaveLength(0);

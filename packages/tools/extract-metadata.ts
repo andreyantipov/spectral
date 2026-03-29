@@ -68,12 +68,14 @@ const TEST_SERVICES = new Set(["TestSpanExporter"]);
 
 function deriveTier(pkgName: string): string {
 	const tiers: [string, string][] = [
-		["core.port", "core.port"],
-		["core.base", "core.base"],
-		["core.ui.", "core.ui"],
-		["domain.adapter", "domain.adapter"],
+		["core.contract", "core.contract"],
+		["core.impl", "core.impl"],
+		["base.", "base"],
+		["ui.base.components", "ui"],
+		["ui.base.api", "ui"],
 		["domain.feature", "domain.feature"],
 		["domain.service", "domain.service"],
+		["wire.desktop", "wire.desktop"],
 		["ui.feature", "ui.feature"],
 		["ui.scene", "ui.scene"],
 	];
@@ -271,7 +273,7 @@ function parseEventsFromFile(sourceFile: SourceFile): EventMeta[] {
 }
 
 function parseEventGroups(project: Project): EventMeta[] {
-	const groupsDir = resolve(LIBS_DIR, "core.port.event-bus/src/groups");
+	const groupsDir = resolve(LIBS_DIR, "core.contract.event-bus/src/groups");
 
 	return project
 		.getSourceFiles()

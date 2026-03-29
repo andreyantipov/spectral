@@ -13,7 +13,7 @@
 			"@ctrl/*": ["./packages/libs/*/src"],
 			"@ctrl/apps/*": ["./packages/apps/*/src"],
 			"@ctrl/infra/*": ["./packages/infra/*/src"],
-			"@styled-system/*": ["./packages/libs/core.ui.design/styled-system/*"]
+			"@styled-system/*": ["./packages/libs/ui.base.components/styled-system/*"]
 		}
 	},
 	"exclude": ["node_modules", ".bun", "dist"]
