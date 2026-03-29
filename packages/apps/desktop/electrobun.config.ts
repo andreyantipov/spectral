@@ -1,9 +1,11 @@
 import type { ElectrobunConfig } from "electrobun";
 import rootPkg from "../../../package.json";
 
+const isDev = process.argv[2] === "dev";
+
 export default {
   app: {
-    name: "Spectral",
+    name: isDev ? "Spectral-dev" : "Spectral",
     identifier: "spectral.ctrl.page",
     version: rootPkg.version,
   },
@@ -26,7 +28,7 @@ export default {
     watch: ["build/main-ui"],
     mac: {
       defaultRenderer: "native",
-      icons: "assets/icon.iconset",
+      icons: isDev ? "assets/icon-dev.iconset" : "assets/icon.iconset",
     },
     linux: {
       bundleCEF: true,

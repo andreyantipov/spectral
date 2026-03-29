@@ -93,7 +93,7 @@ async function writeDomains(
 				id: svc.name,
 				name: svc.name,
 				version,
-				markdown: `**Package:** \`${svc.package}\`\n\n**Methods:** ${svc.methods.join(", ") || "—"}\n\n**Requires:** ${svc.requires.join(", ") || "none"}\n\n**Provided by:** ${svc.providedBy || "—"}`,
+				markdown: `**Package:** \`${svc.package}\`\n\n**Methods:** ${svc.methods.join(", ") || "none"}\n\n**Requires:** ${svc.requires.join(", ") || "none"}\n\n**Provided by:** ${svc.providedBy || "none"}`,
 			});
 
 			await sdk.addServiceToDomain(domain.id, { id: svc.name, version });
@@ -128,7 +128,8 @@ async function main() {
 
 	const sdk = catalogFactory(CATALOG_DIR);
 	const meta: AppMetadata = JSON.parse(readFileSync(METADATA_PATH, "utf-8"));
-	const version = "0.14.0";
+	const rootPkg = JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf-8"));
+	const version = rootPkg.version;
 
 	await writeDomains(sdk, meta, version);
 	await writeEvents(sdk, meta, version);
