@@ -1,5 +1,4 @@
 # General code quality rules
-# GritQL equivalents: ban_console_log.md, no_lint_ignores.md, type_consistency.md,
 #                     no_declare_module.md
 
 id: ban-console-log

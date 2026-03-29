@@ -1,5 +1,4 @@
 # No re-exports from @ctrl/* packages in barrel files (core/ui packages)
-# GritQL equivalent: no_reexports.md
 
 id: no-reexport-named
 language: TypeScript

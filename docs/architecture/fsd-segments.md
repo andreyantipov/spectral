@@ -61,5 +61,4 @@ ui.scene.*                                             ✓
 - Stories in `ui.feature.sidebar/src/ui/SidebarFeature.stories.tsx`
 - Page compositions in `ui.scene.*/src/ui/MainPage.tsx`
 
-For GritQL rules that enforce these segment boundaries, see `docs/architecture/dependency-matrix.md`.
-For deep details see `docs/superpowers/specs/2026-03-14-domain-architecture-design.md` (Section 3).
+For ast-grep rules that enforce these segment boundaries, see `.ast-grep/rules/fsd-segment-rules.yml`.

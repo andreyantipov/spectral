@@ -168,7 +168,7 @@ Rules:
 - Never `v1`, `v2`, `v3` — only `current` and `-deprecated`
 - If you need to break again before migration is done — finish the migration first
 - Add `/** @deprecated Use X instead */` to the barrel export
-- A grit rule blocks NEW imports of `-deprecated` packages
+- An ast-grep rule blocks NEW imports of `-deprecated` packages
 
 ### Core Package Levels
 Three-tier core structure, each level can only import levels above it:

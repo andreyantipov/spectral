@@ -1,5 +1,4 @@
 # Effect-specific rules
-# GritQL equivalents: effect_no_raw_promises.md, no_manual_withspan.md, domain_requires_tracing.md
 
 id: no-async-in-bun-layer
 language: TypeScript

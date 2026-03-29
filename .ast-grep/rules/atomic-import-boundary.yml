@@ -1,5 +1,4 @@
 # Enforces one-way import deps in core.ui atomic design
-# GritQL equivalent: atomic_import_boundary.md
 
 id: atoms-no-higher-import
 language: TypeScript

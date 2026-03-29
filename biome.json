@@ -40,7 +40,7 @@
 			"!**/build",
 			"!**/styled-system",
 			"!**/.turbo",
-			"!**/.grit",
+			"!**/.ast-grep",
 			"!**/*.config.ts",
 			"!**/*.config.js",
 			"!**/drizzle",

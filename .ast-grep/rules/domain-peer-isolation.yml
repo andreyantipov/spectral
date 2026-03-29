@@ -1,5 +1,4 @@
 # Sibling packages within same layer cannot import each other
-# GritQL equivalent: domain_peer_isolation.md
 
 id: feature-no-peer-feature
 language: TypeScript

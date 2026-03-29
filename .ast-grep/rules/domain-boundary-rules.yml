@@ -1,5 +1,4 @@
 # Enforces hexagonal architecture layer boundaries
-# GritQL equivalent: domain_boundary_rules.md
 
 id: ui-no-domain
 language: TypeScript
