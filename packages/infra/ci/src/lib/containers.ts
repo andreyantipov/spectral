@@ -21,7 +21,8 @@ export function withSource(container: Container, source: Directory, config: CiCo
 	return container
 		.withDirectory(config.workdir, source, { exclude: config.mountExcludes })
 		.withWorkdir(config.workdir)
-		.withExec(["bun", "install", "--ignore-scripts"]);
+		.withExec(["bun", "install", "--ignore-scripts"])
+		.withExec(["npm", "install", "-g", "--force", "@ast-grep/cli@0.33.1"]);
 }
 
 export function withGitIdentity(container: Container, config: CiConfig): Container {

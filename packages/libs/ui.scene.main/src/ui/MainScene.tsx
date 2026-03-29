@@ -105,29 +105,37 @@ function WorkspaceContent() {
 		requestAnimationFrame(() => syncAllWebviewDimensions());
 	}
 
-	// FIX #6: Guard panel sync - don't remove empty panels, only session panels
-	createEffect(() => {
-		const ids = sessionIds();
-		if (!api || !initialized) return;
-
-		const existing = new Set(api.panels.map((p) => p.id));
+	function addMissingSessions(dockApi: DockviewApi, ids: string[]) {
+		const existing = new Set(dockApi.panels.map((p) => p.id));
 		for (const id of ids) {
 			if (!existing.has(id)) {
-				api.addPanel({ id, component: "session", params: { sessionId: id } });
+				dockApi.addPanel({ id, component: "session", params: { sessionId: id } });
 			}
 		}
-		// Only remove session panels that no longer exist in state
-		// Keep empty panels (they start with "empty-")
-		for (const panel of [...api.panels]) {
+	}
+
+	function removeStaleSessions(dockApi: DockviewApi, ids: string[]) {
+		for (const panel of [...dockApi.panels]) {
 			const isEmptyPanel = panel.id.startsWith("empty-");
 			if (!isEmptyPanel && !ids.includes(panel.id)) {
 				try {
-					api.removePanel(panel);
+					dockApi.removePanel(panel);
 				} catch {
 					// Panel may be mid-interaction
 				}
 			}
 		}
+	}
+
+	// FIX #6: Guard panel sync - don't remove empty panels, only session panels
+	createEffect(() => {
+		const ids = sessionIds();
+		if (!api || !initialized) return;
+
+		addMissingSessions(api, ids);
+		// Only remove session panels that no longer exist in state
+		// Keep empty panels (they start with "empty-")
+		removeStaleSessions(api, ids);
 		scheduleSync();
 	});
 

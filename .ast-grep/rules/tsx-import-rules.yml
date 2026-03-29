@@ -1,0 +1,241 @@
+# TSX variants of import boundary rules
+# ast-grep TypeScript parser cannot parse JSX in .tsx files,
+# so all import-matching rules need Tsx language variants for .tsx files.
+
+id: ui-no-domain--tsx
+language: Tsx
+severity: error
+message: "ui.* cannot import domain.* — use core.ui.api (EventBus)"
+files:
+  - "packages/libs/ui.*/src/**/*.tsx"
+ignores:
+  - "**/*.test.*"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "domain\\."
+
+---
+
+id: apps-no-ui-feature--tsx
+language: Tsx
+severity: error
+message: "apps/* cannot import ui.feature.* directly (use ui.scene.*)"
+files:
+  - "packages/apps/*/src/**/*.tsx"
+ignores:
+  - "**/*.test.*"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "ui\\.feature\\."
+
+---
+
+id: feature-no-service-or-adapter--tsx
+language: Tsx
+severity: error
+message: "domain.feature.* cannot import domain.service.* or domain.adapter.*"
+files:
+  - "packages/libs/domain.feature.*/src/**/*.tsx"
+ignores:
+  - "**/*.test.*"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "domain\\.(service|adapter)\\."
+
+---
+
+id: core-no-domain-or-ui--tsx
+language: Tsx
+severity: error
+message: "core.* cannot import domain.* or ui.*"
+files:
+  - "packages/libs/core.*/src/**/*.tsx"
+ignores:
+  - "**/*.test.*"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "(domain\\.(feature|service|adapter)\\.|ui\\.(feature|scene)\\.)"
+
+---
+
+id: feature-no-peer-feature--tsx
+language: Tsx
+severity: error
+message: "domain.feature.* cannot import other domain.feature.*"
+files:
+  - "packages/libs/domain.feature.*/src/**/*.tsx"
+ignores:
+  - "**/*.test.*"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "domain\\.feature\\."
+
+---
+
+id: ui-feature-no-peer--tsx
+language: Tsx
+severity: error
+message: "ui.feature.* cannot import other ui.feature.*"
+files:
+  - "packages/libs/ui.feature.*/src/**/*.tsx"
+ignores:
+  - "**/*.test.*"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "ui\\.feature\\."
+
+---
+
+id: atoms-no-higher-import--tsx
+language: Tsx
+severity: error
+message: "atoms cannot import from molecules, organisms, or templates"
+files:
+  - "packages/libs/core.ui/src/components/atoms/**/*.tsx"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "(molecules|organisms|templates)"
+
+---
+
+id: molecules-no-higher-import--tsx
+language: Tsx
+severity: error
+message: "molecules cannot import from organisms or templates"
+files:
+  - "packages/libs/core.ui/src/components/molecules/**/*.tsx"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "(organisms|templates)"
+
+---
+
+id: organisms-no-template-import--tsx
+language: Tsx
+severity: error
+message: "organisms cannot import from templates"
+files:
+  - "packages/libs/core.ui/src/components/organisms/**/*.tsx"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "templates"
+
+---
+
+id: model-no-api-import--tsx
+language: Tsx
+severity: error
+message: "model/ must not import from api/"
+files:
+  - "packages/libs/*/src/model/**/*.tsx"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "/api/"
+
+---
+
+id: no-relative-styled-system--tsx
+language: Tsx
+severity: error
+message: "No relative styled-system imports — use @styled-system alias"
+files:
+  - "packages/**/*.tsx"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "\\.\\./.*styled-system/"
+
+---
+
+id: no-cva-in-core-ui--tsx
+language: Tsx
+severity: error
+message: "No cva in core.ui — use sva only"
+files:
+  - "packages/libs/core.ui/**/*.tsx"
+rule:
+  pattern: cva($$$ARGS)
+
+---
+
+id: no-interface-in-libs--tsx
+language: Tsx
+severity: error
+message: "No interface in packages/libs — use type"
+files:
+  - "packages/libs/**/*.tsx"
+rule:
+  kind: interface_declaration
+
+---
+
+id: no-declare-module--tsx
+language: Tsx
+severity: error
+message: "No declare module in application code"
+files:
+  - "packages/libs/**/*.tsx"
+  - "packages/apps/**/*.tsx"
+rule:
+  pattern: declare module $_ { $$$BODY }
+
+---
+
+id: no-lint-ignore-biome--tsx
+language: Tsx
+severity: error
+message: "No biome-ignore — fix the underlying issue"
+files:
+  - "packages/**/*.tsx"
+rule:
+  kind: comment
+  regex: "biome-ignore"
+
+---
+
+id: no-lint-ignore-ts--tsx
+language: Tsx
+severity: error
+message: "No @ts-ignore/@ts-nocheck — fix the underlying issue"
+files:
+  - "packages/**/*.tsx"
+rule:
+  kind: comment
+  regex: "@ts-(ignore|nocheck|expect-error)"
+
+---
+
+id: core-components-no-domain--tsx
+language: Tsx
+severity: error
+message: "core.ui.components cannot import domain.*, core.ui.api, or core.port.*"
+files:
+  - "packages/libs/core.ui.components/src/**/*.tsx"
+ignores:
+  - "**/*.test.*"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "(domain\\.|core\\.ui\\.api|core\\.port\\.)"

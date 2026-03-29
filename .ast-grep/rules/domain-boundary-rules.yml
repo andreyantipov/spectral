@@ -1,0 +1,119 @@
+# Enforces hexagonal architecture layer boundaries
+# GritQL equivalent: domain_boundary_rules.md
+
+id: ui-no-domain
+language: TypeScript
+severity: error
+message: "ui.* cannot import domain.* — use core.ui.api (EventBus)"
+files:
+  - "packages/libs/ui.*/src/**/*.ts"
+  - "packages/libs/ui.*/src/**/*.tsx"
+ignores:
+  - "**/*.test.*"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "domain\\."
+
+---
+
+id: apps-no-ui-feature
+language: TypeScript
+severity: error
+message: "apps/* cannot import ui.feature.* directly (use ui.scene.*)"
+files:
+  - "packages/apps/*/src/**/*.ts"
+  - "packages/apps/*/src/**/*.tsx"
+ignores:
+  - "**/*.test.*"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "ui\\.feature\\."
+
+---
+
+id: feature-no-service-or-adapter
+language: TypeScript
+severity: error
+message: "domain.feature.* cannot import domain.service.* or domain.adapter.*"
+files:
+  - "packages/libs/domain.feature.*/src/**/*.ts"
+  - "packages/libs/domain.feature.*/src/**/*.tsx"
+ignores:
+  - "**/*.test.*"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "domain\\.(service|adapter)\\."
+
+---
+
+id: service-no-adapter
+language: TypeScript
+severity: error
+message: "domain.service.* cannot import domain.adapter.*"
+files:
+  - "packages/libs/domain.service.*/src/**/*.ts"
+  - "packages/libs/domain.service.*/src/**/*.tsx"
+ignores:
+  - "**/*.test.*"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "domain\\.adapter\\."
+
+---
+
+id: service-no-peer-service
+language: TypeScript
+severity: error
+message: "domain.service.* cannot import other domain.service.*"
+files:
+  - "packages/libs/domain.service.*/src/**/*.ts"
+  - "packages/libs/domain.service.*/src/**/*.tsx"
+ignores:
+  - "**/*.test.*"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "domain\\.service\\."
+
+---
+
+id: adapter-no-feature-or-service
+language: TypeScript
+severity: error
+message: "domain.adapter.* cannot import domain.feature.* or domain.service.*"
+files:
+  - "packages/libs/domain.adapter.*/src/**/*.ts"
+  - "packages/libs/domain.adapter.*/src/**/*.tsx"
+ignores:
+  - "**/*.test.*"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "domain\\.(feature|service)\\."
+
+---
+
+id: core-no-domain-or-ui
+language: TypeScript
+severity: error
+message: "core.* cannot import domain.* or ui.*"
+files:
+  - "packages/libs/core.*/src/**/*.ts"
+  - "packages/libs/core.*/src/**/*.tsx"
+ignores:
+  - "**/*.test.*"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "(domain\\.(feature|service|adapter)\\.|ui\\.(feature|scene)\\b)"

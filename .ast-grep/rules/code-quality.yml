@@ -1,0 +1,75 @@
+# General code quality rules
+# GritQL equivalents: ban_console_log.md, no_lint_ignores.md, type_consistency.md,
+#                     no_declare_module.md
+
+id: ban-console-log
+language: TypeScript
+severity: error
+message: "No console.log — use console.error or console.warn"
+rule:
+  pattern: console.log($$$ARGS)
+
+---
+
+id: no-interface-in-libs
+language: TypeScript
+severity: error
+message: "No interface in packages/libs — use type"
+files:
+  - "packages/libs/**/*.ts"
+  - "packages/libs/**/*.tsx"
+rule:
+  kind: interface_declaration
+
+---
+
+id: no-declare-module
+language: TypeScript
+severity: error
+message: "No declare module in application code"
+files:
+  - "packages/libs/**/*.ts"
+  - "packages/libs/**/*.tsx"
+  - "packages/apps/**/*.ts"
+  - "packages/apps/**/*.tsx"
+rule:
+  pattern: declare module $_ { $$$BODY }
+
+---
+
+id: no-lint-ignore-biome
+language: TypeScript
+severity: error
+message: "No biome-ignore — fix the underlying issue"
+files:
+  - "packages/**/*.ts"
+  - "packages/**/*.tsx"
+rule:
+  kind: comment
+  regex: "biome-ignore"
+
+---
+
+id: no-lint-ignore-eslint
+language: TypeScript
+severity: error
+message: "No eslint-disable — fix the underlying issue"
+files:
+  - "packages/**/*.ts"
+  - "packages/**/*.tsx"
+rule:
+  kind: comment
+  regex: "eslint-disable"
+
+---
+
+id: no-lint-ignore-ts
+language: TypeScript
+severity: error
+message: "No @ts-ignore/@ts-nocheck — fix the underlying issue"
+files:
+  - "packages/**/*.ts"
+  - "packages/**/*.tsx"
+rule:
+  kind: comment
+  regex: "@ts-(ignore|nocheck|expect-error)"

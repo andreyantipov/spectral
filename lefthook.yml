@@ -5,8 +5,8 @@ pre-commit:
       glob: "*.{ts,tsx,json}"
       run: bunx biome check --staged --no-errors-on-unmatched
       stage_fixed: true
-    grit:
-      glob: "*.{ts,tsx,json}"
-      run: bunx grit check {staged_files}
+    ast-grep:
+      glob: "*.{ts,tsx}"
+      run: ast-grep scan {staged_files}
     typecheck:
       run: bun run check

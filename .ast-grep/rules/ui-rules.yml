@@ -1,0 +1,42 @@
+# UI/styling rules
+# GritQL equivalents: no_cva_in_core_ui.md, no_relative_styled_system.md,
+#                     styles_in_style_file_only.md
+
+id: no-cva-in-core-ui
+language: TypeScript
+severity: error
+message: "No cva in core.ui — use sva only"
+files:
+  - "packages/libs/core.ui/**/*.ts"
+  - "packages/libs/core.ui/**/*.tsx"
+rule:
+  pattern: cva($$$ARGS)
+
+---
+
+id: no-relative-styled-system
+language: TypeScript
+severity: error
+message: "No relative styled-system imports — use @styled-system alias"
+files:
+  - "packages/**/*.ts"
+  - "packages/**/*.tsx"
+rule:
+  pattern: import $_ from "$PATH"
+constraints:
+  PATH:
+    regex: "\\.\\./.*styled-system/"
+
+---
+
+id: styles-in-style-file-only
+language: TypeScript
+severity: error
+message: "No sva/cva/css declarations in .tsx files — use .style.ts"
+files:
+  - "packages/libs/core.ui/**/*.tsx"
+rule:
+  any:
+    - pattern: sva($$$ARGS)
+    - pattern: cva($$$ARGS)
+    - pattern: css($$$ARGS)
