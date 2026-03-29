@@ -56,7 +56,7 @@ Only two tiers are importable from outside their own namespace:
 - **`domain.service.*`** — the public API of all business logic (imported by `ui.feature.*`)
 - **`ui.scene.*`** — the public API of all UI (imported by `packages/apps/*`)
 
-Everything else is internal. GritQL enforces this — see `docs/architecture/dependency-matrix.md`.
+Everything else is internal. ast-grep enforces this — see `.ast-grep/rules/domain-boundary-rules.yml`.
 
 ## Naming New Packages
 

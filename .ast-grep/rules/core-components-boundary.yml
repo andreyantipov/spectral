@@ -1,5 +1,4 @@
 # core.ui.components is pure presentational — no domain, api, or port imports
-# GritQL equivalent: core_components_no_imports.md
 
 id: core-components-no-domain
 language: TypeScript

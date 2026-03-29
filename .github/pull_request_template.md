@@ -19,6 +19,6 @@
 ## Test plan
 - [ ] `bun run check` — all typecheck pass
 - [ ] `bun run test` — all tests pass
-- [ ] `bunx grit check .` — 0 violations
+- [ ] `ast-grep scan` — 0 violations
 - [ ] App smoke test (if UI changes)
 - [ ] CLAUDE.md updated (if architecture changed)

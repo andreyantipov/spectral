@@ -1,5 +1,4 @@
 # Feature-Sliced Design segment conventions
-# GritQL equivalent: fsd_segment_rules.md
 
 id: model-no-api-import
 language: TypeScript
