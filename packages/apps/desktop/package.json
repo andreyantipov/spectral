@@ -10,6 +10,8 @@
 		"@ctrl/core.port.event-bus": "workspace:*",
 		"@ctrl/core.port.storage": "workspace:*",
 		"@ctrl/core.ui.api": "workspace:*",
+		"@ctrl/core.ui.components": "workspace:*",
+		"@ctrl/core.ui.design": "workspace:*",
 		"@ctrl/domain.adapter.db": "workspace:*",
 		"@ctrl/domain.adapter.otel": "workspace:*",
 		"@ctrl/domain.service.native": "workspace:*",
