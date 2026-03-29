@@ -70,12 +70,12 @@ function deriveTier(pkgName: string): string {
 	const tiers: [string, string][] = [
 		["core.port", "core.port"],
 		["core.base", "core.base"],
-		["core.ui", "core.ui"],
+		["core.ui.", "core.ui"],
 		["domain.adapter", "domain.adapter"],
 		["domain.feature", "domain.feature"],
 		["domain.service", "domain.service"],
 		["ui.feature", "ui.feature"],
-		["ui.scenes", "ui.scenes"],
+		["ui.scene", "ui.scene"],
 	];
 	return tiers.find(([prefix]) => pkgName.startsWith(prefix))?.[1] ?? "unknown";
 }

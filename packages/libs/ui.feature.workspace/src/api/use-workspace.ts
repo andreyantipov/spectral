@@ -1,5 +1,4 @@
-import { useRuntime } from "@ctrl/core.ui";
-import { useApi } from "@ctrl/core.ui.api";
+import { useApi, useRuntime } from "@ctrl/core.ui.api";
 import { type PanelRef, WorkspaceRpcs } from "@ctrl/domain.service.workspace";
 import { RpcClient } from "@effect/rpc";
 import type { Protocol } from "@effect/rpc/RpcClient";

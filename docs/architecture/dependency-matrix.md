@@ -11,8 +11,8 @@
 | `domain.service.*` | `domain.feature.*` + `core.shared` |
 | `ui.adapter.*` | `core.shared` + external platform libs |
 | `ui.feature.*` | `domain.service.*` + `core.ui` + `core.shared` |
-| `ui.scenes` | `ui.feature.*` + `ui.adapter.*` + `core.ui` |
-| `packages/apps/*` (UI entry) | `ui.scenes` + `core.ui` only |
+| `ui.scene.browser` | `ui.feature.*` + `ui.adapter.*` + `core.ui` |
+| `packages/apps/*` (UI entry) | `ui.scene.browser` + `core.ui` only |
 | `packages/apps/*` (composition root) | ALL domain + core packages (this is the ONLY place that wires Layers) |
 
 ## Peer Isolation Rule
@@ -25,13 +25,13 @@ No package may import a peer at the same tier. Composition happens one level up.
 - `ui.adapter.*` packages cannot import each other — adapters are independent
 - `ui.feature.*` packages cannot import each other — UI features are atomic
 - `ui.feature.*` may NOT import `ui.adapter.*`
-- `ui.scenes` is a single package, so no peer isolation rule is needed
+- `ui.scene.browser` is a single package, so no peer isolation rule is needed
 
 ## Service Contract: `BrowsingRpcs`
 
 `domain.service.browsing` exports `BrowsingRpcs` — an `@effect/rpc` `RpcGroup` that is the **single service contract** for all browsing operations. There is no separate `BrowsingService` `Context.Tag`. The UI layer calls RPCs via a generated client; the Bun side implements handlers via `BrowsingHandlersLive`.
 
-The transport (`ElectrobunServerProtocol` / `ElectrobunClientProtocol` from `domain.adapter.rpc`) is wired at the composition root and is entirely separate from the RPC contract.
+The transport is wired at the composition root via `domain.service.native` and is entirely separate from the RPC contract.
 
 ## Valid and Invalid Imports
 
@@ -46,7 +46,7 @@ import { SessionRepository } from "@ctrl/core.shared"
 // domain.service.browsing importing from domain.feature.*  ✓
 import { SessionFeature } from "@ctrl/domain.feature.session"
 
-// ui.scenes importing from ui.feature.*  ✓
+// ui.scene.browser importing from ui.feature.*  ✓
 import { SidebarFeature } from "@ctrl/ui.feature.sidebar"
 ```
 
@@ -84,7 +84,7 @@ Rule file location: `.grit/` in the repository root (see `docs/superpowers/specs
 ### Key rules covered:
 
 - `ui.*` may only import `domain.service.*` from the domain namespace
-- `apps/*` may only import `ui.scenes` from the UI namespace
+- `apps/*` may only import `ui.scene.browser` from the UI namespace
 - `domain.feature.*` uses ports (via DI), never adapters directly
 - `domain.service.*` composes features only — no adapter imports, no peer service imports
 - `domain.adapter.*` are independent — no cross-adapter imports, no feature/service imports

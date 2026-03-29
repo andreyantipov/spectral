@@ -1,6 +1,6 @@
-import { RuntimeContext, useRuntime } from "@ctrl/core.ui.api";
 import type { ManagedRuntime } from "effect";
 import type { ParentProps } from "solid-js";
+import { RuntimeContext, useRuntime } from "./use-runtime";
 
 type UntypedManagedRuntime = ManagedRuntime.ManagedRuntime<never, never>;
 

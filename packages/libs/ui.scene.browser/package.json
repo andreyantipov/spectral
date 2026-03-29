@@ -1,5 +1,5 @@
 {
-	"name": "@ctrl/ui.scenes",
+	"name": "@ctrl/ui.scene.browser",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -12,7 +12,7 @@
 	},
 	"dependencies": {
 		"@ctrl/core.base.types": "workspace:*",
-		"@ctrl/core.ui": "workspace:*",
+		"@ctrl/core.ui.components": "workspace:*",
 		"@ctrl/ui.feature.sidebar": "workspace:*",
 		"@ctrl/ui.feature.workspace": "workspace:*"
 	}

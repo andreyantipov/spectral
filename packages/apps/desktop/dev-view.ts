@@ -5,7 +5,8 @@ const DEBOUNCE_MS = 200;
 
 const watchDirs = [
 	resolve("src/main-ui"),
-	resolve("../../libs/core.ui/src"),
+	resolve("../../libs/core.ui.components/src"),
+	resolve("../../libs/core.ui.design/src"),
 	resolve("../../libs/core.port.storage/src"),
 ];
 

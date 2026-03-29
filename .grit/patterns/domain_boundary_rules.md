@@ -8,7 +8,7 @@ tags: [architecture, hexagonal]
 
 Enforces hexagonal architecture layer boundaries:
 - `ui.*` can only import `domain.service.*` (not `domain.feature.*` or `domain.adapter.*`)
-- `apps/*` can only import `ui.scenes` (not `ui.feature.*`)
+- `apps/*` can only import `ui.scene.*` (not `ui.feature.*`)
 - `domain.feature.*` cannot import `domain.service.*` or `domain.adapter.*`
 - `domain.service.*` cannot import `domain.adapter.*` or other `domain.service.*`
 - `domain.adapter.*` cannot import `domain.feature.*` or `domain.service.*`
@@ -54,7 +54,7 @@ language js
     // core.* cannot import domain.* or ui.*
     and {
       $filename <: includes "packages/libs/core.",
-      $path <: or { includes "domain.feature.", includes "domain.service.", includes "domain.adapter.", includes "ui.feature.", includes "ui.scenes" }
+      $path <: or { includes "domain.feature.", includes "domain.service.", includes "domain.adapter.", includes "ui.feature.", includes "ui.scene." }
     }
   }
 }

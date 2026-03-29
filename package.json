@@ -8,7 +8,7 @@
 	],
 	"scripts": {
 		"dev": "turbo dev",
-		"dev:desktop": "turbo dev dev:watch-ui storybook --filter=@ctrl/desktop --filter=@ctrl/core.ui --filter=@ctrl/infra.otel",
+		"dev:desktop": "turbo dev dev:watch-ui storybook --filter=@ctrl/desktop --filter=@ctrl/core.ui.components --filter=@ctrl/infra.otel",
 		"dev:desktop:agentic": "turbo dev --filter=@ctrl/desktop --ui=stream --log-order=stream",
 		"dev:app": "cd packages/apps/desktop && bun run prebundle && npx electrobun dev",
 		"build": "turbo build",

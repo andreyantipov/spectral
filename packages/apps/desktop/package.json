@@ -9,13 +9,15 @@
 		"@ctrl/core.base.types": "workspace:*",
 		"@ctrl/core.port.event-bus": "workspace:*",
 		"@ctrl/core.port.storage": "workspace:*",
-		"@ctrl/core.ui": "workspace:*",
+		"@ctrl/core.ui.api": "workspace:*",
+		"@ctrl/core.ui.components": "workspace:*",
+		"@ctrl/core.ui.design": "workspace:*",
 		"@ctrl/domain.adapter.db": "workspace:*",
 		"@ctrl/domain.adapter.otel": "workspace:*",
 		"@ctrl/domain.service.native": "workspace:*",
 		"@ctrl/domain.runtime.bun": "workspace:*",
 		"@ctrl/domain.runtime.webview": "workspace:*",
-		"@ctrl/ui.scenes": "workspace:*",
+		"@ctrl/ui.scene.browser": "workspace:*",
 		"electrobun": "1.15.1"
 	},
 	"scripts": {
