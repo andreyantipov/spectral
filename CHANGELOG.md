@@ -1,3 +1,10 @@
+## [0.16.1](https://github.com/andreyantipov/spectral/compare/v0.16.0...v0.16.1) (2026-03-29)
+
+
+### Bug Fixes
+
+* remove remaining GritQL references after ast-grep migration ([#21](https://github.com/andreyantipov/spectral/issues/21)) ([bcd8835](https://github.com/andreyantipov/spectral/commit/bcd883563d37cf1e03a9e5982bf9bd3a6cab17bd))
+
 # [0.16.0](https://github.com/andreyantipov/spectral/compare/v0.15.0...v0.16.0) (2026-03-29)
 
 
