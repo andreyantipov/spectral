@@ -1,7 +1,7 @@
 import type { ElectrobunConfig } from "electrobun";
 import rootPkg from "../../../package.json";
 
-const isDev = process.argv.includes("dev");
+const isDev = process.argv[2] === "dev";
 
 export default {
   app: {
