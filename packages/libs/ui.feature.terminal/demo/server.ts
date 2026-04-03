@@ -102,7 +102,7 @@ const server = Bun.serve({
 			} else if (message instanceof Buffer || message instanceof Uint8Array) {
 				// Binary message = resize command (4 bytes: cols_hi, cols_lo, rows_hi, rows_lo)
 				if (message.byteLength === 4) {
-					const view = new DataView(message instanceof Buffer ? message.buffer : message.buffer);
+					const view = new DataView(message.buffer, message.byteOffset, message.byteLength);
 					const cols = view.getUint16(0);
 					const rows = view.getUint16(2);
 					proc.terminal.resize(cols, rows);

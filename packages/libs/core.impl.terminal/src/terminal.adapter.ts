@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
-import { TerminalError, TerminalPort } from "@ctrl/core.contract.terminal";
+import { TerminalError } from "@ctrl/base.error";
+import { TerminalPort } from "@ctrl/core.contract.terminal";
 import { Effect, Layer, PubSub, Stream } from "effect";
 
 const ALLOWED_SHELLS_FALLBACK = new Set([
@@ -10,20 +10,19 @@ const ALLOWED_SHELLS_FALLBACK = new Set([
 	"/bin/fish",
 ]);
 
-function isValidShell(shell: string): boolean {
-	try {
-		const etcShells = readFileSync("/etc/shells", "utf-8");
-		const shells = new Set(
-			etcShells
-				.split("\n")
-				.map((s) => s.trim())
-				.filter((s) => s && !s.startsWith("#")),
-		);
-		return shells.has(shell);
-	} catch {
-		return ALLOWED_SHELLS_FALLBACK.has(shell);
-	}
-}
+const isValidShell = (shell: string) =>
+	Effect.tryPromise(() => Bun.file("/etc/shells").text()).pipe(
+		Effect.map((text) => {
+			const shells = new Set(
+				text
+					.split("\n")
+					.map((s) => s.trim())
+					.filter((s) => s && !s.startsWith("#")),
+			);
+			return shells.has(shell);
+		}),
+		Effect.orElseSucceed(() => ALLOWED_SHELLS_FALLBACK.has(shell)),
+	);
 
 type TerminalEntry = {
 	process: ReturnType<typeof Bun.spawn>;
@@ -86,7 +85,7 @@ export const TerminalAdapterLive = Layer.effect(
 						);
 					}
 
-					if (!isValidShell(shell)) {
+					if (!(yield* isValidShell(shell))) {
 						return yield* Effect.fail(
 							new TerminalError({
 								reason: "spawn-failed",
@@ -136,6 +135,7 @@ export const TerminalAdapterLive = Layer.effect(
 					entry.closed = true;
 					entry.process.terminal?.close();
 					entry.process.kill();
+					yield* PubSub.shutdown(entry.output);
 					terminals.delete(id);
 				}),
 
