@@ -13,6 +13,7 @@ const WS_MUTATIONS: Set<string> = new Set([
 	WorkspaceEvents.events["ws.activate-panel"].tag,
 	WorkspaceEvents.events["ws.reorder-panel"].tag,
 	WorkspaceEvents.events["ws.update-tab-meta"].tag,
+	WorkspaceEvents.events["ws.add-panel"].tag,
 ]);
 
 const publishWorkspaceSnapshot = Effect.gen(function* () {

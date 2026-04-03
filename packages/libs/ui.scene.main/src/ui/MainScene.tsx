@@ -13,6 +13,81 @@ function countPanels(node: LayoutNode): number {
 	return node.children.reduce((sum, c) => sum + countPanels(c), 0);
 }
 
+function collectPanelIds(node: LayoutNode): Set<string> {
+	if (node.type === "group") return new Set(node.panels.map((p) => p.id));
+	const ids = new Set<string>();
+	for (const child of node.children) {
+		for (const id of collectPanelIds(child)) ids.add(id);
+	}
+	return ids;
+}
+
+function resolveSessionTitle(s: {
+	pages?: readonly { title?: string | null }[];
+	currentIndex?: number;
+}): string {
+	const page = s.pages?.[s.currentIndex ?? 0];
+	return page?.title ?? "New Tab";
+}
+
+function findFirstGroupId(node: LayoutNode): string | null {
+	if (node.type === "group") return node.id;
+	for (const child of node.children) {
+		const id = findFirstGroupId(child);
+		if (id) return id;
+	}
+	return null;
+}
+
+function makePanelFromSession(s: {
+	id: string;
+	pages?: readonly { title?: string | null }[];
+	currentIndex?: number;
+}): PanelRef {
+	return {
+		id: s.id,
+		type: "session" as const,
+		entityId: s.id,
+		title: resolveSessionTitle(s),
+		icon: null,
+	};
+}
+
+function syncSessionsToLayout(
+	api: ReturnType<typeof useApi>,
+	sessions: readonly {
+		id: string;
+		isActive?: boolean;
+		pages?: readonly { title?: string | null }[];
+		currentIndex?: number;
+	}[],
+	currentLayout: LayoutNode | null,
+) {
+	const sessionIds = new Set(sessions.map((s) => s.id));
+	const layoutPanelIds = currentLayout ? collectPanelIds(currentLayout) : new Set<string>();
+	const missing = sessions.filter((s) => !layoutPanelIds.has(s.id));
+	const stale = [...layoutPanelIds].filter((id) => !sessionIds.has(id));
+	if (missing.length === 0 && stale.length === 0) return;
+
+	if (!currentLayout || countPanels(currentLayout) === 0) {
+		const panels = sessions.map(makePanelFromSession);
+		const activePanel = sessions.find((s) => s.isActive)?.id ?? sessions[0]?.id ?? "";
+		api.dispatch("ws.update-layout", {
+			layout: { version: 2, root: { id: crypto.randomUUID(), type: "group", panels, activePanel } },
+		});
+		return;
+	}
+
+	const firstGroupId = findFirstGroupId(currentLayout);
+	for (const s of missing) {
+		if (!firstGroupId) break;
+		api.dispatch("ws.add-panel", { groupId: firstGroupId, panel: makePanelFromSession(s) });
+	}
+	for (const id of stale) {
+		api.dispatch("ws.close-panel", { panelId: id });
+	}
+}
+
 const BindingsContext = createContext<WebviewBindings>();
 
 export function MainScene() {
@@ -61,35 +136,11 @@ function WorkspaceContent() {
 
 	const hasSessions = () => (browsingState()?.sessions?.length ?? 0) > 0;
 
-	// Reconcile: when sessions exist but layout has no panels, seed the layout
+	// Sync sessions ↔ layout panels (replaces old dockview syncPanels)
 	createEffect(() => {
 		const sessions = browsingState()?.sessions;
 		const currentLayout = layout();
-		if (!sessions || sessions.length === 0) return;
-		// Check if layout has any panels
-		const hasLayoutPanels = currentLayout ? countPanels(currentLayout) > 0 : false;
-		if (hasLayoutPanels) return;
-		// Seed layout with a single group containing all sessions as panels
-		const panels: PanelRef[] = sessions.map((s) => ({
-			id: s.id,
-			type: "session" as const,
-			entityId: s.id,
-			title:
-				(s.pages?.[s.currentIndex] as { title?: string | null } | undefined)?.title ?? "New Tab",
-			icon: null,
-		}));
-		const activePanel = sessions.find((s) => s.isActive)?.id ?? sessions[0]?.id ?? "";
-		api.dispatch("ws.update-layout", {
-			layout: {
-				version: 2 as const,
-				root: {
-					id: crypto.randomUUID(),
-					type: "group" as const,
-					panels,
-					activePanel,
-				},
-			},
-		});
+		if (sessions) syncSessionsToLayout(api, sessions, currentLayout);
 	});
 
 	// Register split handler so sidebar context menu can split panes

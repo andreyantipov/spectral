@@ -10,7 +10,7 @@ import { EventBus } from "@ctrl/core.contract.event-bus";
 import { type ElectrobunIpcHandle, ensureSchema } from "@ctrl/wire.desktop.main";
 import { Effect, ManagedRuntime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
-import { createDesktopMainLive } from "./layers";
+import { createDesktopMainLive, DbOnlyLive } from "./layers";
 import { createMainRPC } from "./rpc";
 
 console.info(`[bun] ${APP_NAME} starting...`);
@@ -34,14 +34,14 @@ const win = new BrowserWindow({
 // The Electrobun RPC handle doubles as the IPC channel for EventBus bridging
 const rpcHandle = win.webview.rpc as unknown as ElectrobunIpcHandle;
 
+// Ensure database schema exists BEFORE services start (they query on startup)
+await Effect.runPromise(ensureSchema.pipe(Effect.provide(DbOnlyLive)));
+
 // Initialize Effect runtime with IPC bridge wired to the webview
 const runtime = ManagedRuntime.make(createDesktopMainLive(rpcHandle));
 
 // Ensure runtime is up (database, services, IPC bridge)
 const rt = await runtime.runtime();
-
-// Ensure database schema exists
-await runtime.runPromise(ensureSchema);
 
 ApplicationMenu.setApplicationMenu([
 	{

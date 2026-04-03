@@ -63,6 +63,15 @@ export const WorkspaceEvents = EventGroup.empty
 		success: Schema.Void,
 	})
 	.add({
+		tag: "ws.add-panel",
+		primaryKey: (p) => p.groupId,
+		payload: Schema.Struct({
+			groupId: Schema.String,
+			panel: PanelRefSchema,
+		}),
+		success: Schema.Void,
+	})
+	.add({
 		tag: "ws.update-tab-meta",
 		primaryKey: (p) => p.panelId,
 		payload: Schema.Struct({

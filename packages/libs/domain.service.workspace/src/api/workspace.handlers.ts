@@ -84,6 +84,14 @@ export const WorkspaceHandlers = EventLog.group(WorkspaceEvents, (h) =>
 				yield* layout.updateLayout({ version: 2, root: updated });
 			}),
 		)
+		.handle("ws.add-panel", ({ payload }) =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				const current = yield* layout.getLayout();
+				const updated = insertPanelIntoGroup(current, payload.groupId, payload.panel);
+				yield* layout.updateLayout({ version: 2, root: updated });
+			}),
+		)
 		.handle("ws.update-tab-meta", ({ payload }) =>
 			Effect.gen(function* () {
 				const layout = yield* LayoutFeature;
