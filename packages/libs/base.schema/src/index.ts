@@ -15,3 +15,4 @@ export { Page } from "./page";
 export { type PanelRef, PanelRefSchema } from "./panel-ref";
 export { Session } from "./session";
 export { type ShortcutBinding, ShortcutBindingSchema } from "./shortcut-binding";
+export { type WorkspaceState, WorkspaceStateSchema } from "./workspace-state";

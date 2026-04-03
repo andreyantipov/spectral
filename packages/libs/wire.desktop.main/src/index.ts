@@ -1,4 +1,4 @@
-import { AppEvents, SettingsEvents } from "@ctrl/core.contract.event-bus";
+import { AppEvents } from "@ctrl/core.contract.event-bus";
 import {
 	BookmarkRepositoryLive,
 	HistoryRepositoryLive,
@@ -14,16 +14,20 @@ import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
 import { LayoutFeatureLive } from "@ctrl/domain.feature.layout";
 import { OmniboxFeatureLive } from "@ctrl/domain.feature.omnibox";
 import { SessionFeatureLive } from "@ctrl/domain.feature.session";
-import { SettingsFeature, SettingsFeatureLive } from "@ctrl/domain.feature.settings";
+import { SettingsFeatureLive } from "@ctrl/domain.feature.settings";
 import {
 	BookmarkHandlers,
-	BrowsingServiceLive,
 	NavigationHandlers,
 	SessionHandlers,
-	SystemHandlers,
-	UIHandlers,
+	WebBrowsingServiceLive,
 } from "@ctrl/domain.service.browsing";
-import { WorkspaceHandlers } from "@ctrl/domain.service.workspace";
+import {
+	SettingsHandlers,
+	SystemHandlers,
+	SystemServiceLive,
+	UIHandlers,
+} from "@ctrl/domain.service.system";
+import { WorkspaceHandlers, WorkspaceServiceLive } from "@ctrl/domain.service.workspace";
 import { EventJournal, EventLog } from "@effect/experimental";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { Effect, Layer } from "effect";
@@ -46,38 +50,38 @@ const LayoutFeatureLayer = LayoutFeatureLive.pipe(Layer.provide(LayoutRepository
 
 // -- EventLog: typed handlers + in-memory journal -----------------------------
 
-const SettingsHandlers = EventLog.group(SettingsEvents, (h) =>
-	h.handle("settings.shortcuts", () =>
-		Effect.gen(function* () {
-			const feature = yield* SettingsFeature;
-			return yield* feature.getShortcuts();
-		}),
-	),
-);
-
 const IdentityLive = Layer.effect(
 	EventLog.Identity,
 	Effect.sync(() => EventLog.Identity.makeRandom()),
 );
 const JournalLive = EventJournal.layerMemory;
 
-const HandlersLive = Layer.mergeAll(
+// Browsing handlers (session, navigation, bookmark)
+const BrowsingHandlersLive = Layer.mergeAll(
 	SessionHandlers.pipe(Layer.provide(SessionFeatureLayer)),
 	NavigationHandlers.pipe(
 		Layer.provide(SessionFeatureLayer),
 		Layer.provide(OmniboxFeatureLive),
 		Layer.provide(HistoryFeatureLayer),
-	),
-	BookmarkHandlers.pipe(Layer.provide(BookmarkFeatureLayer)),
-	WorkspaceHandlers.pipe(Layer.provide(LayoutFeatureLayer)),
-	SystemHandlers.pipe(
-		Layer.provide(SessionFeatureLayer),
-		Layer.provide(BookmarkFeatureLayer),
-		Layer.provide(HistoryFeatureLayer),
 		Layer.provide(EventBusLive),
 	),
+	BookmarkHandlers.pipe(Layer.provide(BookmarkFeatureLayer)),
+);
+
+// Workspace handlers
+const WorkspaceHandlersLive = WorkspaceHandlers.pipe(Layer.provide(LayoutFeatureLayer));
+
+// System handlers (system, UI, settings)
+const SystemHandlersLive = Layer.mergeAll(
+	SystemHandlers.pipe(Layer.provide(EventBusLive)),
 	UIHandlers,
 	SettingsHandlers.pipe(Layer.provide(SettingsFeatureLive)),
+);
+
+const HandlersLive = Layer.mergeAll(
+	BrowsingHandlersLive,
+	WorkspaceHandlersLive,
+	SystemHandlersLive,
 );
 
 const EventLogLive = EventLog.layer(AppEvents).pipe(
@@ -88,14 +92,25 @@ const EventLogLive = EventLog.layer(AppEvents).pipe(
 
 // -- Services -----------------------------------------------------------------
 
-const BrowsingServiceLayer = BrowsingServiceLive.pipe(
+const BrowsingServiceLayer = WebBrowsingServiceLive.pipe(
 	Layer.provide(EventLogLive),
 	Layer.provide(SessionFeatureLayer),
 	Layer.provide(BookmarkFeatureLayer),
 	Layer.provide(HistoryFeatureLayer),
-	Layer.provide(LayoutFeatureLayer),
 	Layer.provide(OmniboxFeatureLive),
 	Layer.provide(EventBusLive),
+);
+
+const WorkspaceServiceLayer = WorkspaceServiceLive.pipe(
+	Layer.provide(EventLogLive),
+	Layer.provide(LayoutFeatureLayer),
+	Layer.provide(EventBusLive),
+);
+
+const SystemServiceLayer = SystemServiceLive.pipe(
+	Layer.provide(EventLogLive),
+	Layer.provide(EventBusLive),
+	Layer.provide(SettingsFeatureLive),
 );
 
 // -- Compose ------------------------------------------------------------------
@@ -111,7 +126,12 @@ export type { ElectrobunIpcHandle };
 export const createMainProcess = (handle: ElectrobunIpcHandle, dbPath: string) => {
 	const DbClientLive = makeDbClient(`file:${dbPath}`);
 	const OtelLayer = OtelLive(OTEL_SERVICE_NAMES.main, "node");
-	const MainProcessLive = Layer.mergeAll(EventBusLive, BrowsingServiceLayer);
+	const MainProcessLive = Layer.mergeAll(
+		EventBusLive,
+		BrowsingServiceLayer,
+		WorkspaceServiceLayer,
+		SystemServiceLayer,
+	);
 	return Layer.mergeAll(
 		DbClientLive,
 		OtelLayer,

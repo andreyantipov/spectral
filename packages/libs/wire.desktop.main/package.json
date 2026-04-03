@@ -23,6 +23,7 @@
 		"@ctrl/domain.feature.session": "workspace:*",
 		"@ctrl/domain.feature.settings": "workspace:*",
 		"@ctrl/domain.service.browsing": "workspace:*",
+		"@ctrl/domain.service.system": "workspace:*",
 		"@ctrl/domain.service.workspace": "workspace:*"
 	}
 }

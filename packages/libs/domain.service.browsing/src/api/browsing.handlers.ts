@@ -1,22 +1,18 @@
 import type { BrowsingState } from "@ctrl/base.schema";
 import {
-	type AppCommand,
 	BookmarkEvents,
 	EventBus,
 	NavigationEvents,
 	SessionEvents,
-	SystemEvents,
-	UIEvents,
-	WorkspaceEvents,
 } from "@ctrl/core.contract.event-bus";
+import { typedSend } from "@ctrl/core.impl.event-bus";
 import { BookmarkFeature } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeature } from "@ctrl/domain.feature.history";
-import { LayoutFeature } from "@ctrl/domain.feature.layout";
 import { OmniboxFeature } from "@ctrl/domain.feature.omnibox";
 import { SessionFeature } from "@ctrl/domain.feature.session";
 import { EventLog } from "@effect/experimental";
 import { Cause, Effect, Layer, Stream } from "effect";
-import { BROWSING_SERVICE } from "../lib/constants";
+import { WEB_BROWSING_SERVICE } from "../lib/constants";
 
 // -- EventLog.group() handlers — exhaustive, typed from EventGroup ------------
 
@@ -81,6 +77,14 @@ export const NavigationHandlers = EventLog.group(NavigationEvents, (h) =>
 			Effect.gen(function* () {
 				const sessions = yield* SessionFeature;
 				yield* sessions.updateTitle(payload.id, payload.title);
+
+				// Choreography: notify workspace of title changes
+				const bus = yield* EventBus;
+				yield* typedSend(bus)("ws.update-tab-meta", {
+					panelId: payload.id,
+					title: payload.title,
+					icon: undefined,
+				}).pipe(Effect.ignore);
 			}),
 		),
 );
@@ -101,51 +105,18 @@ export const BookmarkHandlers = EventLog.group(BookmarkEvents, (h) =>
 		),
 );
 
-// -- System + UI EventLog handlers --------------------------------------------
-
-export const SystemHandlers = EventLog.group(SystemEvents, (h) =>
-	h
-		.handle("state.request", () => publishSnapshot)
-		.handle("state.snapshot", () => Effect.void)
-		.handle("diag.ping", () =>
-			Effect.gen(function* () {
-				const bus = yield* EventBus;
-				yield* bus.publish({
-					type: "event",
-					name: SystemEvents.events["diag.pong"].tag,
-					payload: { message: "EventBus alive" },
-					timestamp: Date.now(),
-				});
-			}),
-		)
-		.handle("diag.pong", () => Effect.void),
-);
-
-export const UIHandlers = EventLog.group(UIEvents, (h) =>
-	h.handle("ui.toggle-omnibox", () => Effect.void).handle("ui.toggle-sidebar", () => Effect.void),
-);
-
 // -- Snapshot publishing ------------------------------------------------------
 
-const publishSnapshot = Effect.gen(function* () {
+const publishBrowsingSnapshot = Effect.gen(function* () {
 	const bus = yield* EventBus;
 	const sessions = yield* SessionFeature;
 	const bookmarks = yield* BookmarkFeature;
 	const history = yield* HistoryFeature;
-	const layout = yield* LayoutFeature;
-	const [s, b, h, l] = yield* Effect.all([
-		sessions.getAll(),
-		bookmarks.getAll(),
-		history.getAll(),
-		layout.getPersistedLayout().pipe(
-			Effect.map((persisted) => persisted ?? undefined),
-			Effect.catchAll(() => Effect.succeed(undefined)),
-		),
-	]);
+	const [s, b, h] = yield* Effect.all([sessions.getAll(), bookmarks.getAll(), history.getAll()]);
 	yield* bus.publish({
 		type: "event",
-		name: SystemEvents.events["state.snapshot"].tag,
-		payload: { sessions: s, bookmarks: b, history: h, layout: l } satisfies BrowsingState,
+		name: "browsing.snapshot",
+		payload: { sessions: s, bookmarks: b, history: h } satisfies BrowsingState,
 		timestamp: Date.now(),
 	});
 });
@@ -163,29 +134,30 @@ const MUTATION_ACTIONS: Set<string> = new Set([
 	NavigationEvents.events["nav.update-title"].tag,
 	BookmarkEvents.events["bm.add"].tag,
 	BookmarkEvents.events["bm.remove"].tag,
-	WorkspaceEvents.events["ws.split-panel"].tag,
-	WorkspaceEvents.events["ws.move-panel"].tag,
-	WorkspaceEvents.events["ws.close-panel"].tag,
 ]);
 
-// -- BrowsingServiceLive — bridges EventBus commands to EventLog dispatch -----
+// -- WebBrowsingServiceLive — bridges EventBus commands to EventLog dispatch --
 
-export const BrowsingServiceLive = Layer.scopedDiscard(
+export const WebBrowsingServiceLive = Layer.scopedDiscard(
 	Effect.gen(function* () {
 		const bus = yield* EventBus;
 		const client = yield* EventLog.makeClient(
-			EventLog.schema(
-				SessionEvents,
-				NavigationEvents,
-				BookmarkEvents,
-				WorkspaceEvents,
-				UIEvents,
-				SystemEvents,
-			),
+			EventLog.schema(SessionEvents, NavigationEvents, BookmarkEvents),
 		);
 
 		yield* bus.commands.pipe(
-			Stream.runForEach((cmd: AppCommand) => {
+			Stream.filter(
+				(cmd) =>
+					cmd.action.startsWith("session.") ||
+					cmd.action.startsWith("nav.") ||
+					cmd.action.startsWith("bm.") ||
+					cmd.action === "state.request",
+			),
+			Stream.runForEach((cmd) => {
+				if (cmd.action === "state.request") {
+					return publishBrowsingSnapshot.pipe(Effect.catchAllCause(() => Effect.void));
+				}
+
 				const action = cmd.action;
 				const payload = (cmd.payload ?? {}) as Record<string, unknown>;
 
@@ -197,23 +169,23 @@ export const BrowsingServiceLive = Layer.scopedDiscard(
 				}).pipe(
 					Effect.catchAllCause((cause) => {
 						if (Cause.isFailure(cause)) {
-							console.error(`[${BROWSING_SERVICE}] ${action}:`, Cause.pretty(cause));
+							console.error(`[${WEB_BROWSING_SERVICE}] ${action}:`, Cause.pretty(cause));
 						}
 						return Effect.void;
 					}),
 				);
 
 				if (MUTATION_ACTIONS.has(action)) {
-					return effect.pipe(Effect.andThen(publishSnapshot));
+					return effect.pipe(Effect.andThen(publishBrowsingSnapshot));
 				}
 				return effect;
 			}),
 			Effect.forkScoped,
 		);
 
-		// Publish initial state snapshot
-		yield* publishSnapshot;
+		// Publish initial browsing snapshot
+		yield* publishBrowsingSnapshot;
 
-		console.info(`[bun] ${BROWSING_SERVICE} started`);
+		console.info(`[bun] ${WEB_BROWSING_SERVICE} started`);
 	}),
 );
