@@ -1,5 +1,5 @@
 {
-	"name": "@ctrl/core.middleware.dev-server",
+	"name": "@ctrl/core.middleware.mcp",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",

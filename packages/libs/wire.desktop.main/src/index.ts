@@ -8,7 +8,7 @@ import {
 } from "@ctrl/core.impl.db";
 import { EventBusLive } from "@ctrl/core.impl.event-bus";
 import { type ElectrobunIpcHandle, IpcBridgeLive } from "@ctrl/core.impl.ipc-bridge";
-import { DevServerLive } from "@ctrl/core.middleware.dev-server";
+import { McpServerLive } from "@ctrl/core.middleware.mcp";
 import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/core.middleware.otel/node";
 import { BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
@@ -116,7 +116,7 @@ const SystemServiceLayer = SystemServiceLive.pipe(
 
 // -- Dev Server ---------------------------------------------------------------
 
-const DevServerLayer = DevServerLive.pipe(Layer.provide(EventBusLive));
+const McpLayer = McpServerLive.pipe(Layer.provide(EventBusLive));
 
 // -- Compose ------------------------------------------------------------------
 
@@ -136,7 +136,7 @@ export const createMainProcess = (handle: ElectrobunIpcHandle, dbPath: string) =
 		BrowsingServiceLayer,
 		WorkspaceServiceLayer,
 		SystemServiceLayer,
-		DevServerLayer,
+		McpLayer,
 	);
 	return Layer.mergeAll(
 		DbClientLive,
