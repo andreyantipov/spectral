@@ -14,7 +14,7 @@ export default {
   },
   build: {
     bun: {
-      entrypoint: "build/bun-entry.js",
+      entrypoint: "build/index.js",
       external: ["@libsql/client"],
     },
     views: {},

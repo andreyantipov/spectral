@@ -50,7 +50,7 @@ function WorkspaceContent() {
 		throw new Error("WorkspaceContent must be rendered inside BindingsContext.Provider");
 	const bindings = maybeBindings;
 	const api = useApi();
-	const browsingState = api.on<BrowsingState>("state.snapshot");
+	const browsingState = api.on<BrowsingState>("browsing.snapshot");
 
 	const { layout, focusedGroupId, setFocusedGroupId, handleCommand } = useWorkspace();
 
