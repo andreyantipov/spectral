@@ -8,9 +8,8 @@
 			"command": "bun",
 			"args": ["run", "packages/tools/mcp-architecture.ts"]
 		},
-		"spectral-dev": {
-			"command": "bun",
-			"args": ["run", "packages/apps/dev-mcp/src/index.ts"]
+		"spectral-mcp-bus": {
+			"url": "http://localhost:50100/mcp"
 		},
 		"ast-grep": {
 			"command": "uvx",
