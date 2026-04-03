@@ -1,4 +1,4 @@
-import { TerminalError } from "@ctrl/core.contract.terminal";
+import { TerminalError } from "@ctrl/base.error";
 import { EventGroup } from "@effect/experimental";
 import { Schema } from "effect";
 

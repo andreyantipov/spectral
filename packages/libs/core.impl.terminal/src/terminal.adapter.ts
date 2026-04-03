@@ -1,5 +1,29 @@
+import { readFileSync } from "node:fs";
 import { TerminalError, TerminalPort } from "@ctrl/core.contract.terminal";
 import { Effect, Layer, PubSub, Stream } from "effect";
+
+const ALLOWED_SHELLS_FALLBACK = new Set([
+	"/bin/sh",
+	"/bin/bash",
+	"/bin/zsh",
+	"/usr/bin/fish",
+	"/bin/fish",
+]);
+
+function isValidShell(shell: string): boolean {
+	try {
+		const etcShells = readFileSync("/etc/shells", "utf-8");
+		const shells = new Set(
+			etcShells
+				.split("\n")
+				.map((s) => s.trim())
+				.filter((s) => s && !s.startsWith("#")),
+		);
+		return shells.has(shell);
+	} catch {
+		return ALLOWED_SHELLS_FALLBACK.has(shell);
+	}
+}
 
 type TerminalEntry = {
 	process: ReturnType<typeof Bun.spawn>;
@@ -62,13 +86,22 @@ export const TerminalAdapterLive = Layer.effect(
 						);
 					}
 
+					if (!isValidShell(shell)) {
+						return yield* Effect.fail(
+							new TerminalError({
+								reason: "spawn-failed",
+								message: `Shell not in /etc/shells: ${shell}`,
+							}),
+						);
+					}
+
 					const proc = Bun.spawn([shell], {
 						cwd,
 						terminal: {
 							cols: 80,
 							rows: 24,
 							data(_terminal, data) {
-								Effect.runSync(PubSub.publish(output, new Uint8Array(data)));
+								Effect.runFork(PubSub.publish(output, new Uint8Array(data)));
 							},
 							exit() {
 								const entry = terminals.get(id);

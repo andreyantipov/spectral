@@ -12,7 +12,6 @@
 	},
 	"dependencies": {
 		"@ctrl/base.error": "workspace:*",
-		"@ctrl/base.schema": "workspace:*",
-		"@ctrl/core.contract.terminal": "workspace:*"
+		"@ctrl/base.schema": "workspace:*"
 	}
 }

@@ -8,5 +8,8 @@
 	},
 	"scripts": {
 		"check": "tsgo --noEmit"
+	},
+	"dependencies": {
+		"@ctrl/base.error": "workspace:*"
 	}
 }
