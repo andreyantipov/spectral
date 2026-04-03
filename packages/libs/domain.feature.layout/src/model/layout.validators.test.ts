@@ -4,6 +4,7 @@ import {
 	GroupNodeSchema,
 	LayoutNodeSchema,
 	PanelRefSchema,
+	PersistedLayoutSchema,
 	SplitNodeSchema,
 } from "./layout.validators";
 
@@ -12,46 +13,58 @@ describe("Layout Schemas", () => {
 		const result = Schema.decodeUnknownSync(PanelRefSchema)({
 			id: "panel-1",
 			type: "session",
-			sessionId: "session-abc",
+			entityId: "session-abc",
+			icon: null,
 		});
 		expect(result.id).toBe("panel-1");
 		expect(result.type).toBe("session");
-		expect(result.sessionId).toBe("session-abc");
+		expect(result.entityId).toBe("session-abc");
+		expect(result.title).toBe("New Tab");
+		expect(result.icon).toBeNull();
 	});
 
 	it("validates a tool PanelRef", () => {
 		const result = Schema.decodeUnknownSync(PanelRefSchema)({
 			id: "panel-2",
 			type: "tool",
-			toolId: "bookmarks",
+			entityId: "bookmarks",
+			title: "Bookmarks",
+			icon: "bookmark-icon",
 		});
 		expect(result.type).toBe("tool");
-		expect(result.toolId).toBe("bookmarks");
+		expect(result.entityId).toBe("bookmarks");
+		expect(result.title).toBe("Bookmarks");
+		expect(result.icon).toBe("bookmark-icon");
 	});
 
 	it("validates a GroupNode", () => {
 		const result = Schema.decodeUnknownSync(GroupNodeSchema)({
+			id: "group-1",
 			type: "group",
-			panels: [{ id: "p1", type: "session", sessionId: "s1" }],
+			panels: [{ id: "p1", type: "session", entityId: "s1", icon: null }],
 			activePanel: "p1",
 		});
 		expect(result.type).toBe("group");
 		expect(result.panels).toHaveLength(1);
+		expect(result.id).toBe("group-1");
 	});
 
 	it("validates a SplitNode", () => {
 		const result = Schema.decodeUnknownSync(SplitNodeSchema)({
+			id: "split-1",
 			type: "split",
 			direction: "horizontal",
 			children: [
 				{
+					id: "group-1",
 					type: "group",
-					panels: [{ id: "p1", type: "session", sessionId: "s1" }],
+					panels: [{ id: "p1", type: "session", entityId: "s1", icon: null }],
 					activePanel: "p1",
 				},
 				{
+					id: "group-2",
 					type: "group",
-					panels: [{ id: "p2", type: "session", sessionId: "s2" }],
+					panels: [{ id: "p2", type: "session", entityId: "s2", icon: null }],
 					activePanel: "p2",
 				},
 			],
@@ -64,26 +77,45 @@ describe("Layout Schemas", () => {
 
 	it("validates nested layout tree", () => {
 		const tree = {
+			id: "split-root",
 			type: "split",
 			direction: "horizontal",
 			children: [
 				{
+					id: "group-1",
 					type: "group",
-					panels: [{ id: "p1", type: "session", sessionId: "s1" }],
+					panels: [{ id: "p1", type: "session", entityId: "s1", icon: null }],
 					activePanel: "p1",
 				},
 				{
+					id: "split-nested",
 					type: "split",
 					direction: "vertical",
 					children: [
 						{
+							id: "group-2",
 							type: "group",
-							panels: [{ id: "p2", type: "tool", toolId: "bookmarks" }],
+							panels: [
+								{
+									id: "p2",
+									type: "tool",
+									entityId: "bookmarks",
+									icon: "bookmark-icon",
+								},
+							],
 							activePanel: "p2",
 						},
 						{
+							id: "group-3",
 							type: "group",
-							panels: [{ id: "p3", type: "session", sessionId: "s3" }],
+							panels: [
+								{
+									id: "p3",
+									type: "session",
+									entityId: "s3",
+									icon: null,
+								},
+							],
 							activePanel: "p3",
 						},
 					],
@@ -99,11 +131,35 @@ describe("Layout Schemas", () => {
 	it("rejects invalid direction", () => {
 		expect(() =>
 			Schema.decodeUnknownSync(SplitNodeSchema)({
+				id: "split-1",
 				type: "split",
 				direction: "diagonal",
 				children: [],
 				sizes: [],
 			}),
 		).toThrow();
+	});
+
+	it("rejects v1 format with dockviewState", () => {
+		expect(() =>
+			Schema.decodeUnknownSync(PersistedLayoutSchema)({
+				version: 1,
+				dockviewState: { panels: {} },
+			}),
+		).toThrow();
+	});
+
+	it("validates v2 PersistedLayout", () => {
+		const result = Schema.decodeUnknownSync(PersistedLayoutSchema)({
+			version: 2,
+			root: {
+				id: "group-1",
+				type: "group",
+				panels: [{ id: "p1", type: "session", entityId: "s1", icon: null }],
+				activePanel: "p1",
+			},
+		});
+		expect(result.version).toBe(2);
+		expect(result.root.type).toBe("group");
 	});
 });
