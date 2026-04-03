@@ -1,9 +1,0 @@
-{
-	"name": "@ctrl/dev-mcp",
-	"version": "0.0.1",
-	"private": true,
-	"type": "module",
-	"bin": {
-		"dev-mcp": "./src/index.ts"
-	}
-}

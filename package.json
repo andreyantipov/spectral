@@ -57,7 +57,7 @@
 		"@dschz/bun-plugin-solid": "^1.0.4",
 		"@effect/language-service": "^0.84.2",
 		"@eventcatalog/sdk": "^2.18.3",
-		"@modelcontextprotocol/sdk": "^1.28.0",
+		"@modelcontextprotocol/sdk": "^1.29.0",
 		"@pandacss/dev": "^1.9.0",
 		"@semantic-release/changelog": "^6.0.3",
 		"@semantic-release/git": "^10.0.1",
