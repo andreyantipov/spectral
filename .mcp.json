@@ -9,7 +9,8 @@
 			"args": ["run", "packages/tools/mcp-architecture.ts"]
 		},
 		"spectral-mcp-bus": {
-			"url": "http://localhost:50100/mcp"
+			"command": "bunx",
+			"args": ["mcp-remote", "http://localhost:50100/mcp"]
 		},
 		"ast-grep": {
 			"command": "uvx",
