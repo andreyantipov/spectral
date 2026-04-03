@@ -24,12 +24,7 @@ if (!result.success) {
 	process.exit(1);
 }
 
-// Combine ui.base.components styles + dockview CSS + theme overrides
+// Combine ui.base.components styles (dockview removed — CSS Grid tiling now)
 const coreStyles = readFileSync("../../libs/ui.base.components/build/styles.css", "utf8");
-const dockviewCss = readFileSync(
-	"../../../node_modules/dockview-core/dist/styles/dockview.css",
-	"utf8",
-);
-const overrides = readFileSync("src/main-ui/dockview-overrides.css", "utf8");
-writeFileSync("build/main-ui/styles.css", `${coreStyles}\n${dockviewCss}\n${overrides}`);
+writeFileSync("build/main-ui/styles.css", coreStyles);
 console.info("View built successfully");

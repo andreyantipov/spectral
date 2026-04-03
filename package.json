@@ -47,7 +47,6 @@
 		"@opentelemetry/sdk-trace-web": "^2.6.0",
 		"@zag-js/solid": "^1.36.0",
 		"@zag-js/toast": "^1.36.0",
-		"dockview-core": "^5.1.0",
 		"drizzle-orm": "^0.45.1",
 		"effect": "^3.19.19",
 		"electrobun": "1.15.1",
