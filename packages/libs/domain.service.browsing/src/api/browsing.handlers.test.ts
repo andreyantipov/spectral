@@ -6,6 +6,8 @@ import {
 	EventBus,
 	NavigationEvents,
 	SessionEvents,
+	TerminalEvents,
+	WorkspaceEvents,
 } from "@ctrl/core.contract.event-bus";
 import { StateSync } from "@ctrl/core.contract.state-sync";
 import {
@@ -192,6 +194,26 @@ const makeMockLayers = () => {
 	// EventLog layers (required by WebBrowsingServiceLive)
 	const IdentityLive = Layer.succeed(EventLogMod.Identity, EventLogMod.Identity.makeRandom());
 	const JournalLive = EventJournal.layerMemory;
+	// Inline stub for WorkspaceHandlers — real implementation lives in domain.service.workspace
+	const TestWorkspaceHandlers = EventLogMod.group(WorkspaceEvents, (h) =>
+		h
+			.handle("ws.update-layout", () => Effect.void)
+			.handle("ws.split-panel", () => Effect.void)
+			.handle("ws.move-panel", () => Effect.void)
+			.handle("ws.close-panel", () => Effect.void)
+			.handle("ws.resize", () => Effect.void)
+			.handle("ws.activate-panel", () => Effect.void)
+			.handle("ws.reorder-panel", () => Effect.void)
+			.handle("ws.add-panel", () => Effect.void)
+			.handle("ws.update-tab-meta", () => Effect.void),
+	);
+	// Inline stub for TerminalHandlers — real implementation lives in domain.service.terminal
+	const TestTerminalHandlers = EventLogMod.group(TerminalEvents, (h) =>
+		h
+			.handle("term.create", () => Effect.succeed({ id: "stub" }))
+			.handle("term.resize", () => Effect.void)
+			.handle("term.close", () => Effect.void),
+	);
 
 	const HandlersLive = Layer.mergeAll(
 		SessionHandlers.pipe(Layer.provide(SessionLayer)),
@@ -202,6 +224,8 @@ const makeMockLayers = () => {
 			Layer.provide(TestEventBusLive),
 		),
 		BookmarkHandlers.pipe(Layer.provide(BookmarkLayer)),
+		TestWorkspaceHandlers,
+		TestTerminalHandlers,
 	);
 	const EventLogLive = EventLogMod.layer(
 		EventLogMod.schema(SessionEvents, NavigationEvents, BookmarkEvents),

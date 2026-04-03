@@ -1,4 +1,4 @@
-import { AppEvents, EventBus } from "@ctrl/core.contract.event-bus";
+import { AppEvents, EventBus, TerminalEvents } from "@ctrl/core.contract.event-bus";
 import { StateSync } from "@ctrl/core.contract.state-sync";
 import {
 	BookmarkRepositoryLive,
@@ -53,6 +53,14 @@ const LayoutFeatureLayer = LayoutFeatureLive.pipe(Layer.provide(LayoutRepository
 
 // -- EventLog: typed handlers + in-memory journal -----------------------------
 
+// Stub terminal handlers — real implementation will be wired via domain.service.terminal
+const TerminalHandlers = EventLog.group(TerminalEvents, (h) =>
+	h
+		.handle("term.create", () => Effect.succeed({ id: "stub" }))
+		.handle("term.resize", () => Effect.void)
+		.handle("term.close", () => Effect.void),
+);
+
 const IdentityLive = Layer.effect(
 	EventLog.Identity,
 	Effect.sync(() => EventLog.Identity.makeRandom()),
@@ -79,6 +87,7 @@ const SystemHandlersLive = Layer.mergeAll(
 	SystemHandlers.pipe(Layer.provide(EventBusLive)),
 	UIHandlers,
 	SettingsHandlers.pipe(Layer.provide(SettingsFeatureLive)),
+	TerminalHandlers,
 );
 
 const HandlersLive = Layer.mergeAll(
@@ -205,3 +214,21 @@ export const createMainProcess = (handle: ElectrobunIpcHandle, dbPath: string) =
 		).pipe(Layer.provide(DbClientLive), Layer.provide(OtelLayer)),
 	);
 };
+
+// -- Terminal Service (activate after UI rework PR merges) --------------------
+// Replace the stub TerminalHandlers above with:
+//
+//   import { TerminalAdapterLive } from "@ctrl/core.impl.terminal";
+//   import { TerminalFeatureLive } from "@ctrl/domain.feature.terminal";
+//   import { TerminalHandlers as RealTerminalHandlers } from "@ctrl/domain.service.terminal";
+//
+//   const TerminalFeatureLayer = TerminalFeatureLive.pipe(
+//     Layer.provide(TerminalAdapterLive),
+//   );
+//
+//   // In HandlersLive, replace stub with:
+//   RealTerminalHandlers.pipe(Layer.provide(TerminalFeatureLayer)),
+//
+//   // Add to MUTATION_ACTIONS in browsing.handlers.ts:
+//   TerminalEvents.events["term.create"].tag,
+//   TerminalEvents.events["term.close"].tag,

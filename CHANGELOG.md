@@ -1,3 +1,10 @@
+# [0.17.0](https://github.com/andreyantipov/spectral/compare/v0.16.2...v0.17.0) (2026-04-03)
+
+
+### Features
+
+* native terminal pane — Bun.Terminal + libghostty-vt WASM + WebGL 2 ([#25](https://github.com/andreyantipov/spectral/issues/25)) ([d44acc5](https://github.com/andreyantipov/spectral/commit/d44acc53cb851ef829c4508e9bc767dc310ad77a))
+
 ## [0.16.2](https://github.com/andreyantipov/spectral/compare/v0.16.1...v0.16.2) (2026-03-29)
 
 
