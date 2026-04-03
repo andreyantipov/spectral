@@ -1,5 +1,17 @@
 import type { GroupNode, LayoutNode, PanelRef, SplitNode } from "../model/layout.validators";
 
+// -- Tree queries -------------------------------------------------------------
+
+/** Find the ID of the first group node via depth-first traversal */
+export const findFirstGroupId = (node: LayoutNode): string | null => {
+	if (node.type === "group") return node.id;
+	for (const child of node.children) {
+		const id = findFirstGroupId(child);
+		if (id) return id;
+	}
+	return null;
+};
+
 // -- Factory functions --------------------------------------------------------
 
 export const makeGroupNode = (panels: readonly PanelRef[], activePanel: string): GroupNode => ({

@@ -1,4 +1,5 @@
 import { EventBus, SettingsEvents, SystemEvents, UIEvents } from "@ctrl/core.contract.event-bus";
+import { StateSync } from "@ctrl/core.contract.state-sync";
 import { SettingsFeature } from "@ctrl/domain.feature.settings";
 import { EventLog } from "@effect/experimental";
 import { Cause, Effect, Layer, Stream } from "effect";
@@ -8,8 +9,6 @@ import { SYSTEM_SERVICE } from "../lib/constants";
 
 export const SystemHandlers = EventLog.group(SystemEvents, (h) =>
 	h
-		.handle("state.request", () => Effect.void)
-		.handle("state.snapshot", () => Effect.void)
 		.handle("diag.ping", () =>
 			Effect.gen(function* () {
 				const bus = yield* EventBus;
@@ -21,7 +20,51 @@ export const SystemHandlers = EventLog.group(SystemEvents, (h) =>
 				});
 			}),
 		)
-		.handle("diag.pong", () => Effect.void),
+		.handle("diag.pong", () => Effect.void)
+		.handle("diag.eval-js", ({ payload }) =>
+			Effect.gen(function* () {
+				const bus = yield* EventBus;
+				yield* bus.publish({
+					type: "event",
+					name: "diag.eval-js-request",
+					payload,
+					timestamp: Date.now(),
+				});
+			}),
+		)
+		.handle("diag.eval-js-result", ({ payload }) =>
+			Effect.gen(function* () {
+				const bus = yield* EventBus;
+				yield* bus.publish({
+					type: "event",
+					name: "diag.eval-js-result",
+					payload,
+					timestamp: Date.now(),
+				});
+			}),
+		)
+		.handle("diag.screenshot", () =>
+			Effect.gen(function* () {
+				const bus = yield* EventBus;
+				yield* bus.publish({
+					type: "event",
+					name: "diag.screenshot-request",
+					payload: {},
+					timestamp: Date.now(),
+				});
+			}),
+		)
+		.handle("diag.screenshot-result", ({ payload }) =>
+			Effect.gen(function* () {
+				const bus = yield* EventBus;
+				yield* bus.publish({
+					type: "event",
+					name: "diag.screenshot-result",
+					payload,
+					timestamp: Date.now(),
+				});
+			}),
+		),
 );
 
 export const UIHandlers = EventLog.group(UIEvents, (h) =>
@@ -46,10 +89,15 @@ export const SystemServiceLive = Layer.scopedDiscard(
 			EventLog.schema(SystemEvents, UIEvents, SettingsEvents),
 		);
 
+		const sync = yield* StateSync;
+		const settings = yield* SettingsFeature;
+		yield* sync.register("settings", () =>
+			settings.getShortcuts().pipe(Effect.map((shortcuts) => ({ shortcuts }))),
+		);
+
 		yield* bus.commands.pipe(
 			Stream.filter(
 				(cmd) =>
-					cmd.action.startsWith("state.") ||
 					cmd.action.startsWith("diag.") ||
 					cmd.action.startsWith("ui.") ||
 					cmd.action.startsWith("settings."),

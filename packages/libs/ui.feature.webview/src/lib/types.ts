@@ -14,6 +14,8 @@ export type ManagedWebviewProps = {
 	onNavigate?: (url: string) => void;
 	/** Called when page title changes */
 	onTitleChange?: (title: string) => void;
+	/** Called when a link opens in a new window (target="_blank", window.open) */
+	onNewWindow?: (url: string) => void;
 };
 
 /** Electrobun webview element interface (runtime API) */

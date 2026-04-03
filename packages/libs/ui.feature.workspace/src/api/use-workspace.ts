@@ -5,7 +5,7 @@ import type { WorkspaceCommand } from "../ui/types";
 
 export function useWorkspace() {
 	const api = useApi();
-	const workspaceState = api.on<WorkspaceState>("workspace.snapshot");
+	const workspaceState = api.state<WorkspaceState>("workspace");
 
 	const layout = () => workspaceState()?.root ?? null;
 

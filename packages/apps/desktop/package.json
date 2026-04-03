@@ -9,12 +9,12 @@
 		"@ctrl/base.type": "workspace:*",
 		"@ctrl/core.contract.event-bus": "workspace:*",
 		"@ctrl/core.contract.storage": "workspace:*",
+		"@ctrl/domain.feature.settings": "workspace:*",
 		"@ctrl/ui.base.api": "workspace:*",
 		"@ctrl/ui.base.components": "workspace:*",
-		"@ctrl/domain.feature.settings": "workspace:*",
+		"@ctrl/ui.scene.main": "workspace:*",
 		"@ctrl/wire.desktop.main": "workspace:*",
 		"@ctrl/wire.desktop.ui": "workspace:*",
-		"@ctrl/ui.scene.main": "workspace:*",
 		"electrobun": "1.15.1"
 	},
 	"scripts": {

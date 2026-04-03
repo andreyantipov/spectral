@@ -19,6 +19,7 @@ export function dispatchShortcut(
 	const command: AppCommand = {
 		type: "command",
 		action: binding.action,
+		payload: binding.payload,
 		meta: { source: "keyboard" },
 	};
 

@@ -7,6 +7,7 @@ import {
 	findAndResize,
 	findAndSplitPanel,
 	findAndUpdateTabMeta,
+	findFirstGroupId,
 	insertPanelIntoGroup,
 	LayoutFeature,
 } from "@ctrl/domain.feature.layout";
@@ -88,7 +89,12 @@ export const WorkspaceHandlers = EventLog.group(WorkspaceEvents, (h) =>
 			Effect.gen(function* () {
 				const layout = yield* LayoutFeature;
 				const current = yield* layout.getLayout();
-				const updated = insertPanelIntoGroup(current, payload.groupId, payload.panel);
+				// __auto__ = find first group in tree
+				let groupId = payload.groupId;
+				if (groupId === "__auto__") {
+					groupId = findFirstGroupId(current) ?? current.id;
+				}
+				const updated = insertPanelIntoGroup(current, groupId, payload.panel);
 				yield* layout.updateLayout({ version: 2, root: updated });
 			}),
 		)

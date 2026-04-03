@@ -53,7 +53,11 @@ ApplicationMenu.setApplicationMenu([
 	},
 	{
 		label: "File",
-		submenu: [{ label: "Close Window", role: "close", accelerator: "Cmd+W" }],
+		submenu: [
+			{ label: "New Tab", action: "new-tab", accelerator: "Cmd+T" },
+			{ type: "separator" },
+			{ label: "Close Window", role: "close", accelerator: "Cmd+W" },
+		],
 	},
 	{
 		label: "Edit",
@@ -84,6 +88,20 @@ ApplicationMenu.setApplicationMenu([
 // Menu accelerator → EventBus command
 ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
 	const data = (event as { data?: { action?: string } })?.data;
+	if (data?.action === "new-tab") {
+		void runtime.runPromise(
+			EventBus.pipe(
+				Effect.flatMap((bus) =>
+					bus.send({
+						type: "command",
+						action: "session.create",
+						payload: { mode: "visual" },
+						meta: { source: "keyboard" },
+					}),
+				),
+			),
+		);
+	}
 	if (data?.action === "toggle-command-center") {
 		void runtime.runPromise(
 			EventBus.pipe(

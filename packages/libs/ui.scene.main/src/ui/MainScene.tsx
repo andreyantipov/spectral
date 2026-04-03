@@ -1,4 +1,4 @@
-import type { BrowsingState, LayoutNode, PanelRef } from "@ctrl/base.schema";
+import type { BrowsingState, PanelRef } from "@ctrl/base.schema";
 import { currentUrl } from "@ctrl/base.type";
 import { useApi } from "@ctrl/ui.base.api";
 import { BlankPage } from "@ctrl/ui.base.components";
@@ -6,88 +6,9 @@ import { KeyboardProvider } from "@ctrl/ui.feature.keyboard-provider";
 import { SidebarFeature, type WebviewBindings } from "@ctrl/ui.feature.sidebar";
 import { ManagedWebview, syncAllWebviewDimensions } from "@ctrl/ui.feature.webview";
 import { LayoutRoot, useWorkspace } from "@ctrl/ui.feature.workspace";
+import html2canvas from "html2canvas";
 import { createContext, createEffect, Show, useContext } from "solid-js";
 import { SHORTCUT_PRELOAD } from "../lib/webview-constants";
-
-function countPanels(node: LayoutNode): number {
-	if (node.type === "group") return node.panels.length;
-	return node.children.reduce((sum, c) => sum + countPanels(c), 0);
-}
-
-function collectPanelIds(node: LayoutNode): Set<string> {
-	if (node.type === "group") return new Set(node.panels.map((p) => p.id));
-	const ids = new Set<string>();
-	for (const child of node.children) {
-		for (const id of collectPanelIds(child)) ids.add(id);
-	}
-	return ids;
-}
-
-function resolveSessionTitle(s: {
-	pages?: readonly { title?: string | null }[];
-	currentIndex?: number;
-}): string {
-	const page = s.pages?.[s.currentIndex ?? 0];
-	return page?.title ?? "New Tab";
-}
-
-function findFirstGroupId(node: LayoutNode): string | null {
-	if (node.type === "group") return node.id;
-	for (const child of node.children) {
-		const id = findFirstGroupId(child);
-		if (id) return id;
-	}
-	return null;
-}
-
-function makePanelFromSession(s: {
-	id: string;
-	pages?: readonly { title?: string | null }[];
-	currentIndex?: number;
-}): PanelRef {
-	return {
-		id: s.id,
-		type: "session" as const,
-		entityId: s.id,
-		title: resolveSessionTitle(s),
-		icon: null,
-	};
-}
-
-function syncSessionsToLayout(
-	api: ReturnType<typeof useApi>,
-	sessions: readonly {
-		id: string;
-		isActive?: boolean;
-		pages?: readonly { title?: string | null }[];
-		currentIndex?: number;
-	}[],
-	currentLayout: LayoutNode | null,
-) {
-	const sessionIds = new Set(sessions.map((s) => s.id));
-	const layoutPanelIds = currentLayout ? collectPanelIds(currentLayout) : new Set<string>();
-	const missing = sessions.filter((s) => !layoutPanelIds.has(s.id));
-	const stale = [...layoutPanelIds].filter((id) => !sessionIds.has(id));
-	if (missing.length === 0 && stale.length === 0) return;
-
-	if (!currentLayout || countPanels(currentLayout) === 0) {
-		const panels = sessions.map(makePanelFromSession);
-		const activePanel = sessions.find((s) => s.isActive)?.id ?? sessions[0]?.id ?? "";
-		api.dispatch("ws.update-layout", {
-			layout: { version: 2, root: { id: crypto.randomUUID(), type: "group", panels, activePanel } },
-		});
-		return;
-	}
-
-	const firstGroupId = findFirstGroupId(currentLayout);
-	for (const s of missing) {
-		if (!firstGroupId) break;
-		api.dispatch("ws.add-panel", { groupId: firstGroupId, panel: makePanelFromSession(s) });
-	}
-	for (const id of stale) {
-		api.dispatch("ws.close-panel", { panelId: id });
-	}
-}
 
 const BindingsContext = createContext<WebviewBindings>();
 
@@ -123,6 +44,7 @@ function SessionPanel(props: { panel: PanelRef }) {
 			preload={SHORTCUT_PRELOAD}
 			onNavigate={(navUrl) => bindings?.onNavigate(sessionId, navUrl)}
 			onTitleChange={(title) => bindings?.onTitleChange(sessionId, title)}
+			onNewWindow={(targetUrl) => bindings?.onNavigate(sessionId, targetUrl)}
 		/>
 	);
 }
@@ -133,17 +55,75 @@ function WorkspaceContent() {
 		throw new Error("WorkspaceContent must be rendered inside BindingsContext.Provider");
 	const bindings = maybeBindings;
 	const api = useApi();
-	const browsingState = api.on<BrowsingState>("browsing.snapshot");
+	const browsingState = api.state<BrowsingState>("browsing");
 
 	const { layout, focusedGroupId, setFocusedGroupId, handleCommand } = useWorkspace();
 
 	const hasSessions = () => (browsingState()?.sessions?.length ?? 0) > 0;
 
-	// Sync sessions ↔ layout panels (replaces old dockview syncPanels)
+	// Screenshot handler: capture DOM when diag.screenshot-request arrives
+	const screenshotRequest = api.on("diag.screenshot-request");
 	createEffect(() => {
-		const sessions = browsingState()?.sessions;
-		const currentLayout = layout();
-		if (sessions) syncSessionsToLayout(api, sessions, currentLayout);
+		const req = screenshotRequest();
+		if (req === undefined) return;
+		html2canvas(document.body, {
+			scale: 1,
+			useCORS: true,
+			allowTaint: true,
+			removeContainer: true,
+			ignoreElements: (el: Element) => {
+				const tag = el.tagName?.toLowerCase();
+				return tag === "webview" || tag === "iframe" || tag === "electrobun-webview";
+			},
+		})
+			.then((canvas) => {
+				api.send("diag.screenshot-result", {
+					data: canvas.toDataURL("image/png").split(",")[1],
+					width: canvas.width,
+					height: canvas.height,
+					timestamp: Date.now(),
+				});
+			})
+			.catch((err) => {
+				// Fallback: send a canvas with error info
+				const c = document.createElement("canvas");
+				c.width = window.innerWidth;
+				c.height = window.innerHeight;
+				const ctx = c.getContext("2d");
+				if (ctx) {
+					ctx.fillStyle = "#1a1a2e";
+					ctx.fillRect(0, 0, c.width, c.height);
+					ctx.fillStyle = "#ff6b6b";
+					ctx.font = "14px monospace";
+					ctx.fillText(`Screenshot capture error: ${err}`, 16, 32);
+				}
+				api.send("diag.screenshot-result", {
+					data: c.toDataURL("image/png").split(",")[1],
+					width: c.width,
+					height: c.height,
+					timestamp: Date.now(),
+				});
+			});
+	});
+
+	// JS eval handler: execute arbitrary JS in the webview context
+	const evalJsRequest = api.on<{ code: string }>("diag.eval-js-request");
+	createEffect(() => {
+		const req = evalJsRequest();
+		if (req === undefined) return;
+		try {
+			const fn = new Function(req.code);
+			const result = fn();
+			if (result instanceof Promise) {
+				result
+					.then((v: unknown) => api.send("diag.eval-js-result", { result: String(v) }))
+					.catch((e: unknown) => api.send("diag.eval-js-result", { result: "", error: String(e) }));
+			} else {
+				api.send("diag.eval-js-result", { result: String(result) });
+			}
+		} catch (e) {
+			api.send("diag.eval-js-result", { result: "", error: String(e) });
+		}
 	});
 
 	// Register split handler so sidebar context menu can split panes

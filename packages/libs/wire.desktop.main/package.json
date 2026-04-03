@@ -11,8 +11,10 @@
 	},
 	"dependencies": {
 		"@ctrl/core.contract.event-bus": "workspace:*",
+		"@ctrl/core.contract.state-sync": "workspace:*",
 		"@ctrl/core.contract.storage": "workspace:*",
 		"@ctrl/core.impl.db": "workspace:*",
+		"@ctrl/core.impl.state-sync": "workspace:*",
 		"@ctrl/core.impl.event-bus": "workspace:*",
 		"@ctrl/core.impl.ipc-bridge": "workspace:*",
 		"@ctrl/core.middleware.otel": "workspace:*",

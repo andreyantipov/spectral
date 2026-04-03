@@ -16,6 +16,7 @@
 		"@ctrl/base.tracing": "workspace:*",
 		"@ctrl/base.type": "workspace:*",
 		"@ctrl/core.contract.event-bus": "workspace:*",
+		"@ctrl/core.contract.state-sync": "workspace:*",
 		"@ctrl/core.contract.storage": "workspace:*",
 		"@ctrl/core.impl.event-bus": "workspace:*",
 		"@ctrl/domain.feature.bookmark": "workspace:*",

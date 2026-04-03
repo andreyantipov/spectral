@@ -1,10 +1,10 @@
-import type { BrowsingState } from "@ctrl/base.schema";
 import {
 	BookmarkEvents,
 	EventBus,
 	NavigationEvents,
 	SessionEvents,
 } from "@ctrl/core.contract.event-bus";
+import { StateSync } from "@ctrl/core.contract.state-sync";
 import { typedSend } from "@ctrl/core.impl.event-bus";
 import { BookmarkFeature } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeature } from "@ctrl/domain.feature.history";
@@ -105,37 +105,6 @@ export const BookmarkHandlers = EventLog.group(BookmarkEvents, (h) =>
 		),
 );
 
-// -- Snapshot publishing ------------------------------------------------------
-
-const publishBrowsingSnapshot = Effect.gen(function* () {
-	const bus = yield* EventBus;
-	const sessions = yield* SessionFeature;
-	const bookmarks = yield* BookmarkFeature;
-	const history = yield* HistoryFeature;
-	const [s, b, h] = yield* Effect.all([sessions.getAll(), bookmarks.getAll(), history.getAll()]);
-	yield* bus.publish({
-		type: "event",
-		name: "browsing.snapshot",
-		payload: { sessions: s, bookmarks: b, history: h } satisfies BrowsingState,
-		timestamp: Date.now(),
-	});
-});
-
-// -- Commands that trigger snapshot -------------------------------------------
-
-const MUTATION_ACTIONS: Set<string> = new Set([
-	SessionEvents.events["session.create"].tag,
-	SessionEvents.events["session.close"].tag,
-	SessionEvents.events["session.activate"].tag,
-	NavigationEvents.events["nav.navigate"].tag,
-	NavigationEvents.events["nav.back"].tag,
-	NavigationEvents.events["nav.forward"].tag,
-	NavigationEvents.events["nav.report"].tag,
-	NavigationEvents.events["nav.update-title"].tag,
-	BookmarkEvents.events["bm.add"].tag,
-	BookmarkEvents.events["bm.remove"].tag,
-]);
-
 // -- WebBrowsingServiceLive — bridges EventBus commands to EventLog dispatch --
 
 export const WebBrowsingServiceLive = Layer.scopedDiscard(
@@ -145,27 +114,63 @@ export const WebBrowsingServiceLive = Layer.scopedDiscard(
 			EventLog.schema(SessionEvents, NavigationEvents, BookmarkEvents),
 		);
 
+		const sync = yield* StateSync;
+		const sessions = yield* SessionFeature;
+		const bookmarks = yield* BookmarkFeature;
+		const history = yield* HistoryFeature;
+		yield* sync.register("browsing", () =>
+			Effect.all([sessions.getAll(), bookmarks.getAll(), history.getAll()]).pipe(
+				Effect.map(([s, b, h]) => ({ sessions: s, bookmarks: b, history: h })),
+				Effect.catchAll(() => Effect.succeed({ sessions: [], bookmarks: [], history: [] })),
+			),
+		);
+
 		yield* bus.commands.pipe(
 			Stream.filter(
 				(cmd) =>
 					cmd.action.startsWith("session.") ||
 					cmd.action.startsWith("nav.") ||
-					cmd.action.startsWith("bm.") ||
-					cmd.action === "state.request",
+					cmd.action.startsWith("bm."),
 			),
 			Stream.runForEach((cmd) => {
-				if (cmd.action === "state.request") {
-					return publishBrowsingSnapshot.pipe(Effect.catchAllCause(() => Effect.void));
-				}
-
 				const action = cmd.action;
 				const payload = (cmd.payload ?? {}) as Record<string, unknown>;
 
-				const effect = Effect.gen(function* () {
-					yield* (client as (tag: string, p: unknown) => Effect.Effect<unknown, unknown>)(
-						action,
-						payload,
-					);
+				return Effect.gen(function* () {
+					const result = yield* (
+						client as (tag: string, p: unknown) => Effect.Effect<unknown, unknown>
+					)(action, payload);
+
+					// Choreography: sync layout panels with sessions
+					if (
+						action === "session.create" &&
+						result &&
+						typeof result === "object" &&
+						"id" in result
+					) {
+						const session = result as { id: string };
+						const panel = {
+							id: session.id,
+							type: "session" as const,
+							entityId: session.id,
+							title: "New Tab",
+							icon: null,
+						};
+						// Add panel to first group — layout auto-created by workspace if empty
+						yield* typedSend(bus)("ws.add-panel", { groupId: "__auto__", panel }).pipe(
+							Effect.ignore,
+						);
+					}
+					if (action === "session.close" && payload && "id" in payload) {
+						yield* typedSend(bus)("ws.close-panel", { panelId: payload.id as string }).pipe(
+							Effect.ignore,
+						);
+					}
+					if (action === "session.activate" && payload && "id" in payload) {
+						yield* typedSend(bus)("ws.activate-panel", { panelId: payload.id as string }).pipe(
+							Effect.ignore,
+						);
+					}
 				}).pipe(
 					Effect.catchAllCause((cause) => {
 						if (Cause.isFailure(cause)) {
@@ -174,17 +179,33 @@ export const WebBrowsingServiceLive = Layer.scopedDiscard(
 						return Effect.void;
 					}),
 				);
-
-				if (MUTATION_ACTIONS.has(action)) {
-					return effect.pipe(Effect.andThen(publishBrowsingSnapshot));
-				}
-				return effect;
 			}),
 			Effect.forkScoped,
 		);
 
-		// Publish initial browsing snapshot
-		yield* publishBrowsingSnapshot;
+		// Initial layout sync: if sessions exist but layout is empty, create layout
+		const initialSessions = yield* sessions.getAll();
+		if (initialSessions.length > 0) {
+			const panels = initialSessions.map((s) => ({
+				id: s.id,
+				type: "session" as const,
+				entityId: s.id,
+				title: "New Tab",
+				icon: null,
+			}));
+			const activeSession = initialSessions.find((s) => s.isActive);
+			yield* typedSend(bus)("ws.update-layout", {
+				layout: {
+					version: 2,
+					root: {
+						id: crypto.randomUUID(),
+						type: "group",
+						panels,
+						activePanel: activeSession?.id ?? initialSessions[0]?.id ?? "",
+					},
+				},
+			}).pipe(Effect.ignore);
+		}
 
 		console.info(`[bun] ${WEB_BROWSING_SERVICE} started`);
 	}),

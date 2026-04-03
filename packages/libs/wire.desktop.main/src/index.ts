@@ -1,4 +1,5 @@
-import { AppEvents } from "@ctrl/core.contract.event-bus";
+import { AppEvents, EventBus } from "@ctrl/core.contract.event-bus";
+import { StateSync } from "@ctrl/core.contract.state-sync";
 import {
 	BookmarkRepositoryLive,
 	HistoryRepositoryLive,
@@ -8,6 +9,7 @@ import {
 } from "@ctrl/core.impl.db";
 import { EventBusLive } from "@ctrl/core.impl.event-bus";
 import { type ElectrobunIpcHandle, IpcBridgeLive } from "@ctrl/core.impl.ipc-bridge";
+import { StateSyncLive } from "@ctrl/core.impl.state-sync";
 import { McpServerLive } from "@ctrl/core.middleware.mcp";
 import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/core.middleware.otel/node";
 import { BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
@@ -31,7 +33,7 @@ import {
 import { WorkspaceHandlers, WorkspaceServiceLive } from "@ctrl/domain.service.workspace";
 import { EventJournal, EventLog } from "@effect/experimental";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Stream } from "effect";
 
 // -- Storage: Drizzle ORM + repositories --------------------------------------
 
@@ -93,30 +95,84 @@ const EventLogLive = EventLog.layer(AppEvents).pipe(
 
 // -- Services -----------------------------------------------------------------
 
+// Services get EventBusLive + StateSyncLive from SharedLive (provided in createMainProcess)
 const BrowsingServiceLayer = WebBrowsingServiceLive.pipe(
 	Layer.provide(EventLogLive),
 	Layer.provide(SessionFeatureLayer),
 	Layer.provide(BookmarkFeatureLayer),
 	Layer.provide(HistoryFeatureLayer),
 	Layer.provide(OmniboxFeatureLive),
-	Layer.provide(EventBusLive),
 );
 
 const WorkspaceServiceLayer = WorkspaceServiceLive.pipe(
 	Layer.provide(EventLogLive),
 	Layer.provide(LayoutFeatureLayer),
-	Layer.provide(EventBusLive),
+	Layer.provide(SessionFeatureLayer),
 );
 
 const SystemServiceLayer = SystemServiceLive.pipe(
 	Layer.provide(EventLogLive),
-	Layer.provide(EventBusLive),
 	Layer.provide(SettingsFeatureLive),
+);
+
+// -- State Sync ---------------------------------------------------------------
+
+const AutoStateSyncLive = Layer.scopedDiscard(
+	Effect.gen(function* () {
+		const sync = yield* StateSync;
+		const bus = yield* EventBus;
+
+		let dirty = false; // will be set after initial delay
+		let lastJson = "";
+
+		// Mark dirty on any command (but don't publish immediately)
+		// ui.ready = webview just mounted and subscribed; force re-publish
+		// even if snapshot data hasn't changed (it was published before UI was ready)
+		yield* bus.commands.pipe(
+			Stream.runForEach((cmd) =>
+				Effect.sync(() => {
+					dirty = true;
+					if (cmd.action === "ui.ready") lastJson = "";
+				}),
+			),
+			Effect.forkScoped,
+		);
+
+		// Initial state publish — delay to ensure webview UI has mounted
+		yield* Effect.sleep("1500 millis").pipe(
+			Effect.andThen(
+				Effect.sync(() => {
+					dirty = true;
+				}),
+			),
+			Effect.forkScoped,
+		);
+
+		// Periodic check: publish only when dirty, deduplicate by JSON equality
+		yield* Effect.forever(
+			Effect.gen(function* () {
+				yield* Effect.sleep("100 millis");
+				if (!dirty) return;
+				dirty = false;
+				const snapshot = yield* sync.getSnapshot().pipe(Effect.catchAll(() => Effect.succeed({})));
+				const json = JSON.stringify(snapshot);
+				if (json === lastJson) return;
+				lastJson = json;
+				yield* bus.publish({
+					type: "event",
+					name: "state-sync",
+					payload: snapshot,
+					timestamp: Date.now(),
+				});
+			}).pipe(Effect.catchAllCause(() => Effect.void)),
+		).pipe(Effect.forkScoped);
+	}),
 );
 
 // -- Dev Server ---------------------------------------------------------------
 
-const McpLayer = McpServerLive.pipe(Layer.provide(EventBusLive));
+// McpLayer gets EventBusLive and StateSyncLive from MainProcessLive (shared instances)
+const _McpLayer = McpServerLive;
 
 // -- Compose ------------------------------------------------------------------
 
@@ -131,13 +187,15 @@ export type { ElectrobunIpcHandle };
 export const createMainProcess = (handle: ElectrobunIpcHandle, dbPath: string) => {
 	const DbClientLive = makeDbClient(`file:${dbPath}`);
 	const OtelLayer = OtelLive(OTEL_SERVICE_NAMES.main, "node");
-	const MainProcessLive = Layer.mergeAll(
-		EventBusLive,
+	const SharedLive = Layer.merge(EventBusLive, StateSyncLive);
+	const ServicesLive = Layer.mergeAll(
 		BrowsingServiceLayer,
 		WorkspaceServiceLayer,
 		SystemServiceLayer,
-		McpLayer,
-	);
+		McpServerLive,
+		AutoStateSyncLive,
+	).pipe(Layer.provide(SharedLive));
+	const MainProcessLive = Layer.merge(SharedLive, ServicesLive);
 	return Layer.mergeAll(
 		DbClientLive,
 		OtelLayer,

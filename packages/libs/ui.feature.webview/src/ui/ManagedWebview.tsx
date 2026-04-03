@@ -51,8 +51,12 @@ export const ManagedWebview: Component<ManagedWebviewProps> = (props) => {
 		const observer = new MutationObserver(() => {
 			if (el.webviewId != null) {
 				observer.disconnect();
+				// Only sync dimensions if container is visible (has non-zero size)
+				// Otherwise syncDimensions sends NaN to native layer
 				requestAnimationFrame(() => {
-					el.syncDimensions(true);
+					if (containerRef && containerRef.offsetWidth > 0 && containerRef.offsetHeight > 0) {
+						el.syncDimensions(true);
+					}
 				});
 				setIsWebviewReady(true);
 			}
@@ -76,18 +80,21 @@ export const ManagedWebview: Component<ManagedWebviewProps> = (props) => {
 			}
 		});
 
-		el.on("dom-ready", () => {
-			el.executeJavascript("document.title")
-				.then((title) => {
-					if (typeof title === "string" && title.length > 0) {
-						props.onTitleChange?.(title);
-					}
-				})
-				.catch(() => {});
+		// Handle links that open in new windows (target="_blank", window.open, etc.)
+		el.on("new-window-open", (event: CustomEvent) => {
+			const detail = event.detail as { url?: string } | string | undefined;
+			const targetUrl = typeof detail === "string" ? detail : detail?.url;
+			if (targetUrl && targetUrl !== "about:blank") {
+				props.onNewWindow?.(targetUrl);
+			}
 		});
 
 		el.on("host-message", (event: CustomEvent) => {
-			const msg = event.detail as { type?: string; url?: string } | undefined;
+			const msg = event.detail as { type?: string; url?: string; title?: string } | undefined;
+			if (msg?.type === "title-change" && msg.title) {
+				props.onTitleChange?.(msg.title);
+				return;
+			}
 			if (msg?.type === "url-change" && msg.url) {
 				if (msg.url !== currentLoadedUrl) {
 					currentLoadedUrl = msg.url;
@@ -137,11 +144,8 @@ export const ManagedWebview: Component<ManagedWebviewProps> = (props) => {
 		}
 	});
 
-	// Container display based on active state
-	createEffect(() => {
-		if (!containerRef) return;
-		containerRef.style.display = props.isActive ? "block" : "none";
-	});
+	// Container always visible — visibility controlled by transparent/passthrough on the webview element
+	// Setting display:none breaks syncDimensions (native layer can't compute bounds)
 
 	// URL changes — navigate without recreating
 	createEffect(() => {
@@ -174,6 +178,10 @@ export const ManagedWebview: Component<ManagedWebviewProps> = (props) => {
 /** Force all managed webviews to re-sync their native view dimensions */
 export function syncAllWebviewDimensions() {
 	document.querySelectorAll("electrobun-webview").forEach((el) => {
-		(el as HTMLElement & { syncDimensions: (force?: boolean) => void }).syncDimensions(true);
+		const htmlEl = el as HTMLElement & { syncDimensions: (force?: boolean) => void };
+		// Skip if parent container is hidden (zero size → NaN in native layer)
+		if (htmlEl.offsetWidth > 0 && htmlEl.offsetHeight > 0) {
+			htmlEl.syncDimensions(true);
+		}
 	});
 }

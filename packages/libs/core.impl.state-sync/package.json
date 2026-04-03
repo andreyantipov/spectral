@@ -1,5 +1,5 @@
 {
-	"name": "@ctrl/domain.service.system",
+	"name": "@ctrl/core.impl.state-sync",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -11,8 +11,6 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@ctrl/core.contract.event-bus": "workspace:*",
-		"@ctrl/core.contract.state-sync": "workspace:*",
-		"@ctrl/domain.feature.settings": "workspace:*"
+		"@ctrl/core.contract.state-sync": "workspace:*"
 	}
 }

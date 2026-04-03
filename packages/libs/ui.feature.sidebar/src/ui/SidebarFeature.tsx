@@ -10,7 +10,7 @@ import {
 	type SidebarItem as CoreSidebarItem,
 	type OmniBoxSuggestion,
 } from "@ctrl/ui.base.components";
-import { createEffect, createMemo, createSignal, type JSX } from "solid-js";
+import { createEffect, createMemo, createSignal, type JSX, onCleanup, onMount } from "solid-js";
 import { SIDEBAR_FEATURE } from "../lib/constants";
 import { buildOmniBoxSuggestions, mapSessionsToSidebarItems } from "../model/sidebar.bindings";
 
@@ -42,7 +42,7 @@ export type SidebarFeatureProps = {
 
 export function SidebarFeature(props: SidebarFeatureProps) {
 	const api = useApi();
-	const state = api.on<BrowsingState>("browsing.snapshot");
+	const state = api.state<BrowsingState>("browsing");
 	const [omniboxQuery, setOmniboxQuery] = createSignal("");
 
 	let autoCreated = false;
@@ -149,7 +149,7 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 			const session = activeSession();
 			return session ? { action: binding.action, payload: { id: session.id } } : null;
 		}
-		return { action: binding.action, payload: {} };
+		return { action: binding.action, payload: binding.payload ?? {} };
 	};
 
 	const handleKeyDown = (e: KeyboardEvent) => {
@@ -164,6 +164,27 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		if (!resolved) return;
 		api.send(resolved.action, resolved.payload);
 	};
+
+	// Listen for shortcuts forwarded from native webview via host-message
+	onMount(() => {
+		const handler = (e: Event) => {
+			const detail = (e as CustomEvent).detail as { type?: string; key?: string } | undefined;
+			if (detail?.type === "shortcut" && detail.key) {
+				const shortcutStr = detail.key
+					.split("+")
+					.map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+					.join("+");
+				const binding = DEFAULT_SHORTCUTS.find(
+					(s) => s.shortcut.toLowerCase() === shortcutStr.toLowerCase(),
+				);
+				if (!binding) return;
+				const resolved = resolveShortcutPayload(binding);
+				if (resolved) api.send(resolved.action, resolved.payload);
+			}
+		};
+		document.addEventListener("webview-host-message", handler);
+		onCleanup(() => document.removeEventListener("webview-host-message", handler));
+	});
 
 	// Context menu
 	const [ctxMenuPos, setCtxMenuPos] = createSignal<{ x: number; y: number } | null>(null);

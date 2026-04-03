@@ -9,6 +9,7 @@ export {
 	findAndResize,
 	findAndSplitPanel,
 	findAndUpdateTabMeta,
+	findFirstGroupId,
 	insertPanelIntoGroup,
 	makeGroupNode,
 	makeSplitNode,

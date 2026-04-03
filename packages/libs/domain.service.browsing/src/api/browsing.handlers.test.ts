@@ -7,6 +7,7 @@ import {
 	NavigationEvents,
 	SessionEvents,
 } from "@ctrl/core.contract.event-bus";
+import { StateSync } from "@ctrl/core.contract.state-sync";
 import {
 	BookmarkRepository,
 	HistoryRepository,
@@ -17,7 +18,7 @@ import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
 import { OmniboxFeature } from "@ctrl/domain.feature.omnibox";
 import { SessionFeatureLive } from "@ctrl/domain.feature.session";
 import { EventJournal, EventLog as EventLogMod } from "@effect/experimental";
-import { Chunk, Duration, Effect, Fiber, Layer, PubSub, Stream } from "effect";
+import { Duration, Effect, Layer, PubSub, Ref, Stream } from "effect";
 import { describe, expect, it } from "vitest";
 import {
 	BookmarkHandlers,
@@ -163,6 +164,27 @@ const makeMockLayers = () => {
 		resolve: (input: string) => Effect.succeed({ url: input, query: null }),
 	} as OmniboxFeature["Type"]);
 
+	// Mock StateSync that captures registered providers
+	const MockStateSyncLive = Layer.effect(
+		StateSync,
+		Effect.gen(function* () {
+			const providers = yield* Ref.make<Record<string, () => Effect.Effect<unknown>>>({});
+			return {
+				register: (path: string, snapshot: () => Effect.Effect<unknown>) =>
+					Ref.update(providers, (p) => ({ ...p, [path]: snapshot })),
+				getSnapshot: () =>
+					Effect.gen(function* () {
+						const p = yield* Ref.get(providers);
+						const entries = Object.entries(p);
+						const results = yield* Effect.all(
+							entries.map(([k, fn]) => fn().pipe(Effect.map((v) => [k, v] as const))),
+						);
+						return Object.fromEntries(results);
+					}),
+			};
+		}),
+	);
+
 	const SessionLayer = SessionFeatureLive.pipe(Layer.provide(MockSessionRepo));
 	const BookmarkLayer = BookmarkFeatureLive.pipe(Layer.provide(MockBookmarkRepo));
 	const HistoryLayer = HistoryFeatureLive.pipe(Layer.provide(MockHistoryRepo));
@@ -192,6 +214,7 @@ const makeMockLayers = () => {
 		Layer.provide(HistoryLayer),
 		Layer.provide(MockOmnibox),
 		Layer.provide(TestEventBusLive),
+		Layer.provide(MockStateSyncLive),
 	);
 
 	return Layer.mergeAll(
@@ -200,85 +223,100 @@ const makeMockLayers = () => {
 		HistoryLayer,
 		MockOmnibox,
 		TestEventBusLive,
+		MockStateSyncLive,
 		ServiceLayer,
 	);
 };
 
-const runWithService = <A, E>(effect: Effect.Effect<A, E, EventBus>) =>
+const runWithService = <A, E>(effect: Effect.Effect<A, E, EventBus | StateSync>) =>
 	Effect.runPromise(effect.pipe(Effect.provide(makeMockLayers())));
 
-const sendAndWaitSnapshot = (bus: EventBus["Type"], action: string, payload?: unknown) =>
+const sendAndWait = (bus: EventBus["Type"], action: string, payload?: unknown) =>
 	Effect.gen(function* () {
-		const fiber = yield* bus
-			.on("browsing.snapshot")
-			.pipe(Stream.take(1), Stream.runCollect, Effect.fork);
-		yield* Effect.sleep(Duration.millis(10)); // let listener start
 		yield* bus.send({ type: "command", action, payload, meta: { source: "ui" } });
-		yield* Effect.sleep(Duration.millis(200)); // let handler + snapshot run
-		const events = Chunk.toArray(yield* Fiber.join(fiber));
-		return events[0]?.payload as
-			| { sessions: Session[]; bookmarks: Bookmark[]; history: HistoryEntry[] }
-			| undefined;
+		yield* Effect.sleep(Duration.millis(200)); // let handler run
 	});
 
 // -- Tests --------------------------------------------------------------------
 
 describe("WebBrowsingServiceLive — EventBus integration", () => {
-	it("service starts and publishes initial browsing.snapshot", async () => {
+	it("service starts and registers with StateSync", async () => {
 		await runWithService(
 			Effect.gen(function* () {
-				const bus = yield* EventBus;
+				const sync = yield* StateSync;
 				yield* Effect.sleep(Duration.millis(50));
-				// Request a snapshot and verify it comes back
-				const state = yield* sendAndWaitSnapshot(bus, "state.request");
-				expect(state).toBeDefined();
-				expect(state?.sessions).toBeDefined();
-				expect(state?.bookmarks).toBeDefined();
-				expect(state?.history).toBeDefined();
+				const snapshot = yield* sync.getSnapshot();
+				expect(snapshot.browsing).toBeDefined();
+				const browsing = snapshot.browsing as {
+					sessions: Session[];
+					bookmarks: Bookmark[];
+					history: HistoryEntry[];
+				};
+				expect(browsing.sessions).toBeDefined();
+				expect(browsing.bookmarks).toBeDefined();
+				expect(browsing.history).toBeDefined();
 			}),
 		);
 	});
 
-	it("session.create → browsing.snapshot with new session", async () => {
+	it("session.create → state reflects new session", async () => {
 		await runWithService(
 			Effect.gen(function* () {
 				const bus = yield* EventBus;
+				const sync = yield* StateSync;
 				yield* Effect.sleep(Duration.millis(50)); // let service start
-				const state = yield* sendAndWaitSnapshot(bus, "session.create", { mode: "visual" });
-				expect(state).toBeDefined();
-				expect(state?.sessions.length).toBeGreaterThanOrEqual(1);
-				expect(state?.sessions.some((s) => s.isActive)).toBe(true);
+				yield* sendAndWait(bus, "session.create", { mode: "visual" });
+				const snapshot = yield* sync.getSnapshot();
+				const browsing = snapshot.browsing as {
+					sessions: Session[];
+					bookmarks: Bookmark[];
+					history: HistoryEntry[];
+				};
+				expect(browsing.sessions.length).toBeGreaterThanOrEqual(1);
+				expect(browsing.sessions.some((s) => s.isActive)).toBe(true);
 			}),
 		);
 	}, 10000);
 
-	it("session.close → browsing.snapshot without closed session", async () => {
+	it("session.close → state without closed session", async () => {
 		await runWithService(
 			Effect.gen(function* () {
 				const bus = yield* EventBus;
+				const sync = yield* StateSync;
 				yield* Effect.sleep(Duration.millis(50));
 				// Create
-				yield* sendAndWaitSnapshot(bus, "session.create", { mode: "visual" });
+				yield* sendAndWait(bus, "session.create", { mode: "visual" });
 				// Close
-				const state = yield* sendAndWaitSnapshot(bus, "session.close", { id: "1" });
-				expect(state).toBeDefined();
-				expect(state?.sessions.find((s) => s.id === "1")).toBeUndefined();
+				yield* sendAndWait(bus, "session.close", { id: "1" });
+				const snapshot = yield* sync.getSnapshot();
+				const browsing = snapshot.browsing as {
+					sessions: Session[];
+					bookmarks: Bookmark[];
+					history: HistoryEntry[];
+				};
+				expect(browsing.sessions.find((s) => s.id === "1")).toBeUndefined();
 			}),
 		);
 	}, 10000);
 
-	it("nav.navigate → browsing.snapshot with updated URL", async () => {
+	it("nav.navigate → state with updated URL", async () => {
 		await runWithService(
 			Effect.gen(function* () {
 				const bus = yield* EventBus;
+				const sync = yield* StateSync;
 				yield* Effect.sleep(Duration.millis(50));
-				yield* sendAndWaitSnapshot(bus, "session.create", { mode: "visual" });
-				const state = yield* sendAndWaitSnapshot(bus, "nav.navigate", {
+				yield* sendAndWait(bus, "session.create", { mode: "visual" });
+				yield* sendAndWait(bus, "nav.navigate", {
 					id: "1",
 					input: "https://example.com",
 				});
-				expect(state).toBeDefined();
-				const session = state?.sessions.find((s) => s.id === "1");
+				const snapshot = yield* sync.getSnapshot();
+				const browsing = snapshot.browsing as {
+					sessions: Session[];
+					bookmarks: Bookmark[];
+					history: HistoryEntry[];
+				};
+				const session = browsing.sessions.find((s) => s.id === "1");
 				expect(session).toBeDefined();
 				const url = session?.pages[session?.currentIndex ?? 0]?.url;
 				expect(url).toBe("https://example.com");
@@ -286,18 +324,24 @@ describe("WebBrowsingServiceLive — EventBus integration", () => {
 		);
 	}, 10000);
 
-	it("bm.add → browsing.snapshot with new bookmark", async () => {
+	it("bm.add → state with new bookmark", async () => {
 		await runWithService(
 			Effect.gen(function* () {
 				const bus = yield* EventBus;
+				const sync = yield* StateSync;
 				yield* Effect.sleep(Duration.millis(50));
-				const state = yield* sendAndWaitSnapshot(bus, "bm.add", {
+				yield* sendAndWait(bus, "bm.add", {
 					url: "https://example.com",
 					title: "Example",
 				});
-				expect(state).toBeDefined();
-				expect(state?.bookmarks).toHaveLength(1);
-				expect(state?.bookmarks[0].url).toBe("https://example.com");
+				const snapshot = yield* sync.getSnapshot();
+				const browsing = snapshot.browsing as {
+					sessions: Session[];
+					bookmarks: Bookmark[];
+					history: HistoryEntry[];
+				};
+				expect(browsing.bookmarks).toHaveLength(1);
+				expect(browsing.bookmarks[0].url).toBe("https://example.com");
 			}),
 		);
 	}, 10000);

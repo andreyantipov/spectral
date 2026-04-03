@@ -7,7 +7,12 @@ import {
 } from "@ctrl/core.contract.event-bus";
 
 export const DEFAULT_SHORTCUTS: readonly ShortcutBinding[] = [
-	{ action: SessionEvents.events["session.create"].tag, shortcut: "Cmd+T", label: "New Tab" },
+	{
+		action: SessionEvents.events["session.create"].tag,
+		shortcut: "Cmd+T",
+		label: "New Tab",
+		payload: { mode: "visual" },
+	},
 	{ action: SessionEvents.events["session.close"].tag, shortcut: "Cmd+W", label: "Close Tab" },
 	{ action: NavigationEvents.events["nav.back"].tag, shortcut: "Cmd+[", label: "Back" },
 	{ action: NavigationEvents.events["nav.forward"].tag, shortcut: "Cmd+]", label: "Forward" },
