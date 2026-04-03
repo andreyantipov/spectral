@@ -1,12 +1,17 @@
-import type { BrowsingState, PanelRef } from "@ctrl/base.schema";
+import type { BrowsingState, LayoutNode, PanelRef } from "@ctrl/base.schema";
 import { currentUrl } from "@ctrl/base.type";
 import { useApi } from "@ctrl/ui.base.api";
 import { BlankPage } from "@ctrl/ui.base.components";
 import { KeyboardProvider } from "@ctrl/ui.feature.keyboard-provider";
 import { SidebarFeature, type WebviewBindings } from "@ctrl/ui.feature.sidebar";
 import { LayoutRoot, useWorkspace } from "@ctrl/ui.feature.workspace";
-import { createContext, Show, useContext } from "solid-js";
+import { createContext, createEffect, Show, useContext } from "solid-js";
 import { SessionWebview, syncAllWebviewDimensions } from "../lib/SessionWebview";
+
+function countPanels(node: LayoutNode): number {
+	if (node.type === "group") return node.panels.length;
+	return node.children.reduce((sum, c) => sum + countPanels(c), 0);
+}
 
 const BindingsContext = createContext<WebviewBindings>();
 
@@ -55,6 +60,37 @@ function WorkspaceContent() {
 	const { layout, focusedGroupId, setFocusedGroupId, handleCommand } = useWorkspace();
 
 	const hasSessions = () => (browsingState()?.sessions?.length ?? 0) > 0;
+
+	// Reconcile: when sessions exist but layout has no panels, seed the layout
+	createEffect(() => {
+		const sessions = browsingState()?.sessions;
+		const currentLayout = layout();
+		if (!sessions || sessions.length === 0) return;
+		// Check if layout has any panels
+		const hasLayoutPanels = currentLayout ? countPanels(currentLayout) > 0 : false;
+		if (hasLayoutPanels) return;
+		// Seed layout with a single group containing all sessions as panels
+		const panels: PanelRef[] = sessions.map((s) => ({
+			id: s.id,
+			type: "session" as const,
+			entityId: s.id,
+			title:
+				(s.pages?.[s.currentIndex] as { title?: string | null } | undefined)?.title ?? "New Tab",
+			icon: null,
+		}));
+		const activePanel = sessions.find((s) => s.isActive)?.id ?? sessions[0]?.id ?? "";
+		api.dispatch("ws.update-layout", {
+			layout: {
+				version: 2 as const,
+				root: {
+					id: crypto.randomUUID(),
+					type: "group" as const,
+					panels,
+					activePanel,
+				},
+			},
+		});
+	});
 
 	// Register split handler so sidebar context menu can split panes
 	bindings.onSplitSession = (sessionId: string, direction: "right" | "down") => {

@@ -1,12 +1,7 @@
 import type { BrowsingState, Session } from "@ctrl/base.schema";
 import { withWebTracing } from "@ctrl/base.tracing";
 import { currentUrl } from "@ctrl/base.type";
-import {
-	DEFAULT_SHORTCUTS,
-	NavigationEvents,
-	SessionEvents,
-	SystemEvents,
-} from "@ctrl/core.contract.event-bus";
+import { DEFAULT_SHORTCUTS, NavigationEvents, SessionEvents } from "@ctrl/core.contract.event-bus";
 import { useApi } from "@ctrl/ui.base.api";
 import {
 	AppShellTemplate,
@@ -47,7 +42,7 @@ export type SidebarFeatureProps = {
 
 export function SidebarFeature(props: SidebarFeatureProps) {
 	const api = useApi();
-	const state = api.on<BrowsingState>(SystemEvents.events["state.snapshot"].tag);
+	const state = api.on<BrowsingState>("browsing.snapshot");
 	const [omniboxQuery, setOmniboxQuery] = createSignal("");
 
 	let autoCreated = false;

@@ -8,7 +8,7 @@ import {
 } from "@ctrl/core.impl.db";
 import { EventBusLive } from "@ctrl/core.impl.event-bus";
 import { type ElectrobunIpcHandle, IpcBridgeLive } from "@ctrl/core.impl.ipc-bridge";
-import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/core.middleware.otel";
+import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/core.middleware.otel/node";
 import { BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
 import { LayoutFeatureLive } from "@ctrl/domain.feature.layout";
