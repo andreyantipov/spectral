@@ -6,7 +6,7 @@ describe("Layout Migration", () => {
 		const layout = bootstrapDefaultLayout("session-123");
 		expect(layout.type).toBe("group");
 		expect(layout.panels).toHaveLength(1);
-		expect(layout.panels[0].sessionId).toBe("session-123");
+		expect(layout.panels[0].entityId).toBe("session-123");
 		expect(layout.activePanel).toBe(layout.panels[0].id);
 	});
 

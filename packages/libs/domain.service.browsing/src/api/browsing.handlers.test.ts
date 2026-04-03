@@ -173,7 +173,8 @@ const makeMockLayers = () => {
 	const HistoryLayer = HistoryFeatureLive.pipe(Layer.provide(MockHistoryRepo));
 
 	const MockLayoutFeature = Layer.succeed(LayoutFeature, {
-		getLayout: () => Effect.succeed({ type: "group" as const, panels: [], activePanel: "" }),
+		getLayout: () =>
+			Effect.succeed({ id: "mock-group", type: "group" as const, panels: [], activePanel: "" }),
 		getPersistedLayout: () => Effect.succeed(null),
 		updateLayout: () => Effect.void,
 	});

@@ -1,13 +1,16 @@
 import type { GroupNode, PanelRef } from "../model/layout.validators";
+import { makeGroupNode } from "./tree-ops";
 
 export const bootstrapDefaultLayout = (activeSessionId?: string): GroupNode => {
 	if (!activeSessionId) {
-		return { type: "group", panels: [], activePanel: "" };
+		return makeGroupNode([], "");
 	}
 	const panel: PanelRef = {
 		id: `panel-${activeSessionId}`,
 		type: "session",
-		sessionId: activeSessionId,
+		entityId: activeSessionId,
+		title: "New Tab",
+		icon: null,
 	};
-	return { type: "group", panels: [panel], activePanel: panel.id };
+	return makeGroupNode([panel], panel.id);
 };

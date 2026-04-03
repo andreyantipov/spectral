@@ -6,15 +6,20 @@ describe("Layout Fallback", () => {
 	it("rejects corrupted JSON gracefully", () => {
 		const result = Schema.decodeUnknownEither(PersistedLayoutSchema)({
 			version: "not-a-number",
-			dockviewState: null,
+			root: null,
 		});
 		expect(result._tag).toBe("Left");
 	});
 
 	it("accepts valid layout", () => {
 		const result = Schema.decodeUnknownEither(PersistedLayoutSchema)({
-			version: 1,
-			dockviewState: { panels: {} },
+			version: 2,
+			root: {
+				id: "g1",
+				type: "group",
+				panels: [],
+				activePanel: "",
+			},
 		});
 		expect(result._tag).toBe("Right");
 	});
