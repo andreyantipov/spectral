@@ -8,7 +8,26 @@
 import type { Subprocess } from "bun";
 
 const HTML_PATH = new URL("./index.html", import.meta.url).pathname;
-const WASM_PATH = new URL("../../vendor/libghostty-vt.wasm", import.meta.url).pathname;
+const BUILD_DIR = new URL("./build", import.meta.url).pathname;
+const WASM_PATH = new URL("../../../vendor/libghostty-vt.wasm", import.meta.url).pathname;
+
+// Build client bundle on startup
+console.error("[demo] Building client bundle...");
+const buildResult = await Bun.build({
+	entrypoints: [new URL("./client.ts", import.meta.url).pathname],
+	outdir: BUILD_DIR,
+	minify: false,
+	target: "browser",
+});
+
+if (!buildResult.success) {
+	console.error("[demo] Build failed:");
+	for (const log of buildResult.logs) {
+		console.error("  ", log);
+	}
+	process.exit(1);
+}
+console.error("[demo] Client bundle built successfully.");
 
 // Track PTY processes per WebSocket connection
 const processes = new WeakMap<object, Subprocess>();
@@ -32,6 +51,13 @@ const server = Bun.serve({
 			});
 		}
 
+		// Serve built client JS
+		if (url.pathname === "/build/client.js") {
+			return new Response(Bun.file(`${BUILD_DIR}/client.js`), {
+				headers: { "Content-Type": "application/javascript" },
+			});
+		}
+
 		// Serve WASM
 		if (url.pathname === "/libghostty-vt.wasm") {
 			return new Response(Bun.file(WASM_PATH), {
@@ -51,7 +77,6 @@ const server = Bun.serve({
 					cols: 80,
 					rows: 24,
 					data(_terminal, data) {
-						// Send PTY output to browser
 						try {
 							ws.sendBinary(new Uint8Array(data));
 						} catch {
@@ -73,7 +98,6 @@ const server = Bun.serve({
 			if (!proc?.terminal) return;
 
 			if (typeof message === "string") {
-				// String message = keyboard input
 				proc.terminal.write(message);
 			} else if (message instanceof Buffer || message instanceof Uint8Array) {
 				// Binary message = resize command (4 bytes: cols_hi, cols_lo, rows_hi, rows_lo)
@@ -99,9 +123,10 @@ const server = Bun.serve({
 });
 
 console.error(`
-╔══════════════════════════════════════════╗
-║  Spectral Terminal Demo                  ║
-║  http://localhost:${server.port}                   ║
-║  Press Ctrl+C to stop                    ║
-╚══════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════╗
+║  Spectral Terminal Demo                                      ║
+║  http://localhost:${server.port}                                       ║
+║  Pipeline: Bun.Terminal → WS → libghostty-vt.wasm → WebGL 2 ║
+║  Press Ctrl+C to stop                                        ║
+╚══════════════════════════════════════════════════════════════╝
 `);
