@@ -35,10 +35,7 @@ export const SessionHandlers = EventLog.group(SessionEvents, (h) =>
 		.handle("session.activate", ({ payload }) =>
 			Effect.gen(function* () {
 				const sessions = yield* SessionFeature;
-				const bus = yield* EventBus;
 				yield* sessions.setActive(payload.id);
-				// Choreography: sync active panel in workspace layout
-				yield* typedSend(bus)("ws.activate-panel", { panelId: payload.id });
 			}),
 		),
 );

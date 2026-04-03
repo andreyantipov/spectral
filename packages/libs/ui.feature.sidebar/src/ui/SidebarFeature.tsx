@@ -85,7 +85,10 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 			}
 		},
 		createSession: () => api.dispatch("session.create", { mode: "visual" }),
-		switchSession: (id: string) => api.dispatch("session.activate", { id }),
+		switchSession: (id: string) => {
+			api.dispatch("session.activate", { id });
+			api.dispatch("ws.activate-panel", { panelId: id });
+		},
 		closeSession: (id: string) => api.dispatch("session.close", { id }),
 		reportNavigation: (sessionId: string, url: string) =>
 			api.dispatch("nav.report", { id: sessionId, url }),
