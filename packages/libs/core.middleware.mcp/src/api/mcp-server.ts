@@ -34,9 +34,10 @@ export const McpServerLive = Layer.scopedDiscard(
 		);
 
 		const registerTools = (mcpServer: McpServer) => {
-			// Use Record-typed reference to avoid tsgo TS2589 (deep type instantiation with zod + MCP SDK generics)
-			const mcp: Record<string, (...args: unknown[]) => unknown> = mcpServer as never;
-			mcp.tool(
+			// Typed wrapper to avoid tsgo TS2589 (deep type instantiation with zod + MCP SDK generics)
+			const tool = (...args: unknown[]) =>
+				(mcpServer.tool as (...a: unknown[]) => unknown)(...args);
+			tool(
 				"dispatch",
 				"Send a command to EventBus. Payload is validated by EventBus handlers.",
 				{ action: z.string(), payload: z.record(z.unknown()).optional() },
@@ -56,11 +57,11 @@ export const McpServerLive = Layer.scopedDiscard(
 				},
 			);
 
-			mcp.tool("get_state", "Get current application state (sessions + layout)", async () => ({
+			tool("get_state", "Get current application state (sessions + layout)", async () => ({
 				content: [{ type: "text" as const, text: JSON.stringify(latestState, null, 2) }],
 			}));
 
-			mcp.tool(
+			tool(
 				"get_events",
 				"Get recent EventBus events",
 				{ limit: z.number().optional() },
@@ -74,7 +75,7 @@ export const McpServerLive = Layer.scopedDiscard(
 				}),
 			);
 
-			mcp.tool(
+			tool(
 				"get_screenshot",
 				"Capture a screenshot of the app UI via EventBus diag.screenshot. Returns base64 PNG image.",
 				{ selector: z.string().optional() },
