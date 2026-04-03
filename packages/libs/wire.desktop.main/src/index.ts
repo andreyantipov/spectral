@@ -130,3 +130,21 @@ export const createMainProcess = (handle: ElectrobunIpcHandle, dbPath: string) =
 		).pipe(Layer.provide(DbClientLive), Layer.provide(OtelLayer)),
 	);
 };
+
+// -- Terminal Service (activate after UI rework PR merges) --------------------
+// Replace the stub TerminalHandlers above with:
+//
+//   import { TerminalAdapterLive } from "@ctrl/core.impl.terminal";
+//   import { TerminalFeatureLive } from "@ctrl/domain.feature.terminal";
+//   import { TerminalHandlers as RealTerminalHandlers } from "@ctrl/domain.service.terminal";
+//
+//   const TerminalFeatureLayer = TerminalFeatureLive.pipe(
+//     Layer.provide(TerminalAdapterLive),
+//   );
+//
+//   // In HandlersLive, replace stub with:
+//   RealTerminalHandlers.pipe(Layer.provide(TerminalFeatureLayer)),
+//
+//   // Add to MUTATION_ACTIONS in browsing.handlers.ts:
+//   TerminalEvents.events["term.create"].tag,
+//   TerminalEvents.events["term.close"].tag,
