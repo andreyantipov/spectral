@@ -40,4 +40,39 @@ export const WorkspaceEvents = EventGroup.empty
 		payload: Schema.Struct({ panelId: Schema.String }),
 		success: Schema.Void,
 	})
+	.add({
+		tag: "ws.resize",
+		primaryKey: (p) => p.splitId,
+		payload: Schema.Struct({
+			splitId: Schema.String,
+			sizes: Schema.Array(Schema.Number),
+		}),
+		success: Schema.Void,
+	})
+	.add({
+		tag: "ws.activate-panel",
+		primaryKey: (p) => p.panelId,
+		payload: Schema.Struct({ panelId: Schema.String }),
+		success: Schema.Void,
+	})
+	.add({
+		tag: "ws.reorder-panel",
+		primaryKey: (p) => p.panelId,
+		payload: Schema.Struct({
+			groupId: Schema.String,
+			panelId: Schema.String,
+			index: Schema.Number,
+		}),
+		success: Schema.Void,
+	})
+	.add({
+		tag: "ws.update-tab-meta",
+		primaryKey: (p) => p.panelId,
+		payload: Schema.Struct({
+			panelId: Schema.String,
+			title: Schema.optional(Schema.String),
+			icon: Schema.optional(Schema.NullOr(Schema.String)),
+		}),
+		success: Schema.Void,
+	})
 	.addError(DatabaseError);

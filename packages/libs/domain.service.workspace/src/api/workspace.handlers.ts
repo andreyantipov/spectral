@@ -1,9 +1,13 @@
 import { WorkspaceEvents } from "@ctrl/core.contract.event-bus";
 import type { LayoutNode } from "@ctrl/domain.feature.layout";
 import {
+	findAndActivatePanel,
 	findAndMovePanel,
 	findAndRemovePanel,
+	findAndReorderPanel,
+	findAndResize,
 	findAndSplitPanel,
+	findAndUpdateTabMeta,
 	insertPanelIntoGroup,
 	LayoutFeature,
 } from "@ctrl/domain.feature.layout";
@@ -55,6 +59,46 @@ export const WorkspaceHandlers = EventLog.group(WorkspaceEvents, (h) =>
 				const { node } = findAndRemovePanel(current, payload.panelId);
 				if (!node) return;
 				yield* layout.updateLayout({ version: 2, root: node });
+			}),
+		)
+		.handle("ws.resize", ({ payload }) =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				const current = yield* layout.getLayout();
+				const updated = findAndResize(current, payload.splitId, payload.sizes);
+				yield* layout.updateLayout({ version: 2, root: updated });
+			}),
+		)
+		.handle("ws.activate-panel", ({ payload }) =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				const current = yield* layout.getLayout();
+				const updated = findAndActivatePanel(current, payload.panelId);
+				yield* layout.updateLayout({ version: 2, root: updated });
+			}),
+		)
+		.handle("ws.reorder-panel", ({ payload }) =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				const current = yield* layout.getLayout();
+				const updated = findAndReorderPanel(
+					current,
+					payload.groupId,
+					payload.panelId,
+					payload.index,
+				);
+				yield* layout.updateLayout({ version: 2, root: updated });
+			}),
+		)
+		.handle("ws.update-tab-meta", ({ payload }) =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				const current = yield* layout.getLayout();
+				const updated = findAndUpdateTabMeta(current, payload.panelId, {
+					title: payload.title,
+					icon: payload.icon,
+				});
+				yield* layout.updateLayout({ version: 2, root: updated });
 			}),
 		),
 );

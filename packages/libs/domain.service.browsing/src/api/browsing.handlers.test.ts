@@ -196,7 +196,11 @@ const makeMockLayers = () => {
 			.handle("ws.update-layout", () => Effect.void)
 			.handle("ws.split-panel", () => Effect.void)
 			.handle("ws.move-panel", () => Effect.void)
-			.handle("ws.close-panel", () => Effect.void),
+			.handle("ws.close-panel", () => Effect.void)
+			.handle("ws.resize", () => Effect.void)
+			.handle("ws.activate-panel", () => Effect.void)
+			.handle("ws.reorder-panel", () => Effect.void)
+			.handle("ws.update-tab-meta", () => Effect.void),
 	);
 
 	const HandlersLive = Layer.mergeAll(
