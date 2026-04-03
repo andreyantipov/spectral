@@ -1,1 +1,1 @@
-export { DatabaseError, ValidationError } from "./errors";
+export { DatabaseError, TerminalError, ValidationError } from "./errors";

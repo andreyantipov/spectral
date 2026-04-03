@@ -1,0 +1,17 @@
+{
+	"name": "@ctrl/core.impl.terminal",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check": "tsgo --noEmit",
+		"test": "bun test"
+	},
+	"dependencies": {
+		"@ctrl/base.error": "workspace:*",
+		"@ctrl/core.contract.terminal": "workspace:*"
+	}
+}

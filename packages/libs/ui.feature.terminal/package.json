@@ -1,0 +1,16 @@
+{
+	"name": "@ctrl/ui.feature.terminal",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check": "tsgo --noEmit",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@ctrl/core.contract.terminal": "workspace:*"
+	}
+}

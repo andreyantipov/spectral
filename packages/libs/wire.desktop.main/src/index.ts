@@ -1,4 +1,4 @@
-import { AppEvents, SettingsEvents } from "@ctrl/core.contract.event-bus";
+import { AppEvents, SettingsEvents, TerminalEvents } from "@ctrl/core.contract.event-bus";
 import {
 	BookmarkRepositoryLive,
 	HistoryRepositoryLive,
@@ -55,6 +55,14 @@ const SettingsHandlers = EventLog.group(SettingsEvents, (h) =>
 	),
 );
 
+// Stub terminal handlers — real implementation will be wired via domain.service.terminal
+const TerminalHandlers = EventLog.group(TerminalEvents, (h) =>
+	h
+		.handle("term.create", () => Effect.succeed({ id: "stub" }))
+		.handle("term.resize", () => Effect.void)
+		.handle("term.close", () => Effect.void),
+);
+
 const IdentityLive = Layer.effect(
 	EventLog.Identity,
 	Effect.sync(() => EventLog.Identity.makeRandom()),
@@ -78,6 +86,7 @@ const HandlersLive = Layer.mergeAll(
 	),
 	UIHandlers,
 	SettingsHandlers.pipe(Layer.provide(SettingsFeatureLive)),
+	TerminalHandlers,
 );
 
 const EventLogLive = EventLog.layer(AppEvents).pipe(
@@ -121,3 +130,21 @@ export const createMainProcess = (handle: ElectrobunIpcHandle, dbPath: string) =
 		).pipe(Layer.provide(DbClientLive), Layer.provide(OtelLayer)),
 	);
 };
+
+// -- Terminal Service (activate after UI rework PR merges) --------------------
+// Replace the stub TerminalHandlers above with:
+//
+//   import { TerminalAdapterLive } from "@ctrl/core.impl.terminal";
+//   import { TerminalFeatureLive } from "@ctrl/domain.feature.terminal";
+//   import { TerminalHandlers as RealTerminalHandlers } from "@ctrl/domain.service.terminal";
+//
+//   const TerminalFeatureLayer = TerminalFeatureLive.pipe(
+//     Layer.provide(TerminalAdapterLive),
+//   );
+//
+//   // In HandlersLive, replace stub with:
+//   RealTerminalHandlers.pipe(Layer.provide(TerminalFeatureLayer)),
+//
+//   // Add to MUTATION_ACTIONS in browsing.handlers.ts:
+//   TerminalEvents.events["term.create"].tag,
+//   TerminalEvents.events["term.close"].tag,

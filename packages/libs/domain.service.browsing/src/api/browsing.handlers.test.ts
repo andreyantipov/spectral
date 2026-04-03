@@ -6,6 +6,7 @@ import {
 	EventBus,
 	SettingsEvents,
 	SystemEvents,
+	TerminalEvents,
 	WorkspaceEvents,
 } from "@ctrl/core.contract.event-bus";
 import {
@@ -197,6 +198,13 @@ const makeMockLayers = () => {
 			.handle("ws.move-panel", () => Effect.void)
 			.handle("ws.close-panel", () => Effect.void),
 	);
+	// Inline stub for TerminalHandlers — real implementation lives in domain.service.terminal
+	const TestTerminalHandlers = EventLogMod.group(TerminalEvents, (h) =>
+		h
+			.handle("term.create", () => Effect.succeed({ id: "stub" }))
+			.handle("term.resize", () => Effect.void)
+			.handle("term.close", () => Effect.void),
+	);
 
 	const HandlersLive = Layer.mergeAll(
 		SessionHandlers.pipe(Layer.provide(SessionLayer)),
@@ -207,6 +215,7 @@ const makeMockLayers = () => {
 		),
 		BookmarkHandlers.pipe(Layer.provide(BookmarkLayer)),
 		TestWorkspaceHandlers,
+		TestTerminalHandlers,
 		SystemHandlers.pipe(
 			Layer.provide(SessionLayer),
 			Layer.provide(BookmarkLayer),
