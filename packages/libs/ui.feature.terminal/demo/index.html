@@ -207,7 +207,7 @@ function processBytes(data) {
     if (ch === '\x1b') { inEsc = true; escBuf = ''; continue; }
     if (ch === '\r') { cursorCol = 0; continue; }
     if (ch === '\n') { cursorRow++; if (cursorRow >= ROWS) scrollUp(); continue; }
-    if (ch === '\b') { if (cursorCol > 0) cursorCol--; continue; }
+    if (ch === '\b' || ch === '\x7f') { if (cursorCol > 0) cursorCol--; continue; }
     if (ch === '\t') { cursorCol = Math.min(COLS - 1, (Math.floor(cursorCol / 8) + 1) * 8); continue; }
     if (ch === '\x07') continue; // bell
     if (ch.charCodeAt(0) < 32) continue; // other control chars
