@@ -38,7 +38,7 @@ export const SessionHandlers = EventLog.group(SessionEvents, (h) =>
 				const bus = yield* EventBus;
 				yield* sessions.setActive(payload.id);
 				// Choreography: sync active panel in workspace layout
-				typedSend(bus)("ws.activate-panel", { panelId: payload.id });
+				yield* typedSend(bus)("ws.activate-panel", { panelId: payload.id });
 			}),
 		),
 );

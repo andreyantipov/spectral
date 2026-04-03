@@ -18,6 +18,7 @@
 		"@ctrl/ui.base.components": "workspace:*",
 		"@ctrl/ui.feature.keyboard-provider": "workspace:*",
 		"@ctrl/ui.feature.sidebar": "workspace:*",
+		"@ctrl/ui.feature.webview": "workspace:*",
 		"@ctrl/ui.feature.workspace": "workspace:*"
 	}
 }

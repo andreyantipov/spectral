@@ -4,9 +4,10 @@ import { useApi } from "@ctrl/ui.base.api";
 import { BlankPage } from "@ctrl/ui.base.components";
 import { KeyboardProvider } from "@ctrl/ui.feature.keyboard-provider";
 import { SidebarFeature, type WebviewBindings } from "@ctrl/ui.feature.sidebar";
+import { ManagedWebview, syncAllWebviewDimensions } from "@ctrl/ui.feature.webview";
 import { LayoutRoot, useWorkspace } from "@ctrl/ui.feature.workspace";
 import { createContext, createEffect, Show, useContext } from "solid-js";
-import { SessionWebview, syncAllWebviewDimensions } from "../lib/SessionWebview";
+import { SHORTCUT_PRELOAD } from "../lib/webview-constants";
 
 function countPanels(node: LayoutNode): number {
 	if (node.type === "group") return node.panels.length;
@@ -114,10 +115,12 @@ function SessionPanel(props: { panel: PanelRef }) {
 	};
 
 	return (
-		<SessionWebview
+		<ManagedWebview
 			sessionId={sessionId}
 			url={url()}
 			isActive={bindings?.activeSessionId() === sessionId}
+			overlayMasks={["[data-sidebar]", "[data-omnibox]", "[data-context-menu]"]}
+			preload={SHORTCUT_PRELOAD}
 			onNavigate={(navUrl) => bindings?.onNavigate(sessionId, navUrl)}
 			onTitleChange={(title) => bindings?.onTitleChange(sessionId, title)}
 		/>

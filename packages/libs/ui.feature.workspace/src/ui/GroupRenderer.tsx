@@ -23,10 +23,9 @@ export const GroupRenderer: Component<GroupRendererProps> = (props) => {
 					{(panel) => (
 						<div
 							style={{
-								position: "absolute",
-								inset: "0",
-								visibility: panel.id === activePanelId() ? "visible" : "hidden",
-								"z-index": panel.id === activePanelId() ? "1" : "0",
+								width: "100%",
+								height: "100%",
+								display: panel.id === activePanelId() ? "block" : "none",
 							}}
 						>
 							{props.renderViewport(panel)}
