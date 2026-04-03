@@ -1,4 +1,4 @@
-import { AppEvents, SettingsEvents } from "@ctrl/core.contract.event-bus";
+import { AppEvents, SettingsEvents, TerminalEvents } from "@ctrl/core.contract.event-bus";
 import {
 	BookmarkRepositoryLive,
 	HistoryRepositoryLive,
@@ -55,6 +55,14 @@ const SettingsHandlers = EventLog.group(SettingsEvents, (h) =>
 	),
 );
 
+// Stub terminal handlers — real implementation will be wired via domain.service.terminal
+const TerminalHandlers = EventLog.group(TerminalEvents, (h) =>
+	h
+		.handle("term.create", () => Effect.succeed({ id: "stub" }))
+		.handle("term.resize", () => Effect.void)
+		.handle("term.close", () => Effect.void),
+);
+
 const IdentityLive = Layer.effect(
 	EventLog.Identity,
 	Effect.sync(() => EventLog.Identity.makeRandom()),
@@ -78,6 +86,7 @@ const HandlersLive = Layer.mergeAll(
 	),
 	UIHandlers,
 	SettingsHandlers.pipe(Layer.provide(SettingsFeatureLive)),
+	TerminalHandlers,
 );
 
 const EventLogLive = EventLog.layer(AppEvents).pipe(

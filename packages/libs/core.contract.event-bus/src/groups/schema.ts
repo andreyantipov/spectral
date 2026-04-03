@@ -4,6 +4,7 @@ import { NavigationEvents } from "./navigation";
 import { SessionEvents } from "./session";
 import { SettingsEvents } from "./settings";
 import { SystemEvents } from "./system";
+import { TerminalEvents } from "./terminal";
 import { UIEvents } from "./ui";
 import { WorkspaceEvents } from "./workspace";
 
@@ -15,4 +16,5 @@ export const AppEvents = EventLog.schema(
 	UIEvents,
 	SystemEvents,
 	SettingsEvents,
+	TerminalEvents,
 );
