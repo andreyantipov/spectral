@@ -36,9 +36,8 @@ export function WorkspaceRoot(props: WorkspaceRootProps) {
 				<DockviewProvider
 					components={components}
 					onReady={onReady}
-					initialLayout={
-						state()?.layout?.dockviewState as import("dockview-core").SerializedDockview | undefined
-					}
+					// TODO(Task 7/8): replace DockviewProvider with CSS Grid tiling renderer
+					initialLayout={undefined}
 				/>
 			</Show>
 		</div>

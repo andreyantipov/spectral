@@ -1,5 +1,5 @@
 import type { DatabaseError } from "@ctrl/base.error";
-import type { Bookmark, HistoryEntry, Page, Session } from "@ctrl/base.schema";
+import type { Bookmark, HistoryEntry, Page, PersistedLayout, Session } from "@ctrl/base.schema";
 import { Context, type Effect } from "effect";
 
 export const DATABASE_SERVICE_ID = "DatabaseService" as const;
@@ -42,14 +42,8 @@ export class HistoryRepository extends Context.Tag(HISTORY_REPOSITORY_ID)<
 export class LayoutRepository extends Context.Tag(LAYOUT_REPOSITORY_ID)<
 	LayoutRepository,
 	{
-		readonly getLayout: () => Effect.Effect<
-			{ version: number; dockviewState: unknown } | null,
-			DatabaseError
-		>;
-		readonly saveLayout: (layout: {
-			version: number;
-			dockviewState: unknown;
-		}) => Effect.Effect<void, DatabaseError>;
+		readonly getLayout: () => Effect.Effect<PersistedLayout | null, DatabaseError>;
+		readonly saveLayout: (layout: PersistedLayout) => Effect.Effect<void, DatabaseError>;
 	}
 >() {}
 

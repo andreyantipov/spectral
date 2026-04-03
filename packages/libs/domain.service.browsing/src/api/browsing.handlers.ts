@@ -137,8 +137,8 @@ const publishSnapshot = Effect.gen(function* () {
 		sessions.getAll(),
 		bookmarks.getAll(),
 		history.getAll(),
-		layout.getLayout().pipe(
-			Effect.map((node) => ({ version: 1, dockviewState: node as unknown })),
+		layout.getPersistedLayout().pipe(
+			Effect.map((persisted) => persisted ?? undefined),
 			Effect.catchAll(() => Effect.succeed(undefined)),
 		),
 	]);

@@ -1,5 +1,4 @@
 import { WorkspaceEvents } from "@ctrl/core.contract.event-bus";
-import type { LayoutNode } from "@ctrl/domain.feature.layout";
 import {
 	findAndActivatePanel,
 	findAndMovePanel,
@@ -21,12 +20,7 @@ export const WorkspaceHandlers = EventLog.group(WorkspaceEvents, (h) =>
 		.handle("ws.update-layout", ({ payload }) =>
 			Effect.gen(function* () {
 				const layout = yield* LayoutFeature;
-				// TODO(Task 3): update EventBus schema to use PersistedLayout directly
-				const persisted = {
-					version: 2 as const,
-					root: payload.layout.dockviewState as LayoutNode,
-				};
-				yield* layout.updateLayout(persisted);
+				yield* layout.updateLayout(payload.layout);
 			}),
 		)
 		.handle("ws.split-panel", ({ payload }) =>

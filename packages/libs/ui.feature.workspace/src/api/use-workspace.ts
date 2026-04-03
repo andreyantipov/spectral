@@ -1,6 +1,6 @@
-import type { BrowsingState, PanelRef } from "@ctrl/base.schema";
+import type { BrowsingState, LayoutNode, PanelRef } from "@ctrl/base.schema";
 import { useApi } from "@ctrl/ui.base.api";
-import type { DockviewApi, SerializedDockview } from "dockview-core";
+import type { DockviewApi } from "dockview-core";
 import { createSignal, onCleanup } from "solid-js";
 
 export function useWorkspace() {
@@ -8,8 +8,8 @@ export function useWorkspace() {
 	const state = api.on<BrowsingState>("state.snapshot");
 
 	const ops = {
-		updateLayout: (dockviewState: SerializedDockview) =>
-			api.dispatch("ws.update-layout", { layout: { version: 1, dockviewState } }),
+		updateLayout: (root: LayoutNode) =>
+			api.dispatch("ws.update-layout", { layout: { version: 2 as const, root } }),
 		splitPanel: (panelId: string, direction: "horizontal" | "vertical", newPanel: PanelRef) =>
 			api.dispatch("ws.split-panel", { panelId, direction, newPanel }),
 	};
@@ -23,10 +23,11 @@ export function useWorkspace() {
 
 	const onReady = (dockApi: DockviewApi) => {
 		setDockviewApi(dockApi);
+		// TODO(Task 7/8): replace dockview with CSS Grid tiling — dockApi.toJSON() no longer relevant
 		dockApi.onDidLayoutChange(() => {
 			if (rafId) cancelAnimationFrame(rafId);
 			rafId = requestAnimationFrame(() => {
-				ops.updateLayout(dockApi.toJSON());
+				// Legacy: dockview layout change handler — will be replaced
 				rafId = null;
 			});
 		});

@@ -24,26 +24,14 @@ export const LayoutFeatureLive = Layer.effect(
 		return withTracing(LAYOUT_FEATURE, {
 			getLayout: () =>
 				repo.getLayout().pipe(
-					Effect.map((persisted) =>
-						persisted ? (persisted.dockviewState as LayoutNode) : DEFAULT_LAYOUT,
-					),
+					Effect.map((persisted) => (persisted ? persisted.root : DEFAULT_LAYOUT)),
 					Effect.catchAll(() => Effect.succeed(DEFAULT_LAYOUT)),
 				),
 
-			getPersistedLayout: () =>
-				repo.getLayout().pipe(
-					Effect.map((persisted) =>
-						persisted
-							? ({ version: 2, root: persisted.dockviewState as LayoutNode } as PersistedLayout)
-							: null,
-					),
-					Effect.catchAll(() => Effect.succeed(null)),
-				),
+			getPersistedLayout: () => repo.getLayout().pipe(Effect.catchAll(() => Effect.succeed(null))),
 
 			updateLayout: (layout: PersistedLayout) =>
-				repo
-					.saveLayout({ version: layout.version, dockviewState: layout.root })
-					.pipe(Effect.catchAll(() => Effect.void)),
+				repo.saveLayout(layout).pipe(Effect.catchAll(() => Effect.void)),
 		});
 	}),
 );

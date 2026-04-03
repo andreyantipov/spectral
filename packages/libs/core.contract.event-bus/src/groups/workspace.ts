@@ -1,5 +1,5 @@
 import { DatabaseError } from "@ctrl/base.error";
-import { PanelRefSchema } from "@ctrl/base.schema";
+import { PanelRefSchema, PersistedLayoutSchema } from "@ctrl/base.schema";
 import { EventGroup } from "@effect/experimental";
 import { Schema } from "effect";
 
@@ -8,10 +8,7 @@ export const WorkspaceEvents = EventGroup.empty
 		tag: "ws.update-layout",
 		primaryKey: () => "global",
 		payload: Schema.Struct({
-			layout: Schema.Struct({
-				version: Schema.Number,
-				dockviewState: Schema.Unknown,
-			}),
+			layout: PersistedLayoutSchema,
 		}),
 		success: Schema.Void,
 	})

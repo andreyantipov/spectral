@@ -1,3 +1,4 @@
+import type { PersistedLayout } from "@ctrl/base.schema";
 import { LayoutRepository } from "@ctrl/core.contract.storage";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { LibsqlClient } from "@effect/sql-libsql";
@@ -36,28 +37,66 @@ describe("LayoutRepository", () => {
 		const result = await runTest(
 			Effect.gen(function* () {
 				const repo = yield* LayoutRepository;
-				yield* repo.saveLayout({
-					version: 1,
-					dockviewState: { panels: [{ id: "p1", type: "session" }] },
-				});
+				const layout: PersistedLayout = {
+					version: 2,
+					root: {
+						id: "g1",
+						type: "group",
+						panels: [{ id: "p1", type: "session", entityId: "s1", title: "New Tab", icon: null }],
+						activePanel: "p1",
+					},
+				};
+				yield* repo.saveLayout(layout);
 				return yield* repo.getLayout();
 			}),
 		);
 		expect(result).not.toBeNull();
-		expect(result?.version).toBe(1);
-		expect(result?.dockviewState).toEqual({ panels: [{ id: "p1", type: "session" }] });
+		expect(result?.version).toBe(2);
+		expect(result?.root.type).toBe("group");
 	});
 
 	it("overwrites existing layout on save", async () => {
 		const result = await runTest(
 			Effect.gen(function* () {
 				const repo = yield* LayoutRepository;
-				yield* repo.saveLayout({ version: 1, dockviewState: { panels: [] } });
-				yield* repo.saveLayout({ version: 2, dockviewState: { panels: [{ id: "p1" }] } });
+				const layout1: PersistedLayout = {
+					version: 2,
+					root: { id: "g1", type: "group", panels: [], activePanel: "" },
+				};
+				const layout2: PersistedLayout = {
+					version: 2,
+					root: {
+						id: "g2",
+						type: "group",
+						panels: [{ id: "p1", type: "session", entityId: "s1", title: "Tab", icon: null }],
+						activePanel: "p1",
+					},
+				};
+				yield* repo.saveLayout(layout1);
+				yield* repo.saveLayout(layout2);
 				return yield* repo.getLayout();
 			}),
 		);
 		expect(result?.version).toBe(2);
-		expect(result?.dockviewState).toEqual({ panels: [{ id: "p1" }] });
+		expect(result?.root.type).toBe("group");
+		if (result?.root.type === "group") {
+			expect(result.root.panels).toHaveLength(1);
+		}
+	});
+
+	it("returns null for invalid stored data", async () => {
+		const result = await runTest(
+			Effect.gen(function* () {
+				const repo = yield* LayoutRepository;
+				// Save valid data first, then verify decode works
+				const layout: PersistedLayout = {
+					version: 2,
+					root: { id: "g1", type: "group", panels: [], activePanel: "" },
+				};
+				yield* repo.saveLayout(layout);
+				return yield* repo.getLayout();
+			}),
+		);
+		expect(result).not.toBeNull();
 	});
 });

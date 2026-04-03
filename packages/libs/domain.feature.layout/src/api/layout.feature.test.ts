@@ -1,16 +1,16 @@
+import type { PersistedLayout } from "@ctrl/base.schema";
 import { LayoutRepository } from "@ctrl/core.contract.storage";
 import { Effect, Layer } from "effect";
 import { describe, expect, it } from "vitest";
 import { makeGroupNode } from "../lib/tree-ops";
-import type { PersistedLayout } from "../model/layout.validators";
 import { LayoutFeature, LayoutFeatureLive } from "./layout.feature";
 
 const makeTestLayer = () => {
-	let stored: { version: number; dockviewState: unknown } | null = null;
+	let stored: PersistedLayout | null = null;
 
 	const MockRepo = Layer.succeed(LayoutRepository, {
 		getLayout: () => Effect.succeed(stored),
-		saveLayout: (layout: { version: number; dockviewState: unknown }) =>
+		saveLayout: (layout: PersistedLayout) =>
 			Effect.sync(() => {
 				stored = layout;
 			}),
