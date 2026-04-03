@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Spectral Terminal Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: system-ui;
+    }
+    #container {
+      border: 1px solid #333;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    }
+    #titlebar {
+      background: #16213e;
+      color: #8888aa;
+      padding: 8px 16px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #titlebar .dot { width: 12px; height: 12px; border-radius: 50%; }
+    #titlebar .dot.red { background: #ff5f57; }
+    #titlebar .dot.yellow { background: #febc2e; }
+    #titlebar .dot.green { background: #28c840; }
+    #titlebar .title { flex: 1; text-align: center; }
+    canvas {
+      display: block;
+      background: #0f0f23;
+    }
+    #status {
+      background: #16213e;
+      color: #666;
+      padding: 4px 16px;
+      font-size: 11px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="titlebar">
+      <div class="dot red"></div>
+      <div class="dot yellow"></div>
+      <div class="dot green"></div>
+      <span class="title">Spectral Terminal Demo</span>
+    </div>
+    <canvas id="terminal" width="960" height="480"></canvas>
+    <div id="status">Connecting...</div>
+  </div>
+
+<script>
+// -- Simple ANSI parser + Canvas 2D renderer (demo-only) --
+// This is a minimal implementation to prove the PTY pipeline works.
+// The real Spectral terminal uses libghostty-vt WASM + WebGL 2.
+
+const canvas = document.getElementById('terminal');
+const ctx = canvas.getContext('2d');
+const status = document.getElementById('status');
+
+const FONT_SIZE = 14;
+const FONT = `${FONT_SIZE}px monospace`;
+const LINE_HEIGHT = Math.ceil(FONT_SIZE * 1.4);
+
+ctx.font = FONT;
+const CELL_WIDTH = ctx.measureText('M').width;
+
+const COLS = Math.floor(canvas.width / CELL_WIDTH);
+const ROWS = Math.floor(canvas.height / LINE_HEIGHT);
+
+// Terminal state
+const grid = [];
+for (let r = 0; r < ROWS; r++) {
+  const row = [];
+  for (let c = 0; c < COLS; c++) {
+    row.push({ char: ' ', fg: '#e0e0e0', bg: '#0f0f23', bold: false });
+  }
+  grid.push(row);
+}
+
+let cursorRow = 0, cursorCol = 0;
+let currentFg = '#e0e0e0';
+let currentBg = '#0f0f23';
+let currentBold = false;
+let savedCursorRow = 0, savedCursorCol = 0;
+
+// ANSI color palette
+const COLORS_16 = [
+  '#000000', '#cd0000', '#00cd00', '#cdcd00', '#0000ee', '#cd00cd', '#00cdcd', '#e5e5e5',
+  '#7f7f7f', '#ff0000', '#00ff00', '#ffff00', '#5c5cff', '#ff00ff', '#00ffff', '#ffffff',
+];
+
+function sgrColor(params, offset, isFg) {
+  if (params[offset] === 5 && params.length > offset + 1) {
+    const idx = params[offset + 1];
+    if (idx < 16) return COLORS_16[idx];
+    if (idx < 232) {
+      const n = idx - 16;
+      const r = Math.floor(n / 36) * 51;
+      const g = Math.floor((n % 36) / 6) * 51;
+      const b = (n % 6) * 51;
+      return `rgb(${r},${g},${b})`;
+    }
+    const gray = (idx - 232) * 10 + 8;
+    return `rgb(${gray},${gray},${gray})`;
+  }
+  if (params[offset] === 2 && params.length > offset + 3) {
+    return `rgb(${params[offset+1]},${params[offset+2]},${params[offset+3]})`;
+  }
+  return isFg ? '#e0e0e0' : '#0f0f23';
+}
+
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: demo-only ANSI SGR parser
+function handleSGR(params) {
+  if (params.length === 0) params = [0];
+  for (let i = 0; i < params.length; i++) {
+    const p = params[i];
+    if (p === 0) { currentFg = '#e0e0e0'; currentBg = '#0f0f23'; currentBold = false; }
+    else if (p === 1) currentBold = true;
+    else if (p === 22) currentBold = false;
+    else if (p >= 30 && p <= 37) currentFg = COLORS_16[p - 30 + (currentBold ? 8 : 0)];
+    else if (p === 38) { currentFg = sgrColor(params, i+1, true); i += (params[i+1] === 2 ? 4 : 2); }
+    else if (p === 39) currentFg = '#e0e0e0';
+    else if (p >= 40 && p <= 47) currentBg = COLORS_16[p - 40];
+    else if (p === 48) { currentBg = sgrColor(params, i+1, false); i += (params[i+1] === 2 ? 4 : 2); }
+    else if (p === 49) currentBg = '#0f0f23';
+    else if (p >= 90 && p <= 97) currentFg = COLORS_16[p - 90 + 8];
+    else if (p >= 100 && p <= 107) currentBg = COLORS_16[p - 100 + 8];
+  }
+}
+
+function scrollUp() {
+  grid.shift();
+  const row = [];
+  for (let c = 0; c < COLS; c++) {
+    row.push({ char: ' ', fg: '#e0e0e0', bg: '#0f0f23', bold: false });
+  }
+  grid.push(row);
+  if (cursorRow > 0) cursorRow--;
+}
+
+function putChar(ch) {
+  if (cursorCol >= COLS) {
+    cursorCol = 0;
+    cursorRow++;
+    if (cursorRow >= ROWS) scrollUp();
+  }
+  if (cursorRow >= 0 && cursorRow < ROWS && cursorCol >= 0 && cursorCol < COLS) {
+    grid[cursorRow][cursorCol] = { char: ch, fg: currentFg, bg: currentBg, bold: currentBold };
+  }
+  cursorCol++;
+}
+
+function clearLine(row, from, to) {
+  for (let c = from; c < to; c++) {
+    if (row >= 0 && row < ROWS && c >= 0 && c < COLS) {
+      grid[row][c] = { char: ' ', fg: '#e0e0e0', bg: '#0f0f23', bold: false };
+    }
+  }
+}
+
+// Simple ANSI escape parser
+let escBuf = '';
+let inEsc = false;
+
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: demo-only ANSI escape parser
+function processBytes(data) {
+  const text = new TextDecoder().decode(data);
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+
+    if (inEsc) {
+      escBuf += ch;
+      // CSI sequence: ESC [ ... letter
+      if (escBuf[0] === '[') {
+        if (ch >= '@' && ch <= '~') {
+          handleCSI(escBuf);
+          inEsc = false;
+          escBuf = '';
+        }
+      }
+      // OSC sequence: ESC ] ... BEL/ST
+      else if (escBuf[0] === ']') {
+        if (ch === '\x07' || (escBuf.endsWith('\x1b\\'))) {
+          inEsc = false;
+          escBuf = '';
+        }
+      }
+      // Two-char escape
+      else {
+        // ESC ( B, ESC ) 0, etc.
+        inEsc = false;
+        escBuf = '';
+      }
+      continue;
+    }
+
+    if (ch === '\x1b') { inEsc = true; escBuf = ''; continue; }
+    if (ch === '\r') { cursorCol = 0; continue; }
+    if (ch === '\n') { cursorRow++; if (cursorRow >= ROWS) scrollUp(); continue; }
+    if (ch === '\b') { if (cursorCol > 0) cursorCol--; continue; }
+    if (ch === '\t') { cursorCol = Math.min(COLS - 1, (Math.floor(cursorCol / 8) + 1) * 8); continue; }
+    if (ch === '\x07') continue; // bell
+    if (ch.charCodeAt(0) < 32) continue; // other control chars
+
+    putChar(ch);
+  }
+}
+
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: demo-only CSI sequence handler
+function handleCSI(seq) {
+  const cmd = seq[seq.length - 1];
+  const paramStr = seq.slice(1, -1);
+  const params = paramStr ? paramStr.split(';').map(Number) : [];
+
+  switch (cmd) {
+    case 'm': handleSGR(params); break;
+    case 'H': case 'f': // cursor position
+      cursorRow = Math.max(0, (params[0] || 1) - 1);
+      cursorCol = Math.max(0, (params[1] || 1) - 1);
+      break;
+    case 'A': cursorRow = Math.max(0, cursorRow - (params[0] || 1)); break;
+    case 'B': cursorRow = Math.min(ROWS - 1, cursorRow + (params[0] || 1)); break;
+    case 'C': cursorCol = Math.min(COLS - 1, cursorCol + (params[0] || 1)); break;
+    case 'D': cursorCol = Math.max(0, cursorCol - (params[0] || 1)); break;
+    case 'J': // erase in display
+      if (params[0] === 2 || params[0] === 3) {
+        for (let r = 0; r < ROWS; r++) clearLine(r, 0, COLS);
+        cursorRow = 0; cursorCol = 0;
+      } else if (params[0] === 1) {
+        for (let r = 0; r < cursorRow; r++) clearLine(r, 0, COLS);
+        clearLine(cursorRow, 0, cursorCol + 1);
+      } else {
+        clearLine(cursorRow, cursorCol, COLS);
+        for (let r = cursorRow + 1; r < ROWS; r++) clearLine(r, 0, COLS);
+      }
+      break;
+    case 'K': // erase in line
+      if (params[0] === 2) clearLine(cursorRow, 0, COLS);
+      else if (params[0] === 1) clearLine(cursorRow, 0, cursorCol + 1);
+      else clearLine(cursorRow, cursorCol, COLS);
+      break;
+    case 'G': cursorCol = Math.max(0, (params[0] || 1) - 1); break;
+    case 'd': cursorRow = Math.max(0, (params[0] || 1) - 1); break;
+    case 's': savedCursorRow = cursorRow; savedCursorCol = cursorCol; break;
+    case 'u': cursorRow = savedCursorRow; cursorCol = savedCursorCol; break;
+    case 'L': { // insert lines
+      const insertN = params[0] || 1;
+      for (let i = 0; i < insertN; i++) {
+        grid.splice(cursorRow, 0, Array.from({length: COLS}, () => ({char:' ',fg:'#e0e0e0',bg:'#0f0f23',bold:false})));
+        grid.pop();
+      }
+      break;
+    }
+    case 'M': { // delete lines
+      const deleteN = params[0] || 1;
+      grid.splice(cursorRow, deleteN);
+      for (let i = 0; i < deleteN; i++) {
+        grid.push(Array.from({length: COLS}, () => ({char:' ',fg:'#e0e0e0',bg:'#0f0f23',bold:false})));
+      }
+      break;
+    }
+    // h/l for mode set/reset (ignore for demo)
+    case 'h': case 'l': break;
+  }
+}
+
+// Render loop
+let needsRender = true;
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: demo-only render loop
+function render() {
+  if (!needsRender) { requestAnimationFrame(render); return; }
+  needsRender = false;
+
+  ctx.fillStyle = '#0f0f23';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = grid[r][c];
+      const x = c * CELL_WIDTH;
+      const y = r * LINE_HEIGHT;
+
+      // Background
+      if (cell.bg !== '#0f0f23') {
+        ctx.fillStyle = cell.bg;
+        ctx.fillRect(x, y, CELL_WIDTH, LINE_HEIGHT);
+      }
+
+      // Foreground
+      if (cell.char !== ' ') {
+        ctx.fillStyle = cell.fg;
+        ctx.font = cell.bold ? `bold ${FONT_SIZE}px monospace` : FONT;
+        ctx.fillText(cell.char, x, y + FONT_SIZE);
+      }
+    }
+  }
+
+  // Cursor
+  const cx = cursorCol * CELL_WIDTH;
+  const cy = cursorRow * LINE_HEIGHT;
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.fillRect(cx, cy, CELL_WIDTH, LINE_HEIGHT);
+  // Invert char under cursor
+  const cursorCell = grid[cursorRow]?.[cursorCol];
+  if (cursorCell && cursorCell.char !== ' ') {
+    ctx.fillStyle = '#0f0f23';
+    ctx.font = cursorCell.bold ? `bold ${FONT_SIZE}px monospace` : FONT;
+    ctx.fillText(cursorCell.char, cx, cy + FONT_SIZE);
+  }
+
+  requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
+
+// -- WebSocket connection --
+const ws = new WebSocket(`ws://${location.host}/ws`);
+ws.binaryType = 'arraybuffer';
+
+ws.onopen = () => {
+  status.textContent = `Connected | ${COLS}x${ROWS} | ws://localhost:3456`;
+  // Send initial size
+  const buf = new ArrayBuffer(4);
+  const view = new DataView(buf);
+  view.setUint16(0, COLS);
+  view.setUint16(2, ROWS);
+  ws.send(buf);
+};
+
+ws.onmessage = (event) => {
+  processBytes(new Uint8Array(event.data));
+  needsRender = true;
+};
+
+ws.onclose = () => { status.textContent = 'Disconnected'; };
+ws.onerror = () => { status.textContent = 'Connection error'; };
+
+// Keyboard input
+document.addEventListener('keydown', (e) => {
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  e.preventDefault();
+
+  const MODIFIERS = new Set(['Control', 'Shift', 'Alt', 'Meta', 'CapsLock', 'NumLock']);
+  if (MODIFIERS.has(e.key)) return;
+
+  // Ctrl+letter
+  if (e.ctrlKey && !e.altKey && !e.metaKey && e.key.length === 1) {
+    const code = e.key.toLowerCase().charCodeAt(0);
+    if (code >= 97 && code <= 122) {
+      ws.send(String.fromCharCode(code - 96));
+      return;
+    }
+  }
+
+  // Alt+key
+  if (e.altKey && !e.ctrlKey && !e.metaKey && e.key.length === 1) {
+    ws.send(`\x1b${e.key}`);
+    return;
+  }
+
+  const SPECIAL = {
+    Enter: '\r', Backspace: '\x7f', Tab: '\t', Escape: '\x1b',
+    ArrowUp: '\x1b[A', ArrowDown: '\x1b[B', ArrowRight: '\x1b[C', ArrowLeft: '\x1b[D',
+    Home: '\x1b[H', End: '\x1b[F', Delete: '\x1b[3~',
+    PageUp: '\x1b[5~', PageDown: '\x1b[6~',
+  };
+
+  if (SPECIAL[e.key]) { ws.send(SPECIAL[e.key]); return; }
+  if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) { ws.send(e.key); return; }
+});
+
+// Focus
+canvas.tabIndex = 0;
+canvas.focus();
+canvas.addEventListener('click', () => canvas.focus());
+</script>
+</body>
+</html>
