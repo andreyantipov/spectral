@@ -1,6 +1,4 @@
-export type { PanelProps } from "./lib/createSolidRenderer";
-export { createSolidRenderer } from "./lib/createSolidRenderer";
-export type { DockviewProviderProps } from "./lib/DockviewProvider";
-export { DockviewProvider } from "./lib/DockviewProvider";
-export type { WorkspaceRootProps } from "./ui/WorkspaceRoot";
-export { WorkspaceRoot } from "./ui/WorkspaceRoot";
+export { useWorkspace } from "./api/use-workspace";
+export type { LayoutRendererProps, LayoutRootProps } from "./ui/LayoutRenderer";
+export { LayoutRenderer, LayoutRoot } from "./ui/LayoutRenderer";
+export type { WorkspaceCommand, WorkspaceProps } from "./ui/types";

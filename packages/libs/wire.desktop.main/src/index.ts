@@ -1,4 +1,5 @@
-import { AppEvents, SettingsEvents, TerminalEvents } from "@ctrl/core.contract.event-bus";
+import { AppEvents, EventBus, TerminalEvents } from "@ctrl/core.contract.event-bus";
+import { StateSync } from "@ctrl/core.contract.state-sync";
 import {
 	BookmarkRepositoryLive,
 	HistoryRepositoryLive,
@@ -8,25 +9,31 @@ import {
 } from "@ctrl/core.impl.db";
 import { EventBusLive } from "@ctrl/core.impl.event-bus";
 import { type ElectrobunIpcHandle, IpcBridgeLive } from "@ctrl/core.impl.ipc-bridge";
-import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/core.middleware.otel";
+import { StateSyncLive } from "@ctrl/core.impl.state-sync";
+import { McpServerLive } from "@ctrl/core.middleware.mcp";
+import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/core.middleware.otel/node";
 import { BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
 import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
 import { LayoutFeatureLive } from "@ctrl/domain.feature.layout";
 import { OmniboxFeatureLive } from "@ctrl/domain.feature.omnibox";
 import { SessionFeatureLive } from "@ctrl/domain.feature.session";
-import { SettingsFeature, SettingsFeatureLive } from "@ctrl/domain.feature.settings";
+import { SettingsFeatureLive } from "@ctrl/domain.feature.settings";
 import {
 	BookmarkHandlers,
-	BrowsingServiceLive,
 	NavigationHandlers,
 	SessionHandlers,
-	SystemHandlers,
-	UIHandlers,
+	WebBrowsingServiceLive,
 } from "@ctrl/domain.service.browsing";
-import { WorkspaceHandlers } from "@ctrl/domain.service.workspace";
+import {
+	SettingsHandlers,
+	SystemHandlers,
+	SystemServiceLive,
+	UIHandlers,
+} from "@ctrl/domain.service.system";
+import { WorkspaceHandlers, WorkspaceServiceLive } from "@ctrl/domain.service.workspace";
 import { EventJournal, EventLog } from "@effect/experimental";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Stream } from "effect";
 
 // -- Storage: Drizzle ORM + repositories --------------------------------------
 
@@ -46,15 +53,6 @@ const LayoutFeatureLayer = LayoutFeatureLive.pipe(Layer.provide(LayoutRepository
 
 // -- EventLog: typed handlers + in-memory journal -----------------------------
 
-const SettingsHandlers = EventLog.group(SettingsEvents, (h) =>
-	h.handle("settings.shortcuts", () =>
-		Effect.gen(function* () {
-			const feature = yield* SettingsFeature;
-			return yield* feature.getShortcuts();
-		}),
-	),
-);
-
 // Stub terminal handlers — real implementation will be wired via domain.service.terminal
 const TerminalHandlers = EventLog.group(TerminalEvents, (h) =>
 	h
@@ -69,24 +67,33 @@ const IdentityLive = Layer.effect(
 );
 const JournalLive = EventJournal.layerMemory;
 
-const HandlersLive = Layer.mergeAll(
+// Browsing handlers (session, navigation, bookmark)
+const BrowsingHandlersLive = Layer.mergeAll(
 	SessionHandlers.pipe(Layer.provide(SessionFeatureLayer)),
 	NavigationHandlers.pipe(
 		Layer.provide(SessionFeatureLayer),
 		Layer.provide(OmniboxFeatureLive),
 		Layer.provide(HistoryFeatureLayer),
-	),
-	BookmarkHandlers.pipe(Layer.provide(BookmarkFeatureLayer)),
-	WorkspaceHandlers.pipe(Layer.provide(LayoutFeatureLayer)),
-	SystemHandlers.pipe(
-		Layer.provide(SessionFeatureLayer),
-		Layer.provide(BookmarkFeatureLayer),
-		Layer.provide(HistoryFeatureLayer),
 		Layer.provide(EventBusLive),
 	),
+	BookmarkHandlers.pipe(Layer.provide(BookmarkFeatureLayer)),
+);
+
+// Workspace handlers
+const WorkspaceHandlersLive = WorkspaceHandlers.pipe(Layer.provide(LayoutFeatureLayer));
+
+// System handlers (system, UI, settings)
+const SystemHandlersLive = Layer.mergeAll(
+	SystemHandlers.pipe(Layer.provide(EventBusLive)),
 	UIHandlers,
 	SettingsHandlers.pipe(Layer.provide(SettingsFeatureLive)),
 	TerminalHandlers,
+);
+
+const HandlersLive = Layer.mergeAll(
+	BrowsingHandlersLive,
+	WorkspaceHandlersLive,
+	SystemHandlersLive,
 );
 
 const EventLogLive = EventLog.layer(AppEvents).pipe(
@@ -97,15 +104,84 @@ const EventLogLive = EventLog.layer(AppEvents).pipe(
 
 // -- Services -----------------------------------------------------------------
 
-const BrowsingServiceLayer = BrowsingServiceLive.pipe(
+// Services get EventBusLive + StateSyncLive from SharedLive (provided in createMainProcess)
+const BrowsingServiceLayer = WebBrowsingServiceLive.pipe(
 	Layer.provide(EventLogLive),
 	Layer.provide(SessionFeatureLayer),
 	Layer.provide(BookmarkFeatureLayer),
 	Layer.provide(HistoryFeatureLayer),
-	Layer.provide(LayoutFeatureLayer),
 	Layer.provide(OmniboxFeatureLive),
-	Layer.provide(EventBusLive),
 );
+
+const WorkspaceServiceLayer = WorkspaceServiceLive.pipe(
+	Layer.provide(EventLogLive),
+	Layer.provide(LayoutFeatureLayer),
+	Layer.provide(SessionFeatureLayer),
+);
+
+const SystemServiceLayer = SystemServiceLive.pipe(
+	Layer.provide(EventLogLive),
+	Layer.provide(SettingsFeatureLive),
+);
+
+// -- State Sync ---------------------------------------------------------------
+
+const AutoStateSyncLive = Layer.scopedDiscard(
+	Effect.gen(function* () {
+		const sync = yield* StateSync;
+		const bus = yield* EventBus;
+
+		let dirty = false; // will be set after initial delay
+		let lastJson = "";
+
+		// Mark dirty on any command (but don't publish immediately)
+		// ui.ready = webview just mounted and subscribed; force re-publish
+		// even if snapshot data hasn't changed (it was published before UI was ready)
+		yield* bus.commands.pipe(
+			Stream.runForEach((cmd) =>
+				Effect.sync(() => {
+					dirty = true;
+					if (cmd.action === "ui.ready") lastJson = "";
+				}),
+			),
+			Effect.forkScoped,
+		);
+
+		// Initial state publish — delay to ensure webview UI has mounted
+		yield* Effect.sleep("1500 millis").pipe(
+			Effect.andThen(
+				Effect.sync(() => {
+					dirty = true;
+				}),
+			),
+			Effect.forkScoped,
+		);
+
+		// Periodic check: publish only when dirty, deduplicate by JSON equality
+		yield* Effect.forever(
+			Effect.gen(function* () {
+				yield* Effect.sleep("100 millis");
+				if (!dirty) return;
+				dirty = false;
+				const snapshot = yield* sync.getSnapshot().pipe(Effect.catchAll(() => Effect.succeed({})));
+				const json = JSON.stringify(snapshot);
+				if (json === lastJson) return;
+				lastJson = json;
+				yield* bus.publish({
+					type: "event",
+					name: "state-sync",
+					payload: snapshot,
+					timestamp: Date.now(),
+				});
+			}).pipe(Effect.catchAllCause(() => Effect.void)),
+		).pipe(Effect.forkScoped);
+	}),
+);
+
+// -- Dev Server ---------------------------------------------------------------
+
+// McpLayer gets EventBusLive and StateSyncLive from MainProcessLive (shared instances)
+const _McpLayer = McpServerLive;
 
 // -- Compose ------------------------------------------------------------------
 
@@ -120,7 +196,15 @@ export type { ElectrobunIpcHandle };
 export const createMainProcess = (handle: ElectrobunIpcHandle, dbPath: string) => {
 	const DbClientLive = makeDbClient(`file:${dbPath}`);
 	const OtelLayer = OtelLive(OTEL_SERVICE_NAMES.main, "node");
-	const MainProcessLive = Layer.mergeAll(EventBusLive, BrowsingServiceLayer);
+	const SharedLive = Layer.merge(EventBusLive, StateSyncLive);
+	const ServicesLive = Layer.mergeAll(
+		BrowsingServiceLayer,
+		WorkspaceServiceLayer,
+		SystemServiceLayer,
+		McpServerLive,
+		AutoStateSyncLive,
+	).pipe(Layer.provide(SharedLive));
+	const MainProcessLive = Layer.merge(SharedLive, ServicesLive);
 	return Layer.mergeAll(
 		DbClientLive,
 		OtelLayer,

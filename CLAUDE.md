@@ -149,9 +149,14 @@ Key differences from `dev:desktop`:
 - No hardcoded strings for span names or service identifiers
 - ast-grep enforces all boundaries — run `ast-grep scan` before committing
 - Two public surfaces: `domain.service.*` (for UI) and `ui.scene.*` (for apps)
-- **`BrowsingServiceLive`** listens to EventBus commands and dispatches to domain features via EventLog. All business operations (browsing + workspace) flow through EventBus commands.
+- **Three services** handle all EventBus commands — each publishes its own snapshot:
+  - **`WebBrowsingServiceLive`** — handles `session.*`, `nav.*`, `bm.*` → publishes `browsing.snapshot`
+  - **`WorkspaceServiceLive`** — handles `ws.*` → publishes `workspace.snapshot`
+  - **`SystemServiceLive`** — handles `state.*`, `diag.*`, `ui.*`, `settings.*`
+- Services communicate via **event choreography**: one service dispatches an EventBus command that another service handles (e.g. browsing dispatches `ws.update-tab-meta` after a title change). Use `typedSend` from `core.impl.event-bus` for type-safe cross-service dispatch with `source: "system"` for service-originated commands.
 - **`Model.Class` (extending Effect Schema) is the single source of truth** for domain types — derive TypeScript types from schemas, never duplicate them.
 - The browsing unit of work is a **session** — use `domain.feature.session` not `domain.feature.tab`. Constants use `SESSION_FEATURE`, not `TAB_FEATURE`.
+- **Tiling layout** uses a pure tree model (`domain.feature.layout`) with `tree-ops.ts` for all split/move/close/resize operations. No dockview — layout is CSS Grid rendered by `ui.feature.workspace`.
 
 ### One Layer Per Impl Package
 Each `core.impl.*` package exports exactly **one Layer**. This keeps the dependency graph readable and makes each implementation a clear, single-purpose unit. Enforced by code review (ast-grep cannot count cross-file occurrences). See `.ast-grep/rules/impl-single-layer.yml` for rationale.
@@ -221,8 +226,8 @@ One unified mechanism for all communication — local and cross-process:
 
 ```
 EventBus (business logic — ALL commands and events):
-  Commands: session.create, nav.navigate, ws.split, ...
-  Events:   session.created, nav.navigated, ...
+  Commands: session.create, nav.navigate, ws.split-panel, ws.move-panel, ...
+  Events:   browsing.snapshot, workspace.snapshot, diag.pong, ...
 
 IPC Bridge (infrastructure — transparent cross-process delivery):
   Main process ←──Electrobun IPC──→ Webview
@@ -230,10 +235,11 @@ IPC Bridge (infrastructure — transparent cross-process delivery):
   Business code never touches IPC directly — it only dispatches/subscribes via EventBus.
 ```
 
-- **`core.impl.event-bus`** = `EventBusLive` (in-memory PubSub implementation of EventBus contract).
+- **`core.impl.event-bus`** = `EventBusLive` (in-memory PubSub) + `typedSend` helper for type-safe service-to-service dispatch.
 - **`core.impl.ipc-bridge`** = `IpcBridgeLive(handle, "main" | "webview")`. One Layer, configured per side. Both sides use `EventBusLive` locally; the bridge syncs between local bus and IPC.
 - **`core.impl.native`** = implements `core.contract.native`. Wraps Electrobun native API calls (window management, menus, etc.) behind a contract so business code stays portable.
 - **EventBus** = where ALL business happens. Every command, every event, every subscriber. Features and services never touch IPC directly — they only speak EventBus.
+- **Event choreography** — services coordinate by dispatching commands to each other through the EventBus. Example: `WebBrowsingServiceLive` handles `nav.update-title` and dispatches `ws.update-tab-meta` so `WorkspaceServiceLive` can update panel metadata. Use `typedSend(bus)(tag, payload)` for type-safe cross-service dispatch.
 - See event catalog: `docs/catalog/` and generated docs: `docs/architecture/GENERATED.md`
 
 ## How to Add a New Command (end-to-end)
@@ -251,7 +257,10 @@ IPC Bridge (infrastructure — transparent cross-process delivery):
 2. Add the group to `AppEvents` in `core.contract.event-bus/src/groups/schema.ts`:
    `export const AppEvents = EventLog.schema(...existing, FooEvents);`
 
-3. Add handler via `EventLog.group()` in `domain.service.browsing/src/api/browsing.handlers.ts`:
+3. Add handler via `EventLog.group()` in the appropriate service:
+   - `domain.service.browsing/src/api/browsing.handlers.ts` — for session/nav/bookmark commands
+   - `domain.service.workspace/src/api/workspace.handlers.ts` — for workspace layout commands
+   - `domain.service.system/src/api/system.service.ts` — for system/UI/settings commands
    ```ts
    export const FooHandlers = EventLog.group(FooEvents, (h) =>
      h.handle("foo.action", ({ payload }) =>
@@ -263,14 +272,16 @@ IPC Bridge (infrastructure — transparent cross-process delivery):
    );
    ```
 
-4. Wire handler in `wire.desktop.main/src/index.ts`:
+4. For workspace layout operations, implement tree-ops in `domain.feature.layout/src/lib/tree-ops.ts` (pure functions over the `LayoutNode` tree model).
+
+5. Wire handler in `wire.desktop.main/src/index.ts`:
    `FooHandlers.pipe(Layer.provide(FooFeatureLayer))`
 
-5. Add tag to `MUTATION_ACTIONS` set if it changes state (triggers snapshot).
+6. Add tag to `MUTATION_ACTIONS` set if it changes state (triggers snapshot).
 
-6. Dispatch from UI: `api.dispatch("foo.action", { id })`
+7. Dispatch from UI: `api.dispatch("foo.action", { id })`
 
-7. Subscribe in UI: `const result = api.on("state.snapshot")`
+8. Subscribe in UI: `const result = api.on("browsing.snapshot")` or `api.on("workspace.snapshot")`
 
 Files touched: 4-5. No new packages unless new domain concept.
 
@@ -284,6 +295,7 @@ Files touched: 4-5. No new packages unless new domain concept.
 
 ## Recent Architecture Changes
 
+- Tiling redesign (Apr 3): Replaced dockview-core with native CSS Grid tiling. New `domain.feature.layout` (tree model + tree-ops), `ui.feature.workspace` (CSS Grid renderer). Split `BrowsingServiceLive` into three services: `WebBrowsingServiceLive`, `WorkspaceServiceLive`, `SystemServiceLive`. Added `typedSend` for type-safe cross-service EventBus choreography. New workspace commands: `ws.split-panel`, `ws.move-panel`, `ws.close-panel`, `ws.resize`, `ws.activate-panel`, `ws.reorder-panel`, `ws.update-tab-meta`, `ws.update-layout`.
 - OTEL middleware (Mar 29): Renamed `core.impl.otel` → `core.middleware.otel`, deleted `core.contract.otel`, moved `OTEL_SERVICE_NAMES` into `core.middleware.otel`. New `core.middleware.*` tier for cross-cutting infrastructure.
 - OTEL unification (Mar 29): Merged `core.impl.otel` + `core.impl.otel-web` into single `core.impl.otel` with `OtelLive(serviceName, "node" | "web")`. Runtime configured in wiring.
 - IPC bridge unification (Mar 29): Merged `core.impl.ipc-bridge` + `core.impl.ipc-bridge-web` into single `core.impl.ipc-bridge` with `IpcBridgeLive(handle, "main" | "webview")`. Both sides now use `EventBusLive` locally.

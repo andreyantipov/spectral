@@ -5,7 +5,8 @@ import { matchShortcut } from "../lib/match-shortcut";
 
 export function KeyboardProvider(props: { children: JSX.Element }) {
 	const api = useApi();
-	const shortcuts = api.on<ShortcutBinding[]>("settings.shortcuts");
+	const settingsState = api.state<{ shortcuts: ShortcutBinding[] }>("settings");
+	const shortcuts = () => settingsState()?.shortcuts;
 
 	onMount(() => {
 		const handler = (e: KeyboardEvent) => {

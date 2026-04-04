@@ -20,56 +20,64 @@ type PayloadFor<T extends AllTags> = Event.PayloadWithTag<
 >;
 
 export function useApi() {
-	// Runtime boundary cast — SolidJS Context is untyped, actual runtime has EventBus
 	const runtime = useRuntime() as unknown as ManagedRuntime.ManagedRuntime<EventBus, never>;
-
 	const bus = runtime.runSync(EventBus);
 
-	/** Send a typed command through EventBus carrier */
 	function dispatch<T extends AllTags>(tag: T, payload: PayloadFor<T>): void {
-		const cmd: AppCommand = {
-			type: "command",
-			action: tag,
-			payload,
-			meta: { source: "ui" },
-		};
+		const cmd: AppCommand = { type: "command", action: tag, payload, meta: { source: "ui" } };
 		void runtime.runPromise(bus.send(cmd));
 	}
 
-	/** Send an untyped command (for dynamic dispatch from shortcuts) */
 	function send(action: string, payload?: unknown): void {
-		const cmd: AppCommand = {
-			type: "command",
-			action,
-			payload,
-			meta: { source: "ui" },
-		};
+		const cmd: AppCommand = { type: "command", action, payload, meta: { source: "ui" } };
 		void runtime.runPromise(bus.send(cmd));
 	}
 
-	// Event subscription — single shared stream, fan out to per-event signals
 	const owner = getOwner();
 	const subscriptions = new Map<string, Accessor<unknown>>();
+	const stateSignals = new Map<string, [Accessor<unknown>, (v: unknown) => void]>();
 	const eventPubSub = runtime.runSync(PubSub.unbounded<AppEvent>());
 
+	const handleEvent = (evt: AppEvent) => {
+		// Fan out to per-event PubSub (for api.on())
+		void runtime.runPromise(PubSub.publish(eventPubSub, evt));
+
+		// Direct state-sync handling (for api.state())
+		if (evt.name === "state-sync" && evt.payload) {
+			const data = evt.payload as Record<string, unknown>;
+			for (const [path, value] of Object.entries(data)) {
+				const entry = stateSignals.get(path);
+				if (entry) entry[1](value);
+			}
+		}
+	};
+
+	// Single onMount: subscribe to bus events and fan out to per-event signals + state signals
 	onMount(() => {
 		if (!owner) return;
-		const stream = bus.events.pipe(
-			Stream.catchAll((error) => {
-				console.error("[useApi] eventStream error:", error);
-				return Stream.empty;
-			}),
-		);
+
 		const fiber = runtime.runFork(
-			stream.pipe(Stream.runForEach((evt) => PubSub.publish(eventPubSub, evt))),
+			bus.events.pipe(
+				Stream.catchAll(() => Stream.empty),
+				Stream.runForEach((evt) => Effect.sync(() => runWithOwner(owner, () => handleEvent(evt)))),
+			),
 		);
 		onCleanup(() => runtime.runFork(Fiber.interrupt(fiber)));
 
-		// Request initial state
+		// Request initial state — sends noop command to trigger state-sync publish
 		requestAnimationFrame(() => {
-			dispatch("state.request", {});
+			send("ui.ready", {});
 		});
 	});
+
+	function state<T>(path: string): Accessor<T> {
+		const existing = stateSignals.get(path);
+		if (existing) return existing[0] as Accessor<T>;
+
+		const [value, setValue] = createSignal<T>(undefined as T);
+		stateSignals.set(path, [value as Accessor<unknown>, setValue as (v: unknown) => void]);
+		return value as Accessor<T>;
+	}
 
 	function on<T = unknown>(eventName: string): Accessor<T | undefined> {
 		const existing = subscriptions.get(eventName);
@@ -96,5 +104,5 @@ export function useApi() {
 		return value as Accessor<T | undefined>;
 	}
 
-	return { dispatch, send, on };
+	return { dispatch, send, on, state };
 }

@@ -1,1 +1,1 @@
-export const BROWSING_SERVICE = "BrowsingService" as const;
+export const WEB_BROWSING_SERVICE = "WebBrowsingService" as const;

@@ -1,9 +1,7 @@
 export {
 	BookmarkHandlers,
-	BrowsingServiceLive,
 	NavigationHandlers,
 	SessionHandlers,
-	SystemHandlers,
-	UIHandlers,
+	WebBrowsingServiceLive,
 } from "./api/browsing.handlers";
-export { BROWSING_SERVICE } from "./lib/constants";
+export { WEB_BROWSING_SERVICE } from "./lib/constants";

@@ -1,7 +1,8 @@
+import type { PersistedLayout } from "@ctrl/base.schema";
 import { LayoutRepository } from "@ctrl/core.contract.storage";
 import { Effect, Layer } from "effect";
 import { describe, expect, it } from "vitest";
-import type { PersistedLayout } from "../model/layout.validators";
+import { makeGroupNode } from "../lib/tree-ops";
 import { LayoutFeature, LayoutFeatureLive } from "./layout.feature";
 
 const makeTestLayer = () => {
@@ -36,10 +37,12 @@ describe("LayoutFeature", () => {
 		await runTest(
 			Effect.gen(function* () {
 				const feature = yield* LayoutFeature;
-				const dockviewState = { some: "state" };
-				yield* feature.updateLayout({ version: 1, dockviewState });
+				const root = makeGroupNode([], "");
+				const persisted: PersistedLayout = { version: 2, root };
+				yield* feature.updateLayout(persisted);
 				const layout = yield* feature.getPersistedLayout();
-				expect(layout?.version).toBe(1);
+				expect(layout?.version).toBe(2);
+				expect(layout?.root.type).toBe("group");
 			}),
 		);
 	});

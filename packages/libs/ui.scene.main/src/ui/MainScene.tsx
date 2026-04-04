@@ -1,13 +1,14 @@
+import type { BrowsingState, PanelRef } from "@ctrl/base.schema";
 import { currentUrl } from "@ctrl/base.type";
+import { useApi } from "@ctrl/ui.base.api";
 import { BlankPage } from "@ctrl/ui.base.components";
 import { KeyboardProvider } from "@ctrl/ui.feature.keyboard-provider";
 import { SidebarFeature, type WebviewBindings } from "@ctrl/ui.feature.sidebar";
-import type { PanelProps } from "@ctrl/ui.feature.workspace";
-import { DockviewProvider } from "@ctrl/ui.feature.workspace";
-import type { DockviewApi } from "dockview-core";
-import { createContext, createEffect, createMemo, Show, untrack, useContext } from "solid-js";
-import { SessionWebview, syncAllWebviewDimensions } from "../lib/SessionWebview";
-import { EmptyPane } from "./EmptyPane";
+import { ManagedWebview, syncAllWebviewDimensions } from "@ctrl/ui.feature.webview";
+import { LayoutRoot, useWorkspace } from "@ctrl/ui.feature.workspace";
+import html2canvas from "html2canvas";
+import { createContext, createEffect, Show, useContext } from "solid-js";
+import { SHORTCUT_PRELOAD } from "../lib/webview-constants";
 
 const BindingsContext = createContext<WebviewBindings>();
 
@@ -25,9 +26,9 @@ export function MainScene() {
 	);
 }
 
-function SessionPanel(panelProps: PanelProps) {
+function SessionPanel(props: { panel: PanelRef }) {
 	const bindings = useContext(BindingsContext);
-	const sessionId = String(panelProps.params.sessionId ?? "");
+	const sessionId = props.panel.entityId;
 
 	const url = () => {
 		const s = bindings?.sessions().find((s) => s.id === sessionId);
@@ -35,139 +36,142 @@ function SessionPanel(panelProps: PanelProps) {
 	};
 
 	return (
-		<SessionWebview
+		<ManagedWebview
 			sessionId={sessionId}
 			url={url()}
 			isActive={bindings?.activeSessionId() === sessionId}
+			overlayMasks={["[data-sidebar]", "[data-omnibox]", "[data-context-menu]"]}
+			preload={SHORTCUT_PRELOAD}
 			onNavigate={(navUrl) => bindings?.onNavigate(sessionId, navUrl)}
 			onTitleChange={(title) => bindings?.onTitleChange(sessionId, title)}
+			onNewWindow={(targetUrl) => bindings?.onNavigate(sessionId, targetUrl)}
 		/>
 	);
 }
-
-// FIX #8: EmptyPane "+" — wait for session sync before closing empty panel
-function EmptyPanelRenderer(panelProps: PanelProps) {
-	const bindings = useContext(BindingsContext);
-	return (
-		<EmptyPane
-			onCreateTab={() => {
-				if (!bindings) return;
-				bindings.createSession();
-				// Wait TWO frames: 1st for session state to propagate,
-				// 2nd for sync effect to add the new panel to dockview
-				requestAnimationFrame(() => {
-					requestAnimationFrame(() => {
-						try {
-							panelProps.api?.close();
-						} catch {
-							// Panel may already be cleaned up
-						}
-					});
-				});
-			}}
-		/>
-	);
-}
-
-const COMPONENTS = { session: SessionPanel, empty: EmptyPanelRenderer };
 
 function WorkspaceContent() {
 	const maybeBindings = useContext(BindingsContext);
 	if (!maybeBindings)
 		throw new Error("WorkspaceContent must be rendered inside BindingsContext.Provider");
 	const bindings = maybeBindings;
-	let api: DockviewApi | undefined;
-	let initialized = false;
+	const api = useApi();
+	const browsingState = api.state<BrowsingState>("browsing");
+
+	const { layout, focusedGroupId, setFocusedGroupId, handleCommand } = useWorkspace();
+
+	const hasSessions = () => (browsingState()?.sessions?.length ?? 0) > 0;
+
+	// Screenshot handler: capture DOM when diag.screenshot-request arrives
+	const screenshotRequest = api.on("diag.screenshot-request");
+	createEffect(() => {
+		const req = screenshotRequest();
+		if (req === undefined) return;
+		html2canvas(document.body, {
+			scale: 1,
+			useCORS: true,
+			allowTaint: true,
+			removeContainer: true,
+			ignoreElements: (el: Element) => {
+				const tag = el.tagName?.toLowerCase();
+				return tag === "webview" || tag === "iframe" || tag === "electrobun-webview";
+			},
+		})
+			.then((canvas) => {
+				api.send("diag.screenshot-result", {
+					data: canvas.toDataURL("image/png").split(",")[1],
+					width: canvas.width,
+					height: canvas.height,
+					timestamp: Date.now(),
+				});
+			})
+			.catch((err) => {
+				// Fallback: send a canvas with error info
+				const c = document.createElement("canvas");
+				c.width = window.innerWidth;
+				c.height = window.innerHeight;
+				const ctx = c.getContext("2d");
+				if (ctx) {
+					ctx.fillStyle = "#1a1a2e";
+					ctx.fillRect(0, 0, c.width, c.height);
+					ctx.fillStyle = "#ff6b6b";
+					ctx.font = "14px monospace";
+					ctx.fillText(`Screenshot capture error: ${err}`, 16, 32);
+				}
+				api.send("diag.screenshot-result", {
+					data: c.toDataURL("image/png").split(",")[1],
+					width: c.width,
+					height: c.height,
+					timestamp: Date.now(),
+				});
+			});
+	});
+
+	// JS eval handler: execute arbitrary JS in the webview context
+	const evalJsRequest = api.on<{ code: string }>("diag.eval-js-request");
+	createEffect(() => {
+		const req = evalJsRequest();
+		if (req === undefined) return;
+		try {
+			const fn = new Function(req.code);
+			const result = fn();
+			if (result instanceof Promise) {
+				result
+					.then((v: unknown) => api.send("diag.eval-js-result", { result: String(v) }))
+					.catch((e: unknown) => api.send("diag.eval-js-result", { result: "", error: String(e) }));
+			} else {
+				api.send("diag.eval-js-result", { result: String(result) });
+			}
+		} catch (e) {
+			api.send("diag.eval-js-result", { result: "", error: String(e) });
+		}
+	});
 
 	// Register split handler so sidebar context menu can split panes
 	bindings.onSplitSession = (sessionId: string, direction: "right" | "down") => {
-		if (!api) return;
-		const refPanel = api.panels.find((p) => p.id === sessionId);
-		if (!refPanel) return;
-		const newId = `empty-${Date.now()}`;
-		api.addPanel({
-			id: newId,
-			component: "empty",
-			position: {
-				referencePanel: refPanel,
-				direction: direction === "right" ? "right" : "below",
+		api.dispatch("ws.split-panel", {
+			panelId: sessionId,
+			direction: direction === "right" ? "horizontal" : "vertical",
+			newPanel: {
+				id: crypto.randomUUID(),
+				type: "session" as const,
+				entityId: sessionId,
+				title: "New Tab",
+				icon: null,
 			},
 		});
-		scheduleSync();
 	};
 
-	const sessionIds = createMemo(() => bindings.sessions().map((s) => s.id), undefined, {
-		equals: (a, b) => a.length === b.length && a.every((id, i) => id === b[i]),
-	});
-
-	// FIX #7: Only show BlankPage when there are NO sessions at all,
-	// not when active session has about:blank (that's normal for new tabs)
-	const hasSessions = () => bindings.sessions().length > 0;
-
-	function scheduleSync() {
-		requestAnimationFrame(() => syncAllWebviewDimensions());
-	}
-
-	function syncPanels(dockApi: DockviewApi, ids: string[]) {
-		const existing = new Set(dockApi.panels.map((p) => p.id));
-		for (const id of ids) {
-			if (!existing.has(id)) {
-				dockApi.addPanel({ id, component: "session", params: { sessionId: id } });
-			}
+	const renderViewport = (panel: PanelRef) => {
+		if (panel.type === "session") {
+			return <SessionPanel panel={panel} />;
 		}
-		// Only remove session panels that no longer exist in state
-		// Keep empty panels (they start with "empty-")
-		for (const panel of [...dockApi.panels]) {
-			const isEmptyPanel = panel.id.startsWith("empty-");
-			if (!isEmptyPanel && !ids.includes(panel.id)) {
-				try {
-					dockApi.removePanel(panel);
-				} catch {
-					// Panel may be mid-interaction
-				}
-			}
-		}
-	}
-
-	// FIX #6: Guard panel sync - don't remove empty panels, only session panels
-	createEffect(() => {
-		const ids = sessionIds();
-		if (!api || !initialized) return;
-		syncPanels(api, ids);
-		scheduleSync();
-	});
-
-	createEffect(() => {
-		const activeId = bindings.activeSessionId();
-		if (!api || !activeId) return;
-		const panel = api.panels.find((p) => p.id === activeId);
-		if (panel && api.activePanel?.id !== activeId) {
-			panel.api.setActive();
-		}
-	});
-
-	function handleReady(dockviewApi: DockviewApi) {
-		api = dockviewApi;
-		dockviewApi.onDidLayoutChange(() => scheduleSync());
-
-		const ids = untrack(sessionIds);
-		for (const id of ids) {
-			dockviewApi.addPanel({ id, component: "session", params: { sessionId: id } });
-		}
-
-		const activeId = untrack(bindings.activeSessionId);
-		if (activeId) {
-			const panel = dockviewApi.panels.find((p) => p.id === activeId);
-			if (panel) panel.api.setActive();
-		}
-
-		scheduleSync();
-		initialized = true;
-	}
+		return <div style="width: 100%; height: 100%; background: #1e1e1e;" />;
+	};
 
 	return (
 		<div style="display: flex; flex: 1; width: 100%; height: 100%; position: relative; overflow: hidden;">
-			<DockviewProvider components={COMPONENTS} onReady={handleReady} class="dv-workspace" />
+			<Show
+				when={layout()}
+				fallback={
+					<Show when={!hasSessions()}>
+						<BlankPage />
+					</Show>
+				}
+			>
+				{(rootLayout) => (
+					<LayoutRoot
+						layout={rootLayout()}
+						focusedGroupId={focusedGroupId()}
+						renderViewport={renderViewport}
+						onCommand={(cmd) => {
+							handleCommand(cmd);
+							// Sync webview dimensions after layout changes
+							requestAnimationFrame(() => syncAllWebviewDimensions());
+						}}
+						onGroupFocus={setFocusedGroupId}
+					/>
+				)}
+			</Show>
 			<Show when={!hasSessions()}>
 				<div style="position: absolute; inset: 0; z-index: 1;">
 					<BlankPage />

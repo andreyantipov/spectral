@@ -1,36 +1,36 @@
-import type { BrowsingState, PanelRef } from "@ctrl/base.schema";
+import type { WorkspaceState } from "@ctrl/base.schema";
 import { useApi } from "@ctrl/ui.base.api";
-import type { DockviewApi, SerializedDockview } from "dockview-core";
-import { createSignal, onCleanup } from "solid-js";
+import { createSignal } from "solid-js";
+import type { WorkspaceCommand } from "../ui/types";
 
 export function useWorkspace() {
 	const api = useApi();
-	const state = api.on<BrowsingState>("state.snapshot");
+	const workspaceState = api.state<WorkspaceState>("workspace");
 
-	const ops = {
-		updateLayout: (dockviewState: SerializedDockview) =>
-			api.dispatch("ws.update-layout", { layout: { version: 1, dockviewState } }),
-		splitPanel: (panelId: string, direction: "horizontal" | "vertical", newPanel: PanelRef) =>
-			api.dispatch("ws.split-panel", { panelId, direction, newPanel }),
+	const layout = () => workspaceState()?.root ?? null;
+
+	const [focusedGroupId, setFocusedGroupId] = createSignal<string | null>(null);
+
+	const handleCommand = (cmd: WorkspaceCommand) => {
+		switch (cmd.type) {
+			case "resize":
+				api.dispatch("ws.resize", { splitId: cmd.splitId, sizes: cmd.sizes });
+				break;
+			case "activate-panel":
+				api.dispatch("ws.activate-panel", { panelId: cmd.panelId });
+				break;
+			case "close-panel":
+				api.dispatch("ws.close-panel", { panelId: cmd.panelId });
+				break;
+			case "reorder-panel":
+				api.dispatch("ws.reorder-panel", {
+					groupId: cmd.groupId,
+					panelId: cmd.panelId,
+					index: cmd.index,
+				});
+				break;
+		}
 	};
 
-	const [dockviewApi, setDockviewApi] = createSignal<DockviewApi | null>(null);
-
-	let rafId: number | null = null;
-	onCleanup(() => {
-		if (rafId) cancelAnimationFrame(rafId);
-	});
-
-	const onReady = (dockApi: DockviewApi) => {
-		setDockviewApi(dockApi);
-		dockApi.onDidLayoutChange(() => {
-			if (rafId) cancelAnimationFrame(rafId);
-			rafId = requestAnimationFrame(() => {
-				ops.updateLayout(dockApi.toJSON());
-				rafId = null;
-			});
-		});
-	};
-
-	return { state, dockviewApi, onReady, ops };
+	return { layout, focusedGroupId, setFocusedGroupId, handleCommand };
 }

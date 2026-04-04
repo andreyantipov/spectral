@@ -10,7 +10,7 @@ import { EventBus } from "@ctrl/core.contract.event-bus";
 import { type ElectrobunIpcHandle, ensureSchema } from "@ctrl/wire.desktop.main";
 import { Effect, ManagedRuntime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
-import { createDesktopMainLive } from "./layers";
+import { createDesktopMainLive, DbOnlyLive } from "./layers";
 import { createMainRPC } from "./rpc";
 
 console.info(`[bun] ${APP_NAME} starting...`);
@@ -34,14 +34,14 @@ const win = new BrowserWindow({
 // The Electrobun RPC handle doubles as the IPC channel for EventBus bridging
 const rpcHandle = win.webview.rpc as unknown as ElectrobunIpcHandle;
 
+// Ensure database schema exists BEFORE services start (they query on startup)
+await Effect.runPromise(ensureSchema.pipe(Effect.provide(DbOnlyLive)));
+
 // Initialize Effect runtime with IPC bridge wired to the webview
 const runtime = ManagedRuntime.make(createDesktopMainLive(rpcHandle));
 
 // Ensure runtime is up (database, services, IPC bridge)
 const rt = await runtime.runtime();
-
-// Ensure database schema exists
-await runtime.runPromise(ensureSchema);
 
 ApplicationMenu.setApplicationMenu([
 	{
@@ -53,7 +53,11 @@ ApplicationMenu.setApplicationMenu([
 	},
 	{
 		label: "File",
-		submenu: [{ label: "Close Window", role: "close", accelerator: "Cmd+W" }],
+		submenu: [
+			{ label: "New Tab", action: "new-tab", accelerator: "Cmd+T" },
+			{ type: "separator" },
+			{ label: "Close Window", role: "close", accelerator: "Cmd+W" },
+		],
 	},
 	{
 		label: "Edit",
@@ -84,6 +88,20 @@ ApplicationMenu.setApplicationMenu([
 // Menu accelerator → EventBus command
 ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
 	const data = (event as { data?: { action?: string } })?.data;
+	if (data?.action === "new-tab") {
+		void runtime.runPromise(
+			EventBus.pipe(
+				Effect.flatMap((bus) =>
+					bus.send({
+						type: "command",
+						action: "session.create",
+						payload: { mode: "visual" },
+						meta: { source: "keyboard" },
+					}),
+				),
+			),
+		);
+	}
 	if (data?.action === "toggle-command-center") {
 		void runtime.runPromise(
 			EventBus.pipe(

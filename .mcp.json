@@ -8,6 +8,10 @@
 			"command": "bun",
 			"args": ["run", "packages/tools/mcp-architecture.ts"]
 		},
+		"spectral-mcp-bus": {
+			"command": "bunx",
+			"args": ["mcp-remote", "http://localhost:50100/mcp"]
+		},
 		"ast-grep": {
 			"command": "uvx",
 			"args": ["--from", "git+https://github.com/ast-grep/ast-grep-mcp@main", "ast-grep-server"]

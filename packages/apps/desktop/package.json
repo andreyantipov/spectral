@@ -9,20 +9,20 @@
 		"@ctrl/base.type": "workspace:*",
 		"@ctrl/core.contract.event-bus": "workspace:*",
 		"@ctrl/core.contract.storage": "workspace:*",
+		"@ctrl/domain.feature.settings": "workspace:*",
 		"@ctrl/ui.base.api": "workspace:*",
 		"@ctrl/ui.base.components": "workspace:*",
-		"@ctrl/domain.feature.settings": "workspace:*",
+		"@ctrl/ui.scene.main": "workspace:*",
 		"@ctrl/wire.desktop.main": "workspace:*",
 		"@ctrl/wire.desktop.ui": "workspace:*",
-		"@ctrl/ui.scene.main": "workspace:*",
 		"electrobun": "1.15.1"
 	},
 	"scripts": {
 		"prebundle": "bun run build-view.ts && bun run prepare-native-deps.ts",
-		"prebundle:bun": "bun build src/bun/index.ts --target=bun --external=@libsql/client --outfile=build/bun-entry.js",
+		"prebundle:bun": "bun build src/bun/index.ts --target=bun --external=@libsql/client --outfile=build/index.js",
 		"build": "bun install && bun run prebundle && bun run prebundle:bun && electrobun build --env stable",
 		"start": "bun run build && electrobun dev",
-		"dev": "bun run prebundle && electrobun dev --watch",
+		"dev": "bun run prebundle && bun run prebundle:bun && electrobun dev --watch",
 		"dev:watch-ui": "bun run dev-view.ts",
 		"check": "tsgo --noEmit 2>&1 | (! grep -v 'node_modules/' | grep 'error TS')"
 	}

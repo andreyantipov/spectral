@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ctrl.page State Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08090c;
+    --surface: #0f1115;
+    --surface-2: #161920;
+    --border: #1e2230;
+    --border-glow: #2a3040;
+    --text: #c8cdd8;
+    --text-dim: #5c6478;
+    --text-bright: #eef0f5;
+    --red: #e5484d;
+    --red-dim: #3d1418;
+    --red-border: #6d2027;
+    --green: #46a758;
+    --green-dim: #0f291a;
+    --green-border: #1b4332;
+    --green-glow: rgba(70, 167, 88, 0.08);
+    --amber: #f0a030;
+    --amber-dim: #2a1e0a;
+    --amber-border: #5c4010;
+    --blue: #3b82f6;
+    --blue-dim: #0c1a33;
+    --blue-border: #1e3a5f;
+    --purple: #8b5cf6;
+    --mono: 'JetBrains Mono', monospace;
+    --serif: 'Instrument Serif', Georgia, serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* --- noise texture overlay --- */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .page { max-width: 1360px; margin: 0 auto; padding: 60px 40px 80px; }
+
+  /* --- header --- */
+  header { text-align: center; margin-bottom: 64px; }
+  header h1 {
+    font-family: var(--serif);
+    font-size: 48px;
+    font-weight: 400;
+    color: var(--text-bright);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  header h1 em { font-style: italic; color: var(--green); }
+  header p {
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--text-dim);
+    font-weight: 300;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* --- grid --- */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    gap: 0;
+    align-items: start;
+  }
+
+  .divider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 80px;
+    gap: 12px;
+  }
+  .divider-line {
+    width: 1px;
+    height: 100%;
+    min-height: 500px;
+    background: linear-gradient(to bottom, transparent, var(--border) 10%, var(--border) 90%, transparent);
+  }
+  .divider-label {
+    writing-mode: vertical-lr;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    position: sticky;
+    top: 50%;
+  }
+
+  /* --- column --- */
+  .col { padding: 0 24px; }
+
+  .col-header {
+    padding: 20px 0 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+  .col-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+  }
+  .col-bad .col-tag { background: var(--red-dim); color: var(--red); border: 1px solid var(--red-border); }
+  .col-good .col-tag { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+
+  .col-title {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--text-bright);
+    line-height: 1.2;
+  }
+  .col-bad .col-title { color: #d4d4d8; }
+  .col-good .col-title { color: var(--text-bright); }
+
+  .col-subtitle {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  /* --- process group --- */
+  .proc {
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .proc-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 8px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px 8px 0 0;
+    border-bottom: none;
+  }
+  .proc-body {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0 8px 8px 8px;
+    padding: 14px;
+  }
+
+  /* --- nodes --- */
+  .n {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 0 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    transition: background 0.2s;
+    position: relative;
+  }
+  .n:hover { background: rgba(255,255,255,0.02); }
+
+  .n-icon {
+    grid-row: 1 / 3;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .n-name { font-weight: 500; font-size: 12px; color: var(--text-bright); }
+  .n-desc { font-size: 11px; color: var(--text-dim); font-weight: 300; }
+
+  /* node types */
+  .n-cmd .n-icon { background: var(--blue-dim); color: var(--blue); border: 1px solid var(--blue-border); }
+  .n-svc .n-icon { background: var(--blue-dim); color: #60a5fa; border: 1px solid var(--blue-border); }
+  .n-feat .n-icon { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+  .n-cer .n-icon { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber-border); }
+  .n-bad .n-icon { background: var(--red-dim); color: var(--red); border: 1px solid var(--red-border); }
+  .n-ipc .n-icon { background: #1a1528; color: var(--purple); border: 1px solid #3b2d66; }
+  .n-sig .n-icon { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
+  .n-ui .n-icon { background: #0c1a2e; color: #38bdf8; border: 1px solid #1e3a5f; }
+
+  .n-loro {
+    background: var(--green-glow);
+    border: 1px solid var(--green-border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .n-loro .n-icon {
+    background: var(--green-dim);
+    color: var(--green);
+    border: 1px solid var(--green-border);
+    box-shadow: 0 0 12px rgba(70,167,88,0.2);
+  }
+  .n-loro .n-name { color: var(--green); }
+
+  /* --- flow arrow --- */
+  .flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 0;
+    gap: 8px;
+  }
+  .flow-line {
+    width: 1px;
+    height: 16px;
+    background: var(--border-glow);
+  }
+  .flow-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--text-dim);
+  }
+  .flow-text {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+  .flow-bad .flow-line { background: var(--red-border); }
+  .flow-bad .flow-text { color: var(--red); font-weight: 500; }
+
+  /* --- loop indicator --- */
+  .loop-back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 14px;
+    margin: 4px 0;
+    background: var(--red-dim);
+    border: 1px dashed var(--red-border);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--red);
+    font-weight: 500;
+  }
+
+  /* --- strikethrough for ceremony --- */
+  .col-good .strike { text-decoration: line-through; opacity: 0.25; }
+
+  /* --- stats bar --- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .stat {
+    text-align: center;
+    padding: 16px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .stat-num {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    font-weight: 300;
+  }
+  .col-bad .stat-num { color: var(--red); }
+  .col-good .stat-num { color: var(--green); }
+
+  /* --- deleted overlay --- */
+  .deleted-section {
+    position: relative;
+  }
+  .deleted-section::after {
+    content: 'DELETED';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-12deg);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    color: var(--red);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .deleted-section > * { opacity: 0.15; }
+
+  /* --- footer --- */
+  .footer {
+    margin-top: 64px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+  .footer a { color: var(--text-dim); text-decoration: underline; }
+
+  /* --- animations --- */
+  .proc { animation: fadeUp 0.5s ease both; }
+  .col-bad .proc:nth-child(2) { animation-delay: 0.1s; }
+  .col-bad .proc:nth-child(3) { animation-delay: 0.2s; }
+  .col-bad .proc:nth-child(4) { animation-delay: 0.3s; }
+  .col-good .proc:nth-child(2) { animation-delay: 0.15s; }
+  .col-good .proc:nth-child(3) { animation-delay: 0.3s; }
+  .col-good .proc:nth-child(4) { animation-delay: 0.45s; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .n-loro { animation: glowPulse 3s ease-in-out infinite; }
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(70,167,88,0); }
+    50% { box-shadow: 0 0 24px rgba(70,167,88,0.08); }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header>
+  <h1>State Architecture: <em>Current vs Loro</em></h1>
+  <p>How a single command travels from business logic to rendered UI &mdash; and why the current path creates cascade loops that Loro eliminates.</p>
+</header>
+
+<div class="grid">
+
+  <!-- ====== LEFT: CURRENT ====== -->
+  <div class="col col-bad">
+    <div class="col-header">
+      <div class="col-tag">Current</div>
+      <div class="col-title">Snapshot Ping-Pong</div>
+      <div class="col-subtitle">Each service publishes independent snapshots. UI reconciles the fragments.</div>
+    </div>
+
+    <div class="proc">
+      <div class="proc-label">Bun Process</div>
+      <div class="proc-body">
+        <div class="n n-cmd">
+          <div class="n-icon">Cmd</div>
+          <div class="n-name">session.activate</div>
+          <div class="n-desc">dispatched via EventBus</div>
+        </div>
+        <div class="flow"><div class="flow-line"></div></div>
+        <div class="n n-svc">
+          <div class="n-icon">Svc</div>
+          <div class="n-name">BrowsingService</div>
+          <div class="n-desc">handles command, delegates to Feature</div>
+        </div>
+        <div class="flow"><div class="flow-line"></div></div>
+        <div class="n n-feat">
+          <div class="n-icon">Fn</div>
+          <div class="n-name">SessionFeature.setActive(id)</div>
+          <div class="n-desc">pure business logic, writes to DB</div>
+        </div>
+        <div class="flow"><div class="flow-line"></div></div>
+        <div class="n n-cer">
+          <div class="n-icon">?</div>
+          <div class="n-name">MUTATION_ACTIONS set check</div>
+          <div class="n-desc">is this command in the mutation set?</div>
+        </div>
+        <div class="flow"><div class="flow-line"></div></div>
+        <div class="n n-cer">
+          <div class="n-icon">Re</div>
+          <div class="n-name">publishBrowsingSnapshot</div>
+          <div class="n-desc">re-read ALL state from DB, build full JSON</div>
+        </div>
+        <div class="flow"><div class="flow-line"></div></div>
+        <div class="n n-cer">
+          <div class="n-icon">Tx</div>
+          <div class="n-name">bus.publish("browsing.snapshot")</div>
+          <div class="n-desc">full state JSON broadcast to all subscribers</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="proc">
+      <div class="proc-label">IPC Bridge</div>
+      <div class="proc-body">
+        <div class="n n-ipc">
+          <div class="n-icon">&#8644;</div>
+          <div class="n-name">JSON serialize &rarr; Electrobun IPC</div>
+          <div class="n-desc">full snapshot every single time, browsing separate from workspace</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="proc">
+      <div class="proc-label">Webview Process</div>
+      <div class="proc-body">
+        <div class="n n-sig">
+          <div class="n-icon">On</div>
+          <div class="n-name">api.on("browsing.snapshot")</div>
+          <div class="n-desc">separate subscription from workspace.snapshot</div>
+        </div>
+        <div class="flow"><div class="flow-line"></div></div>
+        <div class="n n-bad">
+          <div class="n-icon">&#8635;</div>
+          <div class="n-name">syncSessionsToLayout()</div>
+          <div class="n-desc">reconcile sessions vs layout panels</div>
+        </div>
+
+        <div class="loop-back">
+          &#8593; dispatches ws.update-layout back to EventBus &mdash; cascade loop
+        </div>
+
+        <div class="flow"><div class="flow-line"></div></div>
+        <div class="n n-ui">
+          <div class="n-icon">UI</div>
+          <div class="n-name">SolidJS Render</div>
+          <div class="n-desc">finally renders after reconciliation settles</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-num">6</div><div class="stat-label">chain links</div></div>
+      <div class="stat"><div class="stat-num">29</div><div class="stat-label">events at startup</div></div>
+      <div class="stat"><div class="stat-num">~70</div><div class="stat-label">lines of ceremony</div></div>
+    </div>
+  </div>
+
+  <!-- ====== DIVIDER ====== -->
+  <div class="divider">
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- ====== RIGHT: LORO ====== -->
+  <div class="col col-good">
+    <div class="col-header">
+      <div class="col-tag">With Loro</div>
+      <div class="col-title">Transparent State Layer</div>
+      <div class="col-subtitle">One atomic document. Features write, UI observes. No reconciliation.</div>
+    </div>
+
+    <div class="proc">
+      <div class="proc-label">Bun Process</div>
+      <div class="proc-body">
+        <div class="n n-cmd">
+          <div class="n-icon">Cmd</div>
+          <div class="n-name">session.activate</div>
+          <div class="n-desc">dispatched via EventBus (unchanged)</div>
+        </div>
+        <div class="flow"><div class="flow-line"></div></div>
+        <div class="n n-svc">
+          <div class="n-icon">Svc</div>
+          <div class="n-name">Service</div>
+          <div class="n-desc">handles command, delegates to Feature</div>
+        </div>
+        <div class="flow"><div class="flow-line"></div></div>
+        <div class="n n-feat">
+          <div class="n-icon">Fn</div>
+          <div class="n-name">SessionFeature.setActive(id)</div>
+          <div class="n-desc">pure business logic, returns updated state</div>
+        </div>
+        <div class="flow"><div class="flow-line"></div><span class="flow-text">1 line: doc.set()</span></div>
+        <div class="n n-loro">
+          <div class="n-icon">Lo</div>
+          <div class="n-name">LoroDoc</div>
+          <div class="n-desc">atomic state container &bull; auto-notifies subscribers &bull; export() for persistence &bull; future: multi-device sync</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="proc">
+      <div class="proc-label">IPC Bridge</div>
+      <div class="proc-body">
+        <div class="n n-ipc">
+          <div class="n-icon">&#8644;</div>
+          <div class="n-name">doc.toJSON() &rarr; IPC</div>
+          <div class="n-desc">atomic: { browsing, workspace } always together, always consistent</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="proc">
+      <div class="proc-label">Webview Process</div>
+      <div class="proc-body">
+        <div class="n n-sig">
+          <div class="n-icon">On</div>
+          <div class="n-name">SolidJS Signal</div>
+          <div class="n-desc">complete state object, no partial updates, no race conditions</div>
+        </div>
+        <div class="flow"><div class="flow-line"></div></div>
+        <div class="n n-ui">
+          <div class="n-icon">UI</div>
+          <div class="n-name">SolidJS Render</div>
+          <div class="n-desc">immediate &mdash; no reconciliation step</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="proc deleted-section">
+      <div class="proc-label">Deleted Code</div>
+      <div class="proc-body">
+        <div class="n n-cer">
+          <div class="n-icon">&times;</div>
+          <div class="n-name">publishBrowsingSnapshot</div>
+          <div class="n-desc">20 lines</div>
+        </div>
+        <div class="n n-cer">
+          <div class="n-icon">&times;</div>
+          <div class="n-name">publishWorkspaceSnapshot</div>
+          <div class="n-desc">10 lines</div>
+        </div>
+        <div class="n n-cer">
+          <div class="n-icon">&times;</div>
+          <div class="n-name">syncSessionsToLayout</div>
+          <div class="n-desc">40 lines</div>
+        </div>
+        <div class="n n-cer">
+          <div class="n-icon">&times;</div>
+          <div class="n-name">state.request + MUTATION_ACTIONS</div>
+          <div class="n-desc">scattered across 3 services</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-num">3</div><div class="stat-label">chain links</div></div>
+      <div class="stat"><div class="stat-num">1</div><div class="stat-label">event per mutation</div></div>
+      <div class="stat"><div class="stat-num">0</div><div class="stat-label">lines of ceremony</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  ctrl.page &mdash; state architecture comparison &mdash; April 2026
+</div>
+
+</div>
+</body>
+</html>

@@ -2,13 +2,10 @@ import { withTracing } from "@ctrl/base.tracing";
 import { LayoutRepository } from "@ctrl/core.contract.storage";
 import { Context, Effect, Layer } from "effect";
 import { LAYOUT_FEATURE } from "../lib/constants";
+import { makeGroupNode } from "../lib/tree-ops";
 import type { LayoutNode, PersistedLayout } from "../model/layout.validators";
 
-const DEFAULT_LAYOUT: LayoutNode = {
-	type: "group",
-	panels: [],
-	activePanel: "",
-};
+const DEFAULT_LAYOUT: LayoutNode = makeGroupNode([], "");
 
 export class LayoutFeature extends Context.Tag(LAYOUT_FEATURE)<
 	LayoutFeature,
@@ -27,9 +24,7 @@ export const LayoutFeatureLive = Layer.effect(
 		return withTracing(LAYOUT_FEATURE, {
 			getLayout: () =>
 				repo.getLayout().pipe(
-					Effect.map((persisted) =>
-						persisted ? (persisted.dockviewState as LayoutNode) : DEFAULT_LAYOUT,
-					),
+					Effect.map((persisted) => (persisted ? persisted.root : DEFAULT_LAYOUT)),
 					Effect.catchAll(() => Effect.succeed(DEFAULT_LAYOUT)),
 				),
 

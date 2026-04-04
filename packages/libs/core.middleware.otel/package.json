@@ -5,6 +5,8 @@
 	"type": "module",
 	"exports": {
 		".": "./src/index.ts",
+		"./node": "./src/node.ts",
+		"./web": "./src/web.ts",
 		"./testing": "./src/api/otel.test-utils.ts"
 	},
 	"scripts": {
