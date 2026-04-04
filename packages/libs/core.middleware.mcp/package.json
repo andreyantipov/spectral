@@ -7,7 +7,7 @@
 		".": "./src/index.ts"
 	},
 	"scripts": {
-		"check": "echo 'skipped — tsgo TS2589 with @modelcontextprotocol/sdk zod generics on linux'"
+		"check": "tsgo --noEmit"
 	},
 	"dependencies": {
 		"@ctrl/core.contract.event-bus": "workspace:*",

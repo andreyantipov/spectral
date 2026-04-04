@@ -3,7 +3,6 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { Effect, Layer, Stream } from "effect";
-import { z } from "zod";
 
 const MCP_PORT = 50100;
 const MAX_EVENTS = 100;
@@ -33,64 +32,48 @@ export const McpServerLive = Layer.scopedDiscard(
 			),
 		);
 
-		// tsgo on linux hits TS2554/TS2589 with McpServer.tool's zod generics.
-		// Wrapper arrow function avoids the issue by erasing the original signature.
-		const registerTools = (mcpServer: McpServer) => {
-			const tool = (
-				name: string,
-				descOrHandler: unknown,
-				schemaOrNothing?: unknown,
-				handler?: unknown,
-			) =>
-				(mcpServer.tool as (...a: unknown[]) => unknown)(
-					name,
-					descOrHandler,
-					schemaOrNothing,
-					handler,
+		const registerTools = (mcp: McpServer) => {
+			mcp.registerTool("dispatch", { description: "Send a command to EventBus" }, async (extra) => {
+				const args =
+					(extra as unknown as { params: { arguments?: Record<string, unknown> } }).params
+						.arguments ?? {};
+				const action = args.action as string;
+				const payload = (args.payload ?? {}) as Record<string, unknown>;
+				await Effect.runPromise(
+					bus.send({ type: "command", action, payload, meta: { source: "agent" } }),
 				);
-			tool(
-				"dispatch",
-				"Send a command to EventBus. Payload is validated by EventBus handlers.",
-				{ action: z.string(), payload: z.record(z.unknown()).optional() },
-				async ({ action, payload }: { action: string; payload?: Record<string, unknown> }) => {
-					await Effect.runPromise(
-						bus.send({
-							type: "command",
-							action,
-							payload: payload ?? {},
-							meta: { source: "agent" },
-						}),
-					);
-					await new Promise((r) => setTimeout(r, 200));
+				await new Promise((r) => setTimeout(r, 200));
+				return { content: [{ type: "text" as const, text: JSON.stringify({ ok: true, action }) }] };
+			});
+
+			mcp.registerTool("get_state", { description: "Get current application state" }, async () => ({
+				content: [{ type: "text" as const, text: JSON.stringify(latestState, null, 2) }],
+			}));
+
+			mcp.registerTool(
+				"get_events",
+				{ description: "Get recent EventBus events" },
+				async (extra) => {
+					const args =
+						(extra as unknown as { params: { arguments?: Record<string, unknown> } }).params
+							.arguments ?? {};
+					const limit = (args.limit as number) ?? 20;
 					return {
-						content: [{ type: "text" as const, text: JSON.stringify({ ok: true, action }) }],
+						content: [
+							{ type: "text" as const, text: JSON.stringify(recentEvents.slice(-limit), null, 2) },
+						],
 					};
 				},
 			);
 
-			tool("get_state", "Get current application state (sessions + layout)", async () => ({
-				content: [{ type: "text" as const, text: JSON.stringify(latestState, null, 2) }],
-			}));
-
-			tool(
-				"get_events",
-				"Get recent EventBus events",
-				{ limit: z.number().optional() },
-				async ({ limit }: { limit?: number }) => ({
-					content: [
-						{
-							type: "text" as const,
-							text: JSON.stringify(recentEvents.slice(-(limit ?? 20)), null, 2),
-						},
-					],
-				}),
-			);
-
-			tool(
+			mcp.registerTool(
 				"get_screenshot",
-				"Capture a screenshot of the app UI via EventBus diag.screenshot. Returns base64 PNG image.",
-				{ selector: z.string().optional() },
-				async ({ selector }: { selector?: string }) => {
+				{ description: "Capture app screenshot" },
+				async (extra) => {
+					const args =
+						(extra as unknown as { params: { arguments?: Record<string, unknown> } }).params
+							.arguments ?? {};
+					const selector = args.selector as string | undefined;
 					const TIMEOUT_MS = 5000;
 					const resultPromise = new Promise<unknown>((resolve, reject) => {
 						screenshotResolver = resolve;
@@ -101,7 +84,6 @@ export const McpServerLive = Layer.scopedDiscard(
 							}
 						}, TIMEOUT_MS);
 					});
-
 					await Effect.runPromise(
 						bus.send({
 							type: "command",
@@ -110,14 +92,12 @@ export const McpServerLive = Layer.scopedDiscard(
 							meta: { source: "agent" },
 						}),
 					);
-
 					try {
 						const result = (await resultPromise) as { data: string };
 						return {
 							content: [{ type: "image" as const, data: result.data, mimeType: "image/png" }],
 						};
 					} catch {
-						// Fallback: use screencapture
 						const path = "/tmp/spectral-screenshot.png";
 						const proc = Bun.spawn(["screencapture", "-x", "-o", path], {
 							stdout: "ignore",
@@ -130,9 +110,7 @@ export const McpServerLive = Layer.scopedDiscard(
 						}
 						const bytes = await file.arrayBuffer();
 						const base64 = Buffer.from(bytes).toString("base64");
-						return {
-							content: [{ type: "image" as const, data: base64, mimeType: "image/png" }],
-						};
+						return { content: [{ type: "image" as const, data: base64, mimeType: "image/png" }] };
 					}
 				},
 			);
