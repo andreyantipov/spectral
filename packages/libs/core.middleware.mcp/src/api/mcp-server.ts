@@ -33,12 +33,22 @@ export const McpServerLive = Layer.scopedDiscard(
 			),
 		);
 
+		// tsgo on linux hits TS2554/TS2589 with McpServer.tool's zod generics.
+		// Wrapper arrow function avoids the issue by erasing the original signature.
 		const registerTools = (mcpServer: McpServer) => {
-			// Erase McpServer.tool's deeply-nested zod generics to avoid tsgo TS2589
-			const mcp = mcpServer as unknown as Omit<McpServer, "tool"> & {
-				tool: (name: string, ...rest: unknown[]) => void;
-			};
-			mcp.tool(
+			const tool = (
+				name: string,
+				descOrHandler: unknown,
+				schemaOrNothing?: unknown,
+				handler?: unknown,
+			) =>
+				(mcpServer.tool as (...a: unknown[]) => unknown)(
+					name,
+					descOrHandler,
+					schemaOrNothing,
+					handler,
+				);
+			tool(
 				"dispatch",
 				"Send a command to EventBus. Payload is validated by EventBus handlers.",
 				{ action: z.string(), payload: z.record(z.unknown()).optional() },
@@ -58,11 +68,11 @@ export const McpServerLive = Layer.scopedDiscard(
 				},
 			);
 
-			mcp.tool("get_state", "Get current application state (sessions + layout)", async () => ({
+			tool("get_state", "Get current application state (sessions + layout)", async () => ({
 				content: [{ type: "text" as const, text: JSON.stringify(latestState, null, 2) }],
 			}));
 
-			mcp.tool(
+			tool(
 				"get_events",
 				"Get recent EventBus events",
 				{ limit: z.number().optional() },
@@ -76,7 +86,7 @@ export const McpServerLive = Layer.scopedDiscard(
 				}),
 			);
 
-			mcp.tool(
+			tool(
 				"get_screenshot",
 				"Capture a screenshot of the app UI via EventBus diag.screenshot. Returns base64 PNG image.",
 				{ selector: z.string().optional() },
