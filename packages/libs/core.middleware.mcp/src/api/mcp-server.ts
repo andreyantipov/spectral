@@ -34,9 +34,9 @@ export const McpServerLive = Layer.scopedDiscard(
 		);
 
 		const registerTools = (mcpServer: McpServer) => {
-			// Use untyped reference — tsgo TS2589 with zod + MCP SDK generics
-			const mcp = mcpServer as never as {
-				tool: (...args: unknown[]) => void;
+			// Erase McpServer.tool's deeply-nested zod generics to avoid tsgo TS2589
+			const mcp = mcpServer as unknown as Omit<McpServer, "tool"> & {
+				tool: (name: string, ...rest: unknown[]) => void;
 			};
 			mcp.tool(
 				"dispatch",
