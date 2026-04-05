@@ -1,0 +1,9 @@
+{
+  "name": "@ctrl/arch.contract.spec-registry",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": { "effect": "workspace:*" },
+  "scripts": { "check": "tsc --noEmit" }
+}
