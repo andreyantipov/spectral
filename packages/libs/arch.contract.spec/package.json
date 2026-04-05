@@ -4,6 +4,6 @@
   "private": true,
   "type": "module",
   "exports": { ".": "./src/index.ts" },
-  "dependencies": { "effect": "workspace:*" },
+  "dependencies": {},
   "scripts": { "check": "tsc --noEmit", "test": "bun test" }
 }

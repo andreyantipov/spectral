@@ -1,11 +1,15 @@
 {
-  "name": "@ctrl/arch.impl.feature-registry",
+  "name": "@ctrl/arch.impl.spec-runner",
   "version": "0.0.1",
   "private": true,
   "type": "module",
   "exports": { ".": "./src/index.ts" },
   "dependencies": {
+    "@ctrl/arch.contract.spec-runner": "workspace:*",
     "@ctrl/arch.contract.feature-registry": "workspace:*"
+  },
+  "devDependencies": {
+    "@ctrl/arch.impl.feature-registry": "workspace:*"
   },
   "scripts": { "check": "tsc --noEmit", "test": "bun test" }
 }
