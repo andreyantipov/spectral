@@ -39,7 +39,6 @@ const WebSession = Spec("web-session", { mode: "instance", domain: "session", ve
 
 		state.Browsing.on(action.Navigate, state.Loading, [
 			guard.UrlIsValid,
-			effect.WriteUrl,
 			effect.StartNavigation,
 		])
 			.on(action.ActivateSession, state.Browsing, [effect.ActivateSession])
@@ -53,7 +52,7 @@ const WebSession = Spec("web-session", { mode: "instance", domain: "session", ve
 			effect.RecordHistory,
 		]).on(action.NavigationFailed, state.Error, [effect.SetError]),
 
-		state.Error.on(action.Navigate, state.Loading, [effect.WriteUrl, effect.StartNavigation]).on(
+		state.Error.on(action.Navigate, state.Loading, [effect.StartNavigation]).on(
 			action.CloseSession,
 			state.Closed,
 			[],

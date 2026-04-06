@@ -1,5 +1,5 @@
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { Effect } from "effect";
 import { pagesTable, sessionsTable } from "@ctrl/base.model.session";
 
@@ -111,13 +111,22 @@ export const sessionEffects = Effect.gen(function* () {
 			Effect.gen(function* () {
 				const sessionId = p.instanceId as string;
 				const title = p.title as string;
-				// Update latest page title
 				const session = yield* db
 					.select()
 					.from(sessionsTable)
 					.where(eq(sessionsTable.id, sessionId));
 				if (session.length > 0) {
-					yield* db.update(pagesTable).set({ title }).where(eq(pagesTable.sessionId, sessionId));
+					const currentIndex = session[0].currentIndex;
+					// Update only current page, not all pages
+					yield* db
+						.update(pagesTable)
+						.set({ title })
+						.where(
+							and(
+								eq(pagesTable.sessionId, sessionId),
+								eq(pagesTable.pageIndex, currentIndex),
+							),
+						);
 					yield* db
 						.update(sessionsTable)
 						.set({ updatedAt: now() })
