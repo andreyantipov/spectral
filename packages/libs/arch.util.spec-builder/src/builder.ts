@@ -179,9 +179,9 @@ const makeBuilder = (data: BuilderData) => ({
 
 		// --- Build state nodes from transition results ---
 		const states: Record<string, StateNode> = {};
-		const allEffectKeys = new Set<string>();
-		const allGuardKeys = new Set<string>();
-		const allActionTags = new Set<string>();
+		const allEffectKeys: string[] = [];
+		const allGuardKeys: string[] = [];
+		const allActionTags: string[] = [];
 
 		// First, register all declared states
 		for (const name of stateNames) {
@@ -197,9 +197,9 @@ const makeBuilder = (data: BuilderData) => ({
 				statesWithTransitions.add(stateRef.name);
 				const on: Record<string, Transition> = {};
 				for (const t of stateRef._transitions) {
-					allActionTags.add(t.action);
-					for (const e of t.effects) allEffectKeys.add(e);
-					for (const g of t.guards) allGuardKeys.add(g);
+					if (!allActionTags.includes(t.action)) allActionTags.push(t.action);
+					for (const e of t.effects) if (!allEffectKeys.includes(e)) allEffectKeys.push(e);
+					for (const g of t.guards) if (!allGuardKeys.includes(g)) allGuardKeys.push(g);
 
 					const transition: Transition = { target: t.target };
 					if (t.guards.length > 0) (transition as any).guards = t.guards;
@@ -256,9 +256,9 @@ const makeBuilder = (data: BuilderData) => ({
 		}
 
 		// --- Collect all declared keys (not just used in transitions) ---
-		for (const name of Object.keys(effectDefs)) allEffectKeys.add(name);
-		for (const name of Object.keys(guardDefs)) allGuardKeys.add(name);
-		for (const name of Object.keys(actionDefs)) allActionTags.add(name);
+		for (const name of Object.keys(effectDefs)) if (!allEffectKeys.includes(name)) allEffectKeys.push(name);
+		for (const name of Object.keys(guardDefs)) if (!allGuardKeys.includes(name)) allGuardKeys.push(name);
+		for (const name of Object.keys(actionDefs)) if (!allActionTags.includes(name)) allActionTags.push(name);
 
 		return {
 			id,
@@ -270,7 +270,7 @@ const makeBuilder = (data: BuilderData) => ({
 			terminalOn,
 			states,
 			effectKeys: allEffectKeys,
-			emitKeys: new Set<string>(),
+			emitKeys: [],
 			guardKeys: allGuardKeys,
 			actionTags: allActionTags,
 			actions,

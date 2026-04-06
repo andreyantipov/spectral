@@ -1,15 +1,8 @@
 import { EventBus } from "@ctrl/arch.contract.event-bus";
 import { FeatureRegistry } from "@ctrl/arch.contract.feature-registry";
 import type { Spec } from "@ctrl/arch.contract.spec";
-import { type Action, SpecRunner } from "@ctrl/arch.contract.spec-runner";
+import { type Action, SpecRunner, SpecRunnerInternal } from "@ctrl/arch.contract.spec-runner";
 import { Context, Effect, FiberMap, Layer, Queue, Ref } from "effect";
-
-export class SpecRunnerInternal extends Context.Tag("SpecRunnerInternal")<
-	SpecRunnerInternal,
-	SpecRunner["Type"] & {
-		readonly registerSpec: (spec: Spec) => Effect.Effect<void>;
-	}
->() {}
 
 /** Run guard functions; return false if any guard rejects. */
 const checkGuards = (

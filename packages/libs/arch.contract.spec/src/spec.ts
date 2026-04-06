@@ -23,10 +23,10 @@ export type Spec = {
 	readonly states: Record<string, StateNode>;
 	readonly onStart?: readonly string[];
 	readonly onStop?: readonly string[];
-	readonly effectKeys: ReadonlySet<string>;
-	readonly emitKeys: ReadonlySet<string>;
-	readonly guardKeys: ReadonlySet<string>;
-	readonly actionTags: ReadonlySet<string>;
+	readonly effectKeys: readonly string[];
+	readonly emitKeys: readonly string[];
+	readonly guardKeys: readonly string[];
+	readonly actionTags: readonly string[];
 };
 
 // ---------------------------------------------------------------------------

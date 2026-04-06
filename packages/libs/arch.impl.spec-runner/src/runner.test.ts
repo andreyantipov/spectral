@@ -4,7 +4,8 @@ import { FeatureRegistry } from "@ctrl/arch.contract.feature-registry";
 import { EventBusLive } from "@ctrl/arch.impl.event-bus";
 import { FeatureRegistryLive } from "@ctrl/arch.impl.feature-registry";
 import { Effect, Layer, Ref, Stream } from "effect";
-import { SpecRunnerInternal, SpecRunnerLive } from "./runner";
+import { SpecRunnerInternal } from "@ctrl/arch.contract.spec-runner";
+import { SpecRunnerLive } from "./runner";
 
 const SimpleSpec = {
 	id: "simple",

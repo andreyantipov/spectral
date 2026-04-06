@@ -1,1 +1,1 @@
-export { type Action, SpecRunner } from "./runner";
+export { type Action, SpecRunner, SpecRunnerInternal } from "./runner";

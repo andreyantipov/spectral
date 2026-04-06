@@ -6,6 +6,9 @@
 	"exports": {
 		".": "./src/index.ts"
 	},
+	"dependencies": {
+		"@ctrl/arch.contract.spec": "workspace:*"
+	},
 	"scripts": {
 		"check": "tsc --noEmit"
 	}

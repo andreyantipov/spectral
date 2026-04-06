@@ -27,9 +27,9 @@ describe("Spec builder DSL", () => {
 		expect(spec.id).toBe("test");
 		expect(spec.mode).toBe("instance");
 		expect(spec.initial).toBe("Idle");
-		expect(spec.actionTags).toEqual(new Set(["Start", "Stop"]));
-		expect(spec.effectKeys).toEqual(new Set(["DoWork", "Cleanup"]));
-		expect(spec.guardKeys).toEqual(new Set(["IsReady"]));
+		expect(spec.actionTags).toEqual(["Start", "Stop"]);
+		expect(spec.effectKeys).toEqual(["DoWork", "Cleanup"]);
+		expect(spec.guardKeys).toEqual(["IsReady"]);
 		expect(spec.triggers).toEqual(["Start"]);
 		expect(spec.terminalOn).toEqual(["Stop"]);
 		// Transition separates guards and effects
@@ -58,7 +58,7 @@ describe("Spec builder DSL", () => {
 			.transitions(({ action, effect, state }) => [state.A.on(action.Go, state.A, [effect.Run])])
 			.build();
 
-		expect(spec.effectKeys).toEqual(new Set(["Run"]));
+		expect(spec.effectKeys).toEqual(["Run"]);
 	});
 
 	it("validates transition targets exist", () => {
@@ -79,7 +79,7 @@ describe("Spec builder DSL", () => {
 			])
 			.build();
 
-		expect(spec.effectKeys).toEqual(new Set(["E1", "E2", "E3"]));
+		expect(spec.effectKeys).toEqual(["E1", "E2", "E3"]);
 	});
 
 	it("singleton mode has empty triggers/terminalOn", () => {

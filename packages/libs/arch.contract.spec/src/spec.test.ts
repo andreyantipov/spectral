@@ -22,39 +22,28 @@ describe("Spec", () => {
 		},
 		onStart: ["initSession"],
 		onStop: ["teardown"],
-		effectKeys: new Set(["createTab", "navigate", "cleanup", "initSession", "teardown"]),
-		emitKeys: new Set(["browsing.snapshot"]),
-		guardKeys: new Set(["isValidUrl"]),
-		actionTags: new Set(["session.create", "nav.navigate", "session.close"]),
+		effectKeys: ["createTab", "navigate", "cleanup", "initSession", "teardown"],
+		emitKeys: ["browsing.snapshot"],
+		guardKeys: ["isValidUrl"],
+		actionTags: ["session.create", "nav.navigate", "session.close"],
 	});
 
-	it("constructs a well-formed Spec with Sets", () => {
+	it("constructs a well-formed Spec with arrays", () => {
 		const spec = makeSpec();
 		expect(spec.id).toBe("web-session");
 		expect(spec.mode).toBe("instance");
 		expect(spec.initial).toBe("idle");
-		expect(spec.effectKeys.has("createTab")).toBe(true);
-		expect(spec.guardKeys.has("isValidUrl")).toBe(true);
-		expect(spec.emitKeys.has("browsing.snapshot")).toBe(true);
-		expect(spec.actionTags.size).toBe(3);
+		expect(spec.effectKeys).toContain("createTab");
+		expect(spec.guardKeys).toContain("isValidUrl");
+		expect(spec.emitKeys).toContain("browsing.snapshot");
+		expect(spec.actionTags.length).toBe(3);
 	});
 
-	it("is JSON-serializable (Sets need conversion)", () => {
+	it("is JSON-serializable (arrays serialize natively)", () => {
 		const spec = makeSpec();
 
-		// Sets are NOT natively JSON-serializable — they serialize to {}
-		const raw = JSON.parse(JSON.stringify(spec));
-		expect(raw.effectKeys).toEqual({}); // Set becomes empty object
-
-		// Proper serialization requires explicit conversion
-		const serializable = {
-			...spec,
-			effectKeys: [...spec.effectKeys],
-			emitKeys: [...spec.emitKeys],
-			guardKeys: [...spec.guardKeys],
-			actionTags: [...spec.actionTags],
-		};
-		const json = JSON.parse(JSON.stringify(serializable));
+		// Arrays are natively JSON-serializable
+		const json = JSON.parse(JSON.stringify(spec));
 		expect(json.effectKeys).toEqual([
 			"createTab",
 			"navigate",
@@ -78,13 +67,13 @@ describe("Spec", () => {
 			triggers: [],
 			terminalOn: [],
 			states: { ready: {} },
-			effectKeys: new Set(),
-			emitKeys: new Set(),
-			guardKeys: new Set(),
-			actionTags: new Set(),
+			effectKeys: [],
+			emitKeys: [],
+			guardKeys: [],
+			actionTags: [],
 		};
 		expect(spec.mode).toBe("singleton");
-		expect(spec.effectKeys.size).toBe(0);
+		expect(spec.effectKeys.length).toBe(0);
 	});
 
 	it("supports transitions with guards and effects", () => {
@@ -116,10 +105,10 @@ describe("BuiltSpec", () => {
 			triggers: [],
 			terminalOn: [],
 			states: { idle: {} },
-			effectKeys: new Set(),
-			emitKeys: new Set(),
-			guardKeys: new Set(),
-			actionTags: new Set(),
+			effectKeys: [],
+			emitKeys: [],
+			guardKeys: [],
+			actionTags: [],
 			actions: {
 				"session.create": { _tag: "session.create", make: (p: unknown) => p },
 			},

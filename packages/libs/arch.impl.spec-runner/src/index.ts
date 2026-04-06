@@ -1,1 +1,1 @@
-export { SpecRunnerInternal, SpecRunnerLive, SpecRunnerPublicLive } from "./runner";
+export { SpecRunnerLive, SpecRunnerPublicLive } from "./runner";
