@@ -1,4 +1,5 @@
-import { type Spec, SpecRegistry } from "@ctrl/arch.contract.spec-registry";
+import type { Spec } from "@ctrl/arch.contract.spec";
+import { SpecRegistry } from "@ctrl/arch.contract.spec-registry";
 import { SpecRunnerInternal } from "@ctrl/arch.contract.spec-runner";
 import { EventBus } from "@ctrl/arch.contract.event-bus";
 import { Effect, Layer, Ref, Stream } from "effect";

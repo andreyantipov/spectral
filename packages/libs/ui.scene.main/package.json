@@ -19,5 +19,8 @@
 		"@ctrl/ui.feature.sidebar": "workspace:*",
 		"@ctrl/ui.feature.webview": "workspace:*",
 		"@ctrl/ui.feature.workspace": "workspace:*"
+	},
+	"devDependencies": {
+		"html2canvas": "*"
 	}
 }
