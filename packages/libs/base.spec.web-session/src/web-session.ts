@@ -1,6 +1,6 @@
 import { Spec } from "@ctrl/arch.utils.spec-builder"
 import {
-  CreateSession, CloseSession, Navigate, UrlCommitted,
+  CreateSession, CloseSession, ActivateSession, Navigate, UrlCommitted,
   TitleChanged, NavigationFailed,
 } from "@ctrl/base.op.browsing"
 import { Effects } from "@ctrl/base.op.browsing"
@@ -37,6 +37,9 @@ export const WebSessionSpec = Spec.make("web-session", {
     .on(Navigate, "loading", {
       guards: [Effects.URL_IS_VALID],
       effects: [Effects.NAV_START],
+    })
+    .on(ActivateSession, "browsing", {
+      effects: [Effects.SESSION_ACTIVATE],
     })
     .on(TitleChanged, "browsing", {
       effects: [Effects.SESSION_UPDATE_TITLE],

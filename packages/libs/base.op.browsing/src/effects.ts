@@ -3,6 +3,7 @@ export const Effects = {
 	NAV_CANCEL: "nav.cancel",
 	SESSION_CREATE: "session.create",
 	SESSION_CLOSE: "session.close",
+	SESSION_ACTIVATE: "session.activate",
 	SESSION_UPDATE_URL: "session.updateUrl",
 	SESSION_UPDATE_TITLE: "session.updateTitle",
 	SESSION_UPDATE_FAVICON: "session.updateFavicon",

@@ -43,6 +43,21 @@ export const sessionEffects = Effect.gen(function* () {
 				})
 			}),
 
+		[Effects.SESSION_ACTIVATE]: (p: Record<string, unknown>) =>
+			Effect.gen(function* () {
+				const id = p.instanceId as string
+				// Set this session active, deactivate others
+				yield* db.update(sessionsTable).set({ isActive: false })
+				yield* db.update(sessionsTable).set({ isActive: true, updatedAt: now() }).where(eq(sessionsTable.id, id))
+				// Choreography: tell workspace to activate panel
+				yield* bus.send({
+					type: "command",
+					action: "ws.activate-panel",
+					payload: { panelId: id },
+					meta: { source: "system" },
+				})
+			}),
+
 		[Effects.SESSION_CLOSE]: (p: Record<string, unknown>) =>
 			Effect.gen(function* () {
 				const id = p.instanceId as string

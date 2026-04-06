@@ -86,14 +86,8 @@ const EventLogLive = EventLog.layer(AppEvents).pipe(
 
 // -- FSM Spec Engine ----------------------------------------------------------
 
-// SpecRunnerLive needs: FeatureRegistry + EventJournal
-// SpecRegistryLive needs: SpecRunnerInternal + EventBus
-// FeatureRegistryLive is standalone
-
 // SpecEngineLive — same pattern as wire.desktop.test/TestSpecEngineWithBusLive
-// InfraLayer provides deps that SpecRunner and SpecRegistry need
-// EventBus from SharedLive is added in createMainProcess, so use EventBusLive here
-const SpecInfraLayer = Layer.mergeAll(EventBusLive, FeatureRegistryLive, JournalLive);
+const SpecInfraLayer = Layer.mergeAll(EventBusLive, FeatureRegistryLive);
 const SpecRunnerLayer = SpecRunnerLive.pipe(Layer.provide(SpecInfraLayer));
 const SpecRegistryLayer = SpecRegistryLive.pipe(
 	Layer.provide(SpecRunnerLayer),
