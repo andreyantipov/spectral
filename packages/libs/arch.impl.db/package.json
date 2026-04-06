@@ -12,7 +12,5 @@
 		"db:generate": "drizzle-kit generate",
 		"db:push": "drizzle-kit push"
 	},
-	"dependencies": {
-		"@ctrl/base.tracing": "workspace:*"
-	}
+	"dependencies": {}
 }
