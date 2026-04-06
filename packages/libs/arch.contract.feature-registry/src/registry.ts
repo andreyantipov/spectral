@@ -6,10 +6,7 @@ export type EffectResult = {
 	readonly emit?: Record<string, unknown>;
 };
 
-// biome-ignore lint/suspicious/noConfusingVoidType: void needed for effects that return nothing
-export type FeatureFn = (
-	payload: Record<string, unknown>,
-) => Effect.Effect<EffectResult | void | unknown, unknown>;
+export type FeatureFn = (payload: Record<string, unknown>) => Effect.Effect<unknown, unknown>;
 
 export class FeatureRegistry extends Context.Tag("FeatureRegistry")<
 	FeatureRegistry,
