@@ -1,50 +1,44 @@
 import { describe, expect, it } from "bun:test";
-import { Effects } from "@ctrl/base.op.browsing";
 import { Effect } from "effect";
 import { navigationEffects } from "./effects";
 
 describe("navigation effects", () => {
-	it("url.isValid returns true for https", async () => {
+	it("UrlIsValid returns true for https", async () => {
 		const effects = await Effect.runPromise(navigationEffects);
 		const result = await Effect.runPromise(
-			effects[Effects.URL_IS_VALID]({ url: "https://google.com" }),
+			effects.UrlIsValid({ url: "https://google.com" }),
 		);
 		expect(result).toBe(true);
 	});
 
-	it("url.isValid returns false for invalid url", async () => {
+	it("UrlIsValid returns false for invalid url", async () => {
 		const effects = await Effect.runPromise(navigationEffects);
-		const result = await Effect.runPromise(effects[Effects.URL_IS_VALID]({ url: "not-a-url" }));
+		const result = await Effect.runPromise(effects.UrlIsValid({ url: "not-a-url" }));
 		expect(result).toBe(false);
 	});
 
-	it("url.isValid accepts about:blank", async () => {
+	it("UrlIsValid accepts about:blank", async () => {
 		const effects = await Effect.runPromise(navigationEffects);
-		const result = await Effect.runPromise(effects[Effects.URL_IS_VALID]({ url: "about:blank" }));
+		const result = await Effect.runPromise(effects.UrlIsValid({ url: "about:blank" }));
 		expect(result).toBe(true);
 	});
 
-	it("url.isValid returns true for http", async () => {
+	it("UrlIsValid returns true for http", async () => {
 		const effects = await Effect.runPromise(navigationEffects);
 		const result = await Effect.runPromise(
-			effects[Effects.URL_IS_VALID]({ url: "http://localhost:3000" }),
+			effects.UrlIsValid({ url: "http://localhost:3000" }),
 		);
 		expect(result).toBe(true);
 	});
 
-	it("url.isValid returns false for missing url", async () => {
+	it("UrlIsValid returns false for missing url", async () => {
 		const effects = await Effect.runPromise(navigationEffects);
-		const result = await Effect.runPromise(effects[Effects.URL_IS_VALID]({}));
+		const result = await Effect.runPromise(effects.UrlIsValid({}));
 		expect(result).toBe(false);
 	});
 
-	it("nav.start is no-op", async () => {
+	it("StartNavigation is no-op", async () => {
 		const effects = await Effect.runPromise(navigationEffects);
-		await Effect.runPromise(effects[Effects.NAV_START]({ instanceId: "t1", url: "https://x.com" }));
-	});
-
-	it("nav.cancel is no-op", async () => {
-		const effects = await Effect.runPromise(navigationEffects);
-		await Effect.runPromise(effects[Effects.NAV_CANCEL]({ instanceId: "t1" }));
+		await Effect.runPromise(effects.StartNavigation({ instanceId: "t1", url: "https://x.com" }));
 	});
 });
