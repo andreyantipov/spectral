@@ -90,16 +90,17 @@ const EventLogLive = EventLog.layer(AppEvents).pipe(
 // SpecRegistryLive needs: SpecRunnerInternal + EventBus
 // FeatureRegistryLive is standalone
 
-// SpecEngineLive exposes SpecRegistry + FeatureRegistry + SpecRunner (public)
-const SpecEngineLive = Layer.mergeAll(
-	SpecRegistryLive,
-	FeatureRegistryLive,
-	SpecRunnerPublicLive,
-).pipe(
-	Layer.provide(SpecRunnerLive),
-	Layer.provide(FeatureRegistryLive),
-	Layer.provide(JournalLive),
+// SpecEngineLive — same pattern as wire.desktop.test/TestSpecEngineWithBusLive
+// InfraLayer provides deps that SpecRunner and SpecRegistry need
+// EventBus from SharedLive is added in createMainProcess, so use EventBusLive here
+const SpecInfraLayer = Layer.mergeAll(EventBusLive, FeatureRegistryLive, JournalLive);
+const SpecRunnerLayer = SpecRunnerLive.pipe(Layer.provide(SpecInfraLayer));
+const SpecRegistryLayer = SpecRegistryLive.pipe(
+	Layer.provide(SpecRunnerLayer),
+	Layer.provide(SpecInfraLayer),
 );
+const SpecRunnerPublicLayer = SpecRunnerPublicLive.pipe(Layer.provide(SpecRunnerLayer));
+const SpecEngineLive = Layer.mergeAll(SpecRegistryLayer, SpecRunnerPublicLayer, SpecInfraLayer);
 
 // BrowserDomainLive:
 // 1. Registers features (effects) in FeatureRegistry

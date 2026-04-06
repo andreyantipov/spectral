@@ -38,22 +38,35 @@ const runInstance = (
     const journal = yield* EventJournal
     const stateRef = yield* Ref.make(initialState)
 
+    console.info(`[SpecRunner] runInstance STARTED: ${spec.id} instance=${instanceId.slice(0, 8)} state=${initialState}`)
+
     yield* Effect.forever(
       Effect.gen(function* () {
         const action = yield* Queue.take(queue)
         const current = yield* Ref.get(stateRef)
         const stateDef = spec.states[current]
-        if (!stateDef?.on) return
+        if (!stateDef?.on) {
+          console.info(`[SpecRunner] ${instanceId.slice(0, 8)}: state "${current}" has no transitions, dropping ${action._tag}`)
+          return
+        }
         const transition = stateDef.on[action._tag]
-        if (!transition) return
+        if (!transition) {
+          console.info(`[SpecRunner] ${instanceId.slice(0, 8)}: no transition for ${action._tag} in state "${current}"`)
+          return
+        }
 
         // Guards — execute sequentially, any falsy result drops the action
         if (transition.guards) {
           for (const guard of transition.guards) {
             const result = yield* registry.execute(guard, action as Record<string, unknown>)
-            if (!result) return
+            if (!result) {
+              console.info(`[SpecRunner] ${instanceId.slice(0, 8)}: guard "${guard}" blocked ${action._tag}`)
+              return
+            }
           }
         }
+
+        console.info(`[SpecRunner] ${instanceId.slice(0, 8)}: transitioning ${current} → ${transition.target} (${action._tag})`)
 
         // Journal write — state transition + effects run atomically inside
         const previous = current
@@ -67,13 +80,19 @@ const runInstance = (
               yield* Ref.set(stateRef, transition.target)
               if (transition.effects) {
                 for (const effectName of transition.effects) {
+                  console.info(`[SpecRunner] ${instanceId.slice(0, 8)}: executing effect "${effectName}"`)
                   yield* registry.execute(effectName, action as Record<string, unknown>)
                 }
               }
             }),
-        })
+        }).pipe(
+          Effect.catchAll((err) => {
+            console.error(`[SpecRunner] ${instanceId.slice(0, 8)}: journal.write FAILED for ${action._tag}:`, err)
+            return Effect.void
+          }),
+        )
 
-        console.info(`[SpecRunner] transition: ${previous} → ${transition.target} (${action._tag}) instance=${instanceId.slice(0, 8)}`)
+        console.info(`[SpecRunner] ${instanceId.slice(0, 8)}: transition complete ${previous} → ${transition.target}`)
       }),
     )
   })
