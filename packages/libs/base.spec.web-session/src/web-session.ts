@@ -17,7 +17,7 @@ export const WebSessionSpec = Spec.make("web-session", {
     })
     .on(Navigate, "loading", {
       guards: [Effects.URL_IS_VALID],
-      effects: [Effects.NAV_START],
+      effects: [Effects.SESSION_UPDATE_URL, Effects.NAV_START],
     })
   )
   .state("loading", (s) => s
@@ -36,7 +36,7 @@ export const WebSessionSpec = Spec.make("web-session", {
   .state("browsing", (s) => s
     .on(Navigate, "loading", {
       guards: [Effects.URL_IS_VALID],
-      effects: [Effects.NAV_START],
+      effects: [Effects.SESSION_UPDATE_URL, Effects.NAV_START],
     })
     .on(ActivateSession, "browsing", {
       effects: [Effects.SESSION_ACTIVATE],
@@ -50,7 +50,7 @@ export const WebSessionSpec = Spec.make("web-session", {
   )
   .state("error", (s) => s
     .on(Navigate, "loading", {
-      effects: [Effects.NAV_START],
+      effects: [Effects.SESSION_UPDATE_URL, Effects.NAV_START],
     })
     .on(CloseSession, "closed")
   )

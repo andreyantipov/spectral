@@ -61,9 +61,15 @@ export const sessionEffects = Effect.gen(function* () {
 		[Effects.SESSION_CLOSE]: (p: Record<string, unknown>) =>
 			Effect.gen(function* () {
 				const id = p.instanceId as string
-				// Pages cascade-delete via foreign key, but explicit delete for safety
 				yield* db.delete(pagesTable).where(eq(pagesTable.sessionId, id))
 				yield* db.delete(sessionsTable).where(eq(sessionsTable.id, id))
+				// Choreography: tell workspace to remove panel
+				yield* bus.send({
+					type: "command",
+					action: "ws.close-panel",
+					payload: { panelId: id },
+					meta: { source: "system" },
+				})
 			}),
 
 		[Effects.SESSION_UPDATE_URL]: (p: Record<string, unknown>) =>

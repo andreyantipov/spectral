@@ -104,16 +104,12 @@ describe("FSM Integration", () => {
       const runner = yield* SpecRunnerInternal
 
       yield* reg.register(Effects.SESSION_CREATE, () => Effect.void)
-      yield* reg.register(Effects.NAV_START, () => {
-        log.push("nav")
-        return Effect.void
-      })
+      yield* reg.register(Effects.NAV_START, () => { log.push("nav"); return Effect.void })
       yield* reg.register(Effects.URL_IS_VALID, (p) =>
-        Effect.succeed(
-          typeof (p as { url?: string }).url === "string" &&
-            (p as { url?: string }).url!.startsWith("http"),
-        ),
+        Effect.succeed(typeof (p as { url?: string }).url === "string" && (p as { url?: string }).url!.startsWith("http")),
       )
+      yield* reg.register(Effects.SESSION_UPDATE_URL, () => Effect.void)
+      yield* reg.register(Effects.SESSION_ACTIVATE, () => Effect.void)
       yield* reg.register(Effects.SESSION_CLOSE, () => Effect.void)
       yield* reg.register(Effects.SESSION_SET_ERROR, () => Effect.void)
 
@@ -156,6 +152,8 @@ describe("FSM Integration", () => {
         return Effect.void
       })
       yield* reg.register(Effects.URL_IS_VALID, () => Effect.succeed(true))
+      yield* reg.register(Effects.SESSION_UPDATE_URL, () => Effect.void)
+      yield* reg.register(Effects.SESSION_ACTIVATE, () => Effect.void)
       yield* reg.register(Effects.SESSION_CLOSE, () => Effect.void)
       yield* reg.register(Effects.SESSION_SET_ERROR, () => Effect.void)
 
@@ -202,10 +200,9 @@ describe("FSM Integration", () => {
       const runner = yield* SpecRunnerInternal
 
       yield* reg.register(Effects.SESSION_CREATE, () => Effect.void)
-      yield* reg.register(Effects.SESSION_CLOSE, () => {
-        log.push("close")
-        return Effect.void
-      })
+      yield* reg.register(Effects.SESSION_CLOSE, () => { log.push("close"); return Effect.void })
+      yield* reg.register(Effects.SESSION_UPDATE_URL, () => Effect.void)
+      yield* reg.register(Effects.SESSION_ACTIVATE, () => Effect.void)
       yield* reg.register(Effects.SESSION_SET_ERROR, () => Effect.void)
 
       yield* runner.registerSpec(WebSessionSpec)
@@ -236,6 +233,8 @@ describe("FSM Integration", () => {
       })
       yield* reg.register(Effects.URL_IS_VALID, () => Effect.succeed(true))
       yield* reg.register(Effects.NAV_START, () => Effect.void)
+      yield* reg.register(Effects.SESSION_UPDATE_URL, () => Effect.void)
+      yield* reg.register(Effects.SESSION_ACTIVATE, () => Effect.void)
       yield* reg.register(Effects.SESSION_CLOSE, () => Effect.void)
       yield* reg.register(Effects.SESSION_SET_ERROR, () => Effect.void)
 

@@ -85,17 +85,24 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 	const activeItemId = () => mappedSessions().find((item) => item.active)?.id ?? null;
 	const activeSession = () => state()?.sessions?.find((s) => s.isActive);
 
+	const resolveUrl = (input: string): string => {
+		const trimmed = input.trim();
+		if (/^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)) return trimmed;
+		if (/^[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}/.test(trimmed)) return `https://${trimmed}`;
+		if (/^localhost(:\d+)?$/.test(trimmed)) return `http://${trimmed}`;
+		return `https://www.google.com/search?q=${encodeURIComponent(trimmed)}`;
+	};
+
 	const ops = withWebTracing(SIDEBAR_FEATURE, {
 		navigate: (input: string) => {
 			const session = activeSession();
 			if (session) {
-				api.dispatchAction(Navigate.make({ instanceId: session.id, url: input }));
+				api.dispatchAction(Navigate.make({ instanceId: session.id, url: resolveUrl(input) }));
 			}
 		},
 		createSession: () => api.dispatchAction(CreateSession.make({ mode: "visual" })),
 		switchSession: (id: string) => {
 			api.dispatchAction(ActivateSession.make({ instanceId: id }));
-			api.dispatch("ws.activate-panel", { panelId: id });
 		},
 		closeSession: (id: string) => api.dispatchAction(CloseSession.make({ instanceId: id })),
 		reportNavigation: (sessionId: string, url: string) =>
