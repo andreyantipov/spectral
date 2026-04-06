@@ -26,6 +26,10 @@
             otel-tui.defaultPackage.${system}
             pkgs.ast-grep
             pkgs.uv
+            pkgs.tokei
+            pkgs.fd
+            pkgs.sd
+            pkgs.delta
           ];
         };
       }
