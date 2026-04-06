@@ -1,4 +1,4 @@
-import { SpecRegistry, type SpecEntry } from "@ctrl/arch.contract.spec-registry"
+import { SpecRegistry, type Spec } from "@ctrl/arch.contract.spec-registry"
 import { SpecRunnerInternal } from "@ctrl/arch.impl.spec-runner"
 import { EventBus } from "@ctrl/core.contract.event-bus"
 import { Effect, Layer, Ref, Stream } from "effect"
@@ -8,13 +8,13 @@ export const SpecRegistryLive = Layer.scoped(
   Effect.gen(function* () {
     const runner = yield* SpecRunnerInternal
     const bus = yield* EventBus
-    const specs = yield* Ref.make<SpecEntry[]>([])
+    const specs = yield* Ref.make<Spec[]>([])
 
     // Routing maps: action tag -> spec entry that handles it
-    const triggerMap = yield* Ref.make(new Map<string, SpecEntry>())
-    const terminalMap = yield* Ref.make(new Map<string, SpecEntry>())
+    const triggerMap = yield* Ref.make(new Map<string, Spec>())
+    const terminalMap = yield* Ref.make(new Map<string, Spec>())
 
-    const register = (spec: SpecEntry): Effect.Effect<void> =>
+    const register = (spec: Spec): Effect.Effect<void> =>
       Effect.gen(function* () {
         yield* Ref.update(specs, (s) => [...s, spec])
 
@@ -41,11 +41,11 @@ export const SpecRegistryLive = Layer.scoped(
         }
       })
 
-    const describe = (): Effect.Effect<readonly SpecEntry[]> => Ref.get(specs)
+    const describe = (): Effect.Effect<readonly Spec[]> => Ref.get(specs)
 
-    console.info("[SpecRegistry] started")
+    yield* Effect.logInfo("[SpecRegistry] started")
     const registeredSpecs = yield* Ref.get(specs)
-    console.info(`[SpecRegistry] specs registered: ${registeredSpecs.length}`)
+    yield* Effect.logInfo(`[SpecRegistry] specs registered: ${registeredSpecs.length}`)
 
     // Subscribe to EventBus commands and route to SpecRunner instances
     yield* bus.commands.pipe(
@@ -54,7 +54,7 @@ export const SpecRegistryLive = Layer.scoped(
           const actionTag = cmd.action
           const payload = (cmd.payload ?? {}) as Record<string, unknown>
           const action = { _tag: actionTag, ...payload }
-          console.info(`[SpecRegistry] cmd: ${actionTag}`)
+          yield* Effect.logDebug(`[SpecRegistry] cmd: ${actionTag}`)
 
           // 1. Trigger match: spawn new instance
           const triggers = yield* Ref.get(triggerMap)
