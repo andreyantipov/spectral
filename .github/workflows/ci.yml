@@ -54,8 +54,8 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         run: bun install --ignore-scripts
-      - name: Build (generates styled-system, etc.)
-        run: bun run build:ci
+      - name: Generate styled-system (Panda CSS codegen)
+        run: bunx turbo build --filter=@ctrl/ui.base.components
       - name: Check for dead code
         run: bun run lint:dead-code
       - name: Check dependency consistency
