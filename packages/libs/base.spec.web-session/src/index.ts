@@ -1,1 +1,7 @@
-export { WebSessionSpec } from "./web-session"
+export {
+	WebSession,
+	WebSessionActions,
+	WebSessionEffects,
+	WebSessionGuards,
+	WebSessionSpec,
+} from "./web-session";

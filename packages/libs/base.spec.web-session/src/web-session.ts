@@ -1,58 +1,73 @@
-import { Spec } from "@ctrl/arch.utils.spec-builder"
-import {
-  CreateSession, CloseSession, ActivateSession, Navigate, UrlCommitted,
-  TitleChanged, NavigationFailed,
-} from "@ctrl/base.op.browsing"
-import { Effects } from "@ctrl/base.op.browsing"
+import { Spec } from "@ctrl/arch.utils.spec-builder";
+import { Schema } from "effect";
 
-export const WebSessionSpec = Spec.make("web-session", {
-  mode: "instance", domain: "session", version: 1,
-})
-  .initial("idle")
-  .triggers(CreateSession)
-  .terminalOn(CloseSession)
-  .state("idle", (s) => s
-    .on(CreateSession, "browsing", {
-      effects: [Effects.SESSION_CREATE, Effects.SESSION_ACTIVATE],
-    })
-    .on(Navigate, "loading", {
-      guards: [Effects.URL_IS_VALID],
-      effects: [Effects.SESSION_UPDATE_URL, Effects.NAV_START],
-    })
-  )
-  .state("loading", (s) => s
-    .on(UrlCommitted, "browsing", {
-      effects: [
-        Effects.SESSION_UPDATE_URL,
-        Effects.SESSION_UPDATE_TITLE,
-        Effects.SESSION_UPDATE_FAVICON,
-        Effects.HISTORY_RECORD,
-      ],
-    })
-    .on(NavigationFailed, "error", {
-      effects: [Effects.SESSION_SET_ERROR],
-    })
-  )
-  .state("browsing", (s) => s
-    .on(Navigate, "loading", {
-      guards: [Effects.URL_IS_VALID],
-      effects: [Effects.SESSION_UPDATE_URL, Effects.NAV_START],
-    })
-    .on(ActivateSession, "browsing", {
-      effects: [Effects.SESSION_ACTIVATE],
-    })
-    .on(TitleChanged, "browsing", {
-      effects: [Effects.SESSION_UPDATE_TITLE],
-    })
-    .on(CloseSession, "closed", {
-      effects: [Effects.SESSION_CLOSE],
-    })
-  )
-  .state("error", (s) => s
-    .on(Navigate, "loading", {
-      effects: [Effects.SESSION_UPDATE_URL, Effects.NAV_START],
-    })
-    .on(CloseSession, "closed")
-  )
-  .state("closed")
-  .build()
+const WebSession = Spec("web-session", { mode: "instance", domain: "session", version: 1 })
+
+	.actions({
+		CreateSession: { mode: Schema.String },
+		CloseSession: {},
+		Navigate: { url: Schema.String },
+		ActivateSession: {},
+		TitleChanged: { title: Schema.String },
+		UrlCommitted: { url: Schema.String, title: Schema.String, favicon: Schema.String },
+		NavigationFailed: { error: Schema.String },
+	})
+
+	.effects({
+		InsertSession: { id: Schema.String },
+		RemoveSession: { wasLast: Schema.Boolean },
+		ActivateSession: {},
+		WriteUrl: {},
+		WriteTitle: {},
+		WriteFavicon: {},
+		RecordHistory: {},
+		StartNavigation: {},
+		SetError: {},
+	})
+
+	.guards({
+		UrlIsValid: Schema.Boolean,
+	})
+
+	.states("Idle", "Browsing", "Loading", "Error", "Closed")
+
+	.transitions(({ action, effect, guard, state }) => [
+		state.Idle.on(action.CreateSession, state.Browsing, [
+			effect.InsertSession,
+			effect.ActivateSession,
+		]),
+
+		state.Browsing.on(action.Navigate, state.Loading, [
+			guard.UrlIsValid,
+			effect.WriteUrl,
+			effect.StartNavigation,
+		])
+			.on(action.ActivateSession, state.Browsing, [effect.ActivateSession])
+			.on(action.TitleChanged, state.Browsing, [effect.WriteTitle])
+			.on(action.CloseSession, state.Closed, [effect.RemoveSession]),
+
+		state.Loading.on(action.UrlCommitted, state.Browsing, [
+			effect.WriteUrl,
+			effect.WriteTitle,
+			effect.WriteFavicon,
+			effect.RecordHistory,
+		]).on(action.NavigationFailed, state.Error, [effect.SetError]),
+
+		state.Error.on(action.Navigate, state.Loading, [effect.WriteUrl, effect.StartNavigation]).on(
+			action.CloseSession,
+			state.Closed,
+			[],
+		),
+
+		state.Closed,
+	])
+
+	.build();
+
+export { WebSession };
+export const WebSessionActions = WebSession.actions;
+export const WebSessionEffects = WebSession.effectKeys;
+export const WebSessionGuards = WebSession.guardKeys;
+
+/** @deprecated Use WebSession — removed in Plan 3 */
+export const WebSessionSpec = WebSession;
