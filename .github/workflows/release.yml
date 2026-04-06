@@ -115,6 +115,7 @@ jobs:
           cd packages/apps/desktop
           gh release upload v${{ needs.release.outputs.version }} \
             ctrl-page-${{ needs.release.outputs.version }}-macos-arm64.zip \
-            --repo ${{ github.repository }}
+            --repo ${{ github.repository }} \
+            --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
