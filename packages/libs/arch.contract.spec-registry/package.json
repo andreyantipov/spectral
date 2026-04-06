@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "exports": { ".": "./src/index.ts" },
-  "dependencies": {},
+  "dependencies": {
+    "@ctrl/arch.contract.spec": "workspace:*"
+  },
   "scripts": { "check": "tsc --noEmit" }
 }
