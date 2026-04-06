@@ -100,6 +100,166 @@ type BuilderData = {
 };
 
 // ---------------------------------------------------------------------------
+// Build helpers — extracted to reduce cognitive complexity
+// ---------------------------------------------------------------------------
+
+const buildActions = (
+	actionDefs: Record<string, Record<string, Schema.Schema.All>>,
+): Record<string, { readonly _tag: string; make: (props: unknown) => unknown }> => {
+	const actions: Record<string, { readonly _tag: string; make: (props: unknown) => unknown }> = {};
+	for (const [name, fields] of Object.entries(actionDefs)) {
+		// biome-ignore lint/suspicious/noExplicitAny: Schema.TaggedClass requires generic param that is dynamic here
+		const schemaClass = Schema.TaggedClass<any>()(name, fields);
+		actions[name] = {
+			_tag: name,
+			// biome-ignore lint/suspicious/noExplicitAny: TaggedClass constructor type cannot be narrowed dynamically
+			make: (props: unknown) => new (schemaClass as any)(props),
+		};
+	}
+	return actions;
+};
+
+const buildRefs = (
+	actionDefs: Record<string, Record<string, Schema.Schema.All>>,
+	effectDefs: Record<string, Record<string, Schema.Schema.All>>,
+	guardDefs: Record<string, Schema.Schema.All>,
+	stateNames: readonly string[],
+) => {
+	const actionRefs: Record<string, ActionRef> = {};
+	for (const name of Object.keys(actionDefs)) actionRefs[name] = makeActionRef(name);
+
+	const effectRefs: Record<string, EffectRef> = {};
+	for (const name of Object.keys(effectDefs)) effectRefs[name] = makeEffectRef(name);
+
+	const guardRefs: Record<string, GuardRef> = {};
+	for (const name of Object.keys(guardDefs)) guardRefs[name] = makeGuardRef(name);
+
+	const stateRefs: Record<string, StateRef> = {};
+	for (const name of stateNames) stateRefs[name] = makeStateRef(name);
+
+	return { actionRefs, effectRefs, guardRefs, stateRefs };
+};
+
+const buildStates = (
+	transitionFn: BuilderData["transitionFn"],
+	refs: ReturnType<typeof buildRefs>,
+	stateNames: readonly string[],
+) => {
+	const stateResults = transitionFn
+		? transitionFn({
+				action: refs.actionRefs,
+				effect: refs.effectRefs,
+				guard: refs.guardRefs,
+				state: refs.stateRefs,
+			})
+		: [];
+
+	const states: Record<string, StateNode> = {};
+	for (const name of stateNames) states[name] = {};
+
+	const statesWithTransitions = new Set<string>();
+
+	for (const stateRef of stateResults) {
+		if (stateRef._transitions.length > 0) {
+			statesWithTransitions.add(stateRef.name);
+			const on: Record<string, Transition> = {};
+			for (const t of stateRef._transitions) {
+				const transition: Transition = {
+					target: t.target,
+					...(t.guards.length > 0 && { guards: t.guards }),
+					...(t.effects.length > 0 && { effects: t.effects }),
+				};
+				on[t.action] = transition;
+			}
+			states[stateRef.name] = { on };
+		}
+	}
+
+	return { states, stateResults, statesWithTransitions };
+};
+
+const collectTransitionKeys = (stateResults: readonly StateRef[]) => {
+	const effects = new Set<string>();
+	const guards = new Set<string>();
+	const actions = new Set<string>();
+	for (const stateRef of stateResults) {
+		for (const t of stateRef._transitions) {
+			actions.add(t.action);
+			for (const e of t.effects) effects.add(e);
+			for (const g of t.guards) guards.add(g);
+		}
+	}
+	return { effects, guards, actions };
+};
+
+const extractKeys = (
+	stateResults: readonly StateRef[],
+	effectDefs: Record<string, Record<string, Schema.Schema.All>>,
+	guardDefs: Record<string, Schema.Schema.All>,
+	actionDefs: Record<string, Record<string, Schema.Schema.All>>,
+) => {
+	const fromTransitions = collectTransitionKeys(stateResults);
+
+	for (const name of Object.keys(effectDefs)) fromTransitions.effects.add(name);
+	for (const name of Object.keys(guardDefs)) fromTransitions.guards.add(name);
+	for (const name of Object.keys(actionDefs)) fromTransitions.actions.add(name);
+
+	return {
+		allEffectKeys: [...fromTransitions.effects],
+		allGuardKeys: [...fromTransitions.guards],
+		allActionTags: [...fromTransitions.actions],
+	};
+};
+
+const collectTerminalActions = (
+	states: Record<string, StateNode>,
+	terminalStateNames: Set<string>,
+): string[] => {
+	const result = new Set<string>();
+	for (const stateNode of Object.values(states)) {
+		if (stateNode.on === undefined) continue;
+		for (const [actionTag, transition] of Object.entries(stateNode.on)) {
+			if (terminalStateNames.has(transition.target)) result.add(actionTag);
+		}
+	}
+	return [...result];
+};
+
+const detectTriggersAndTerminal = (
+	config: SpecConfig,
+	states: Record<string, StateNode>,
+	stateNames: readonly string[],
+	statesWithTransitions: Set<string>,
+) => {
+	if (config.mode !== "instance") return { triggers: [] as string[], terminalOn: [] as string[] };
+
+	const terminalStateNames = new Set(stateNames.filter((name) => !statesWithTransitions.has(name)));
+	const initial = stateNames[0];
+	const initialNode = initial ? states[initial] : undefined;
+	const triggers = initialNode?.on ? Object.keys(initialNode.on) : [];
+	const terminalOn = collectTerminalActions(states, terminalStateNames);
+
+	return { triggers, terminalOn };
+};
+
+const validateImplementation = (
+	handlers: Record<string, (...args: never) => unknown>,
+	effectKeys: string[],
+	guardKeys: string[],
+) => {
+	const missing: string[] = [];
+	for (const key of effectKeys) {
+		if (!(key in handlers)) missing.push(key);
+	}
+	for (const key of guardKeys) {
+		if (!(key in handlers)) missing.push(key);
+	}
+	if (missing.length > 0) {
+		throw new Error(`implement(): missing handlers for: ${missing.join(", ")}`);
+	}
+};
+
+// ---------------------------------------------------------------------------
 // Builder — immutable fluent chain
 // ---------------------------------------------------------------------------
 
@@ -140,82 +300,13 @@ const makeBuilder = (data: BuilderData) => ({
 	build(): BuiltSpec {
 		const { id, config, actionDefs, effectDefs, guardDefs, stateNames, transitionFn } = data;
 
-		// --- Build action TaggedClasses ---
-		const actions: Record<string, { readonly _tag: string; make: (props: unknown) => unknown }> =
-			{};
-		for (const [name, fields] of Object.entries(actionDefs)) {
-			// Schema.TaggedClass returns a class type that Effect's type system cannot
-			// narrow without the concrete generic parameter, which is dynamic here.
-			// The `as any` casts are unavoidable at this Schema API boundary.
-			// biome-ignore lint/suspicious/noExplicitAny: Schema.TaggedClass requires generic param that is dynamic here
-			const schemaClass = Schema.TaggedClass<any>()(name, fields);
-			actions[name] = {
-				_tag: name,
-				// biome-ignore lint/suspicious/noExplicitAny: TaggedClass constructor type cannot be narrowed dynamically
-				make: (props: unknown) => new (schemaClass as any)(props),
-			};
-		}
-
-		// --- Build refs for transitions callback ---
-		const actionRefs: Record<string, ActionRef> = {};
-		for (const name of Object.keys(actionDefs)) {
-			actionRefs[name] = makeActionRef(name);
-		}
-
-		const effectRefs: Record<string, EffectRef> = {};
-		for (const name of Object.keys(effectDefs)) {
-			effectRefs[name] = makeEffectRef(name);
-		}
-
-		const guardRefs: Record<string, GuardRef> = {};
-		for (const name of Object.keys(guardDefs)) {
-			guardRefs[name] = makeGuardRef(name);
-		}
-
-		const stateRefs: Record<string, StateRef> = {};
-		for (const name of stateNames) {
-			stateRefs[name] = makeStateRef(name);
-		}
-
-		// --- Execute transitions callback ---
-		const stateResults = transitionFn
-			? transitionFn({ action: actionRefs, effect: effectRefs, guard: guardRefs, state: stateRefs })
-			: [];
-
-		// --- Build state nodes from transition results ---
-		const states: Record<string, StateNode> = {};
-		const allEffectKeys: string[] = [];
-		const allGuardKeys: string[] = [];
-		const allActionTags: string[] = [];
-
-		// First, register all declared states
-		for (const name of stateNames) {
-			states[name] = {};
-		}
-
-		// Collect terminal state names (states that appear in results with no transitions)
-		const statesWithTransitions = new Set<string>();
-
-		// Then overlay transitions from results
-		for (const stateRef of stateResults) {
-			if (stateRef._transitions.length > 0) {
-				statesWithTransitions.add(stateRef.name);
-				const on: Record<string, Transition> = {};
-				for (const t of stateRef._transitions) {
-					if (!allActionTags.includes(t.action)) allActionTags.push(t.action);
-					for (const e of t.effects) if (!allEffectKeys.includes(e)) allEffectKeys.push(e);
-					for (const g of t.guards) if (!allGuardKeys.includes(g)) allGuardKeys.push(g);
-
-					const transition: Transition = {
-						target: t.target,
-						...(t.guards.length > 0 && { guards: t.guards }),
-						...(t.effects.length > 0 && { effects: t.effects }),
-					};
-					on[t.action] = transition;
-				}
-				states[stateRef.name] = { on };
-			}
-		}
+		const actions = buildActions(actionDefs);
+		const refs = buildRefs(actionDefs, effectDefs, guardDefs, stateNames);
+		const { states, stateResults, statesWithTransitions } = buildStates(
+			transitionFn,
+			refs,
+			stateNames,
+		);
 
 		// --- Validate ---
 		const initial = stateNames[0];
@@ -234,41 +325,18 @@ const makeBuilder = (data: BuilderData) => ({
 			}
 		}
 
-		// --- Auto-detect triggers and terminalOn ---
-		const terminalStateNames = new Set(
-			stateNames.filter((name) => !statesWithTransitions.has(name)),
+		const { allEffectKeys, allGuardKeys, allActionTags } = extractKeys(
+			stateResults,
+			effectDefs,
+			guardDefs,
+			actionDefs,
 		);
-
-		let triggers: string[] = [];
-		const terminalOn: string[] = [];
-
-		if (config.mode === "instance") {
-			// triggers = actions from initial state's transitions
-			const initialNode = states[initial];
-			if (initialNode?.on) {
-				triggers = Object.keys(initialNode.on);
-			}
-
-			// terminalOn = actions that transition TO terminal states
-			for (const [_stateName, stateNode] of Object.entries(states)) {
-				if (stateNode.on === undefined) continue;
-				for (const [actionTag, transition] of Object.entries(stateNode.on)) {
-					if (terminalStateNames.has(transition.target)) {
-						if (!terminalOn.includes(actionTag)) {
-							terminalOn.push(actionTag);
-						}
-					}
-				}
-			}
-		}
-
-		// --- Collect all declared keys (not just used in transitions) ---
-		for (const name of Object.keys(effectDefs))
-			if (!allEffectKeys.includes(name)) allEffectKeys.push(name);
-		for (const name of Object.keys(guardDefs))
-			if (!allGuardKeys.includes(name)) allGuardKeys.push(name);
-		for (const name of Object.keys(actionDefs))
-			if (!allActionTags.includes(name)) allActionTags.push(name);
+		const { triggers, terminalOn } = detectTriggersAndTerminal(
+			config,
+			states,
+			stateNames,
+			statesWithTransitions,
+		);
 
 		return {
 			id,
@@ -285,16 +353,7 @@ const makeBuilder = (data: BuilderData) => ({
 			actionTags: allActionTags,
 			actions,
 			implement: (handlers: Record<string, (...args: never) => unknown>) => {
-				const missing: string[] = [];
-				for (const key of allEffectKeys) {
-					if (!(key in handlers)) missing.push(key);
-				}
-				for (const key of allGuardKeys) {
-					if (!(key in handlers)) missing.push(key);
-				}
-				if (missing.length > 0) {
-					throw new Error(`implement(): missing handlers for: ${missing.join(", ")}`);
-				}
+				validateImplementation(handlers, allEffectKeys, allGuardKeys);
 				return handlers;
 			},
 		};

@@ -4,6 +4,37 @@ import { SpecRegistry } from "@ctrl/arch.contract.spec-registry";
 import { SpecRunnerInternal } from "@ctrl/arch.contract.spec-runner";
 import { Effect, Layer, Ref, Stream } from "effect";
 
+// ---------------------------------------------------------------------------
+// Routing helpers — extracted to reduce cognitive complexity
+// ---------------------------------------------------------------------------
+
+const handleTrigger = (
+	runner: Effect.Effect.Success<typeof SpecRunnerInternal>,
+	triggerSpec: Spec,
+	action: Record<string, unknown>,
+	_instanceId?: string,
+) => {
+	const instanceId = triggerSpec.mode === "singleton" ? triggerSpec.id : crypto.randomUUID();
+	return Effect.gen(function* () {
+		if (triggerSpec.mode !== "singleton") {
+			yield* runner.spawn(triggerSpec.id, instanceId);
+		}
+		yield* runner.dispatch(instanceId, { ...action, instanceId });
+	});
+};
+
+const handleTerminal = (
+	runner: Effect.Effect.Success<typeof SpecRunnerInternal>,
+	terminalSpec: Spec,
+	action: Record<string, unknown>,
+	instanceId: string,
+) =>
+	Effect.gen(function* () {
+		yield* runner.dispatch(instanceId, action);
+		yield* Effect.sleep("10 millis");
+		yield* runner.destroy(terminalSpec.id, instanceId);
+	});
+
 export const SpecRegistryLive = Layer.scoped(
 	SpecRegistry,
 	Effect.gen(function* () {
@@ -57,37 +88,23 @@ export const SpecRegistryLive = Layer.scoped(
 					const action = { _tag: actionTag, ...payload };
 					yield* Effect.logDebug(`[SpecRegistry] cmd: ${actionTag}`);
 
-					// 1. Trigger match: spawn new instance
 					const triggers = yield* Ref.get(triggerMap);
 					const triggerSpec = triggers.get(actionTag);
-					if (triggerSpec) {
-						const instanceId =
-							triggerSpec.mode === "singleton" ? triggerSpec.id : crypto.randomUUID();
-						// Only spawn non-singletons (singletons auto-spawn at register time)
-						if (triggerSpec.mode !== "singleton") {
-							yield* runner.spawn(triggerSpec.id, instanceId);
-						}
-						// Inject instanceId into action so features know which instance they serve
-						yield* runner.dispatch(instanceId, { ...action, instanceId });
-						return;
-					}
+					if (triggerSpec) return yield* handleTrigger(runner, triggerSpec, action);
 
-					// 2. TerminalOn match: dispatch then destroy
 					const terminals = yield* Ref.get(terminalMap);
 					const terminalSpec = terminals.get(actionTag);
 					if (terminalSpec && payload.instanceId) {
-						const instanceId = payload.instanceId as string;
-						yield* runner.dispatch(instanceId, action);
-						// Allow the transition to process before destroying
-						yield* Effect.sleep("10 millis");
-						yield* runner.destroy(terminalSpec.id, instanceId);
-						return;
+						return yield* handleTerminal(
+							runner,
+							terminalSpec,
+							action,
+							payload.instanceId as string,
+						);
 					}
 
-					// 3. Normal dispatch by instanceId
 					if (payload.instanceId) {
-						yield* runner.dispatch(payload.instanceId as string, action);
-						return;
+						return yield* runner.dispatch(payload.instanceId as string, action);
 					}
 
 					yield* Effect.logDebug(
