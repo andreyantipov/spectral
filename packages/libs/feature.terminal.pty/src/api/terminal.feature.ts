@@ -1,6 +1,6 @@
+import { type TerminalInfo, TerminalPort } from "@ctrl/arch.contract.terminal";
 import { TerminalError } from "@ctrl/base.error";
 import { withTracing } from "@ctrl/base.tracing";
-import { type TerminalInfo, TerminalPort } from "@ctrl/arch.contract.terminal";
 import { Context, Effect, Layer } from "effect";
 import { TERMINAL_FEATURE } from "../lib/constants";
 

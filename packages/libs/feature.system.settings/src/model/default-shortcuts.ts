@@ -1,10 +1,5 @@
+import { NavigationEvents, SessionEvents, UIEvents, WorkspaceEvents } from "@ctrl/base.event";
 import type { ShortcutBinding } from "@ctrl/base.schema";
-import {
-	NavigationEvents,
-	SessionEvents,
-	UIEvents,
-	WorkspaceEvents,
-} from "@ctrl/base.event";
 
 export const DEFAULT_SHORTCUTS: readonly ShortcutBinding[] = [
 	{

@@ -1,7 +1,7 @@
+import { pagesTable, sessionsTable } from "@ctrl/base.model.session";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { and, eq } from "drizzle-orm";
 import { Effect } from "effect";
-import { pagesTable, sessionsTable } from "@ctrl/base.model.session";
 
 const now = () => new Date().toISOString();
 const genId = () => crypto.randomUUID();
@@ -122,10 +122,7 @@ export const sessionEffects = Effect.gen(function* () {
 						.update(pagesTable)
 						.set({ title })
 						.where(
-							and(
-								eq(pagesTable.sessionId, sessionId),
-								eq(pagesTable.pageIndex, currentIndex),
-							),
+							and(eq(pagesTable.sessionId, sessionId), eq(pagesTable.pageIndex, currentIndex)),
 						);
 					yield* db
 						.update(sessionsTable)

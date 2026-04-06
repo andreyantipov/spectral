@@ -1,11 +1,11 @@
+import { ensureSchema } from "@ctrl/arch.impl.db";
 import type { PersistedLayout } from "@ctrl/base.schema";
-import { LayoutRepository } from "./layout.repository.tag";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { LibsqlClient } from "@effect/sql-libsql";
 import { Effect, Layer } from "effect";
 import { describe, expect, it } from "vitest";
-import { ensureSchema } from "@ctrl/arch.impl.db";
 import { LayoutRepositoryLive } from "./layout.repository";
+import { LayoutRepository } from "./layout.repository.tag";
 
 const makeTestLayer = () => {
 	const DbLive = LibsqlClient.layer({ url: "file::memory:" });

@@ -1,11 +1,17 @@
+import { EventBus } from "@ctrl/arch.contract.event-bus";
 import { FeatureRegistry } from "@ctrl/arch.contract.feature-registry";
 import { SpecRegistry } from "@ctrl/arch.contract.spec-registry";
 import { SpecRunner } from "@ctrl/arch.contract.spec-runner";
+import { StateSync } from "@ctrl/arch.contract.state-sync";
+import { makeDbClient } from "@ctrl/arch.impl.db";
+import { EventBusLive } from "@ctrl/arch.impl.event-bus";
 import { FeatureRegistryLive } from "@ctrl/arch.impl.feature-registry";
+import { type ElectrobunIpcHandle, IpcBridgeLive } from "@ctrl/arch.impl.ipc-bridge";
 import { SpecRegistryLive } from "@ctrl/arch.impl.spec-registry";
 import { SpecRunnerLive, SpecRunnerPublicLive } from "@ctrl/arch.impl.spec-runner";
-import { WebSession } from "@ctrl/base.spec.web-session";
-import { EventBus } from "@ctrl/arch.contract.event-bus";
+import { StateSyncLive } from "@ctrl/arch.impl.state-sync";
+import { McpServerLive } from "@ctrl/arch.util.mcp";
+import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/arch.util.otel/node";
 import {
 	AppEvents,
 	AUTO_GROUP,
@@ -17,15 +23,9 @@ import {
 	UIEvents,
 	WorkspaceEvents,
 } from "@ctrl/base.event";
-import { StateSync } from "@ctrl/arch.contract.state-sync";
-import { makeDbClient } from "@ctrl/arch.impl.db";
 import { LayoutRepositoryLive } from "@ctrl/base.model.layout";
 import { SessionRepositoryLive } from "@ctrl/base.model.session";
-import { EventBusLive } from "@ctrl/arch.impl.event-bus";
-import { type ElectrobunIpcHandle, IpcBridgeLive } from "@ctrl/arch.impl.ipc-bridge";
-import { StateSyncLive } from "@ctrl/arch.impl.state-sync";
-import { McpServerLive } from "@ctrl/arch.util.mcp";
-import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/arch.util.otel/node";
+import { WebSession } from "@ctrl/base.spec.web-session";
 import { historyEffects } from "@ctrl/feature.browser.history";
 import { navigationEffects } from "@ctrl/feature.browser.navigation";
 import { SessionFeature, SessionFeatureLive, sessionEffects } from "@ctrl/feature.browser.session";
@@ -548,7 +548,11 @@ export const createMainProcess = (handle: ElectrobunIpcHandle, dbPath: string) =
 		SystemServiceLayer,
 		McpServerLive,
 		AutoStateSyncLive,
-	).pipe(Layer.provide(SharedLive), Layer.provide(DbClientLive), Layer.provide(FeatureRegistryLive));
+	).pipe(
+		Layer.provide(SharedLive),
+		Layer.provide(DbClientLive),
+		Layer.provide(FeatureRegistryLive),
+	);
 	const MainProcessLive = Layer.merge(SharedLive, ServicesLive);
 	return Layer.mergeAll(
 		DbClientLive,

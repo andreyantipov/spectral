@@ -147,9 +147,11 @@ const makeBuilder = (data: BuilderData) => ({
 			// Schema.TaggedClass returns a class type that Effect's type system cannot
 			// narrow without the concrete generic parameter, which is dynamic here.
 			// The `as any` casts are unavoidable at this Schema API boundary.
+			// biome-ignore lint/suspicious/noExplicitAny: Schema.TaggedClass requires generic param that is dynamic here
 			const schemaClass = Schema.TaggedClass<any>()(name, fields);
 			actions[name] = {
 				_tag: name,
+				// biome-ignore lint/suspicious/noExplicitAny: TaggedClass constructor type cannot be narrowed dynamically
 				make: (props: unknown) => new (schemaClass as any)(props),
 			};
 		}
@@ -261,9 +263,12 @@ const makeBuilder = (data: BuilderData) => ({
 		}
 
 		// --- Collect all declared keys (not just used in transitions) ---
-		for (const name of Object.keys(effectDefs)) if (!allEffectKeys.includes(name)) allEffectKeys.push(name);
-		for (const name of Object.keys(guardDefs)) if (!allGuardKeys.includes(name)) allGuardKeys.push(name);
-		for (const name of Object.keys(actionDefs)) if (!allActionTags.includes(name)) allActionTags.push(name);
+		for (const name of Object.keys(effectDefs))
+			if (!allEffectKeys.includes(name)) allEffectKeys.push(name);
+		for (const name of Object.keys(guardDefs))
+			if (!allGuardKeys.includes(name)) allGuardKeys.push(name);
+		for (const name of Object.keys(actionDefs))
+			if (!allActionTags.includes(name)) allActionTags.push(name);
 
 		return {
 			id,

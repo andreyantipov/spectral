@@ -1,10 +1,10 @@
 import { DatabaseError } from "@ctrl/base.error";
 import type { HistoryEntry } from "@ctrl/base.schema";
 import { withTracing } from "@ctrl/base.tracing";
-import { HistoryRepository } from "./history.repository.tag";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { desc, sql } from "drizzle-orm";
 import { Effect, Layer } from "effect";
+import { HistoryRepository } from "./history.repository.tag";
 import { historyTable } from "./history.schema";
 
 export const HistoryRepositoryLive = Layer.effect(

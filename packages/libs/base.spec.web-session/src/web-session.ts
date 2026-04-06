@@ -37,10 +37,7 @@ const WebSession = Spec("web-session", { mode: "instance", domain: "session", ve
 			effect.ActivateSession,
 		]),
 
-		state.Browsing.on(action.Navigate, state.Loading, [
-			guard.UrlIsValid,
-			effect.StartNavigation,
-		])
+		state.Browsing.on(action.Navigate, state.Loading, [guard.UrlIsValid, effect.StartNavigation])
 			.on(action.ActivateSession, state.Browsing, [effect.ActivateSession])
 			.on(action.TitleChanged, state.Browsing, [effect.WriteTitle])
 			.on(action.CloseSession, state.Closed, [effect.RemoveSession]),
@@ -67,4 +64,3 @@ export { WebSession };
 export const WebSessionActions = WebSession.actions;
 export const WebSessionEffects = WebSession.effectKeys;
 export const WebSessionGuards = WebSession.guardKeys;
-

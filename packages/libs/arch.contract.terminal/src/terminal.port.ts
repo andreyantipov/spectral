@@ -1,5 +1,5 @@
-import type { TerminalError } from "./terminal.error";
 import { Context, type Effect, type Stream } from "effect";
+import type { TerminalError } from "./terminal.error";
 
 export const TERMINAL_PORT_ID = "TerminalPort" as const;
 

@@ -1,10 +1,10 @@
 import { DatabaseError } from "@ctrl/base.error";
 import { PersistedLayoutSchema } from "@ctrl/base.schema";
 import { withTracing } from "@ctrl/base.tracing";
-import { LayoutRepository } from "./layout.repository.tag";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { eq } from "drizzle-orm";
 import { Effect, Layer, Schema } from "effect";
+import { LayoutRepository } from "./layout.repository.tag";
 import { workspaceLayoutTable } from "./workspace-layout.schema";
 
 const decodePersistedLayout = Schema.decodeUnknown(PersistedLayoutSchema);

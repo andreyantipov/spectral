@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test";
+import { EventBus } from "@ctrl/arch.contract.event-bus";
 import { FeatureRegistry } from "@ctrl/arch.contract.feature-registry";
 import { SpecRegistry } from "@ctrl/arch.contract.spec-registry";
 import { SpecRunnerInternal } from "@ctrl/arch.contract.spec-runner";
 import { WebSession } from "@ctrl/base.spec.web-session";
-import { EventBus } from "@ctrl/arch.contract.event-bus";
 import { Effect } from "effect";
 import { TestSpecEngineLive, TestSpecEngineWithBusLive } from "./test-layer";
 

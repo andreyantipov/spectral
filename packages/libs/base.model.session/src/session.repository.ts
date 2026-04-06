@@ -2,11 +2,11 @@ import { DatabaseError } from "@ctrl/base.error";
 import type { Page, Session } from "@ctrl/base.schema";
 import { withTracing } from "@ctrl/base.tracing";
 import { DEFAULT_TAB_URL } from "@ctrl/base.type";
-import { SessionRepository } from "./session.repository.tag";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { Effect, Layer } from "effect";
 import { pagesTable } from "./pages.schema";
+import { SessionRepository } from "./session.repository.tag";
 import { sessionsTable } from "./sessions.schema";
 
 export const SessionRepositoryLive = Layer.effect(

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import { EventBus } from "@ctrl/arch.contract.event-bus";
 import { FeatureRegistry } from "@ctrl/arch.contract.feature-registry";
+import { SpecRunnerInternal } from "@ctrl/arch.contract.spec-runner";
 import { EventBusLive } from "@ctrl/arch.impl.event-bus";
 import { FeatureRegistryLive } from "@ctrl/arch.impl.feature-registry";
 import { Effect, Layer, Ref, Stream } from "effect";
-import { SpecRunnerInternal } from "@ctrl/arch.contract.spec-runner";
 import { SpecRunnerLive } from "./runner";
 
 const SimpleSpec = {

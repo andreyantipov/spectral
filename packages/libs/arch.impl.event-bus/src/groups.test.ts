@@ -1,9 +1,4 @@
-import {
-	AppEvents,
-	BookmarkEvents,
-	NavigationEvents,
-	SessionEvents,
-} from "@ctrl/base.event";
+import { AppEvents, BookmarkEvents, NavigationEvents, SessionEvents } from "@ctrl/base.event";
 import { EventGroup, EventLog } from "@effect/experimental";
 import { Effect, Schema } from "effect";
 import { describe, expect, it } from "vitest";

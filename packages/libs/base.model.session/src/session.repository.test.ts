@@ -1,11 +1,11 @@
+import { ensureSchema } from "@ctrl/arch.impl.db";
 import { DEFAULT_TAB_URL } from "@ctrl/base.type";
-import { SessionRepository } from "./session.repository.tag";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { LibsqlClient } from "@effect/sql-libsql";
 import { Effect, Layer } from "effect";
 import { describe, expect, it } from "vitest";
-import { ensureSchema } from "@ctrl/arch.impl.db";
 import { SessionRepositoryLive } from "./session.repository";
+import { SessionRepository } from "./session.repository.tag";
 
 /**
  * Helper: create an in-memory libsql-backed test layer that includes

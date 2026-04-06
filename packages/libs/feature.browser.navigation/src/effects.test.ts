@@ -5,9 +5,7 @@ import { navigationEffects } from "./effects";
 describe("navigation effects", () => {
 	it("UrlIsValid returns true for https", async () => {
 		const effects = await Effect.runPromise(navigationEffects);
-		const result = await Effect.runPromise(
-			effects.UrlIsValid({ url: "https://google.com" }),
-		);
+		const result = await Effect.runPromise(effects.UrlIsValid({ url: "https://google.com" }));
 		expect(result).toBe(true);
 	});
 
@@ -25,9 +23,7 @@ describe("navigation effects", () => {
 
 	it("UrlIsValid returns true for http", async () => {
 		const effects = await Effect.runPromise(navigationEffects);
-		const result = await Effect.runPromise(
-			effects.UrlIsValid({ url: "http://localhost:3000" }),
-		);
+		const result = await Effect.runPromise(effects.UrlIsValid({ url: "http://localhost:3000" }));
 		expect(result).toBe(true);
 	});
 

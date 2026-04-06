@@ -9,12 +9,10 @@ type EventBusService = Context.Tag.Service<typeof EventBus>;
  * The caller provides tag and payload as plain strings/objects.
  * Type safety is enforced at the call site by the consumer's EventGroup types.
  */
-export const typedSend =
-	(bus: EventBusService) =>
-	(tag: string, payload: unknown) =>
-		bus.send({
-			type: "command" as const,
-			action: tag,
-			payload,
-			meta: { source: "system" as const },
-		});
+export const typedSend = (bus: EventBusService) => (tag: string, payload: unknown) =>
+	bus.send({
+		type: "command" as const,
+		action: tag,
+		payload,
+		meta: { source: "system" as const },
+	});

@@ -1,10 +1,10 @@
-import { BookmarkRepository } from "./bookmark.repository.tag";
+import { ensureSchema } from "@ctrl/arch.impl.db";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { LibsqlClient } from "@effect/sql-libsql";
 import { Effect, Layer } from "effect";
 import { describe, expect, it } from "vitest";
 import { BookmarkRepositoryLive } from "./bookmark.repository";
-import { ensureSchema } from "@ctrl/arch.impl.db";
+import { BookmarkRepository } from "./bookmark.repository.tag";
 
 const makeTestLayer = () => {
 	const DbLive = LibsqlClient.layer({ url: "file::memory:" });

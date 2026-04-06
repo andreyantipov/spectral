@@ -1,7 +1,7 @@
+import { NavigationEvents, SessionEvents } from "@ctrl/base.event";
 import type { BrowsingState, Session } from "@ctrl/base.schema";
 import { withWebTracing } from "@ctrl/base.tracing";
 import { currentUrl } from "@ctrl/base.type";
-import { NavigationEvents, SessionEvents } from "@ctrl/base.event";
 import { DEFAULT_SHORTCUTS } from "@ctrl/feature.system.settings";
 import { useApi } from "@ctrl/ui.base.api";
 import {

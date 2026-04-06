@@ -1,10 +1,10 @@
 import { DatabaseError } from "@ctrl/base.error";
 import type { Bookmark } from "@ctrl/base.schema";
 import { withTracing } from "@ctrl/base.tracing";
-import { BookmarkRepository } from "./bookmark.repository.tag";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { desc, eq } from "drizzle-orm";
 import { Effect, Layer } from "effect";
+import { BookmarkRepository } from "./bookmark.repository.tag";
 import { bookmarksTable } from "./bookmarks.schema";
 
 export const BookmarkRepositoryLive = Layer.effect(

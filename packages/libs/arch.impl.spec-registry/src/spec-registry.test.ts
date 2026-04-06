@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
+import { EventBus } from "@ctrl/arch.contract.event-bus";
 import { FeatureRegistry } from "@ctrl/arch.contract.feature-registry";
 import { SpecRegistry } from "@ctrl/arch.contract.spec-registry";
+import { EventBusLive } from "@ctrl/arch.impl.event-bus";
 import { FeatureRegistryLive } from "@ctrl/arch.impl.feature-registry";
 import { SpecRunnerLive } from "@ctrl/arch.impl.spec-runner";
-import { EventBus } from "@ctrl/arch.contract.event-bus";
-import { EventBusLive } from "@ctrl/arch.impl.event-bus";
 import { layerMemory } from "@effect/experimental/EventJournal";
 import { Effect, Layer, Ref } from "effect";
 import { SpecRegistryLive } from "./spec-registry";

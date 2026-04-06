@@ -1,6 +1,6 @@
+import { historyTable } from "@ctrl/base.model.history";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { Effect } from "effect";
-import { historyTable } from "@ctrl/base.model.history";
 
 // Effect key matching WebSession spec (PascalCase)
 const RecordHistory = "RecordHistory";

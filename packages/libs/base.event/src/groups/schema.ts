@@ -1,7 +1,4 @@
 import { EventLog } from "@effect/experimental";
-import { BookmarkEvents } from "./bookmark";
-import { NavigationEvents } from "./navigation";
-import { SessionEvents } from "./session";
 import { SettingsEvents } from "./settings";
 import { SystemEvents } from "./system";
 import { TerminalEvents } from "./terminal";
