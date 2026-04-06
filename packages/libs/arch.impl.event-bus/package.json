@@ -12,5 +12,8 @@
 	},
 	"dependencies": {
 		"@ctrl/arch.contract.event-bus": "workspace:*"
+	},
+	"devDependencies": {
+		"@ctrl/base.event": "workspace:*"
 	}
 }

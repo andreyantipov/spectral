@@ -69,5 +69,3 @@ export const WebSessionActions = WebSession.actions;
 export const WebSessionEffects = WebSession.effectKeys;
 export const WebSessionGuards = WebSession.guardKeys;
 
-/** @deprecated Use WebSession — removed in Plan 3 */
-export const WebSessionSpec = WebSession;

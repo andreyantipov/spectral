@@ -33,10 +33,9 @@ const config: KnipConfig = {
 			ignoreDependencies: [
 				// These are bundled into webview via build-view.ts, not direct imports
 				"@ctrl/ui.base.components",
-				"@ctrl/domain.feature.settings",
+				"@ctrl/feature.system.settings",
 				"@ctrl/base.schema",
 				"@ctrl/base.tracing",
-				"@ctrl/core.contract.storage",
 			],
 		},
 

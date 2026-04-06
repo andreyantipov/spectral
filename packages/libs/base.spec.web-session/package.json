@@ -10,9 +10,6 @@
 		"effect": "^3.19.0",
 		"@ctrl/arch.util.spec-builder": "workspace:*"
 	},
-	"devDependencies": {
-		"@ctrl/arch.contract.spec": "workspace:*"
-	},
 	"scripts": {
 		"check": "tsc --noEmit",
 		"test": "bun test"
