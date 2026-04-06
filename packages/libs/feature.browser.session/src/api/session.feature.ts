@@ -1,7 +1,7 @@
 import { type DatabaseError, ValidationError } from "@ctrl/base.error";
 import type { Session } from "@ctrl/base.schema";
 import { withTracing } from "@ctrl/base.tracing";
-import { SessionRepository } from "@ctrl/arch.contract.storage";
+import { SessionRepository } from "@ctrl/base.model.session";
 import { Context, Effect, Layer } from "effect";
 import { SESSION_FEATURE } from "../lib/constants";
 import { canGoBack, canGoForward } from "../lib/session.helpers";

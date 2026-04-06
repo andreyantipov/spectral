@@ -1,5 +1,5 @@
 import type { PersistedLayout } from "@ctrl/base.schema";
-import { LayoutRepository } from "@ctrl/arch.contract.storage";
+import { LayoutRepository } from "@ctrl/base.model.layout";
 import { Effect, Layer } from "effect";
 import { describe, expect, it } from "vitest";
 import { makeGroupNode } from "../lib/tree-ops";

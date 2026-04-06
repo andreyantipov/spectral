@@ -1,5 +1,5 @@
 import type { PersistedLayout } from "@ctrl/base.schema";
-import { LayoutRepository } from "@ctrl/arch.contract.storage";
+import { LayoutRepository } from "./layout.repository.tag";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { LibsqlClient } from "@effect/sql-libsql";
 import { Effect, Layer } from "effect";

@@ -1,22 +1,17 @@
-import type { AppEvents, EventBus } from "@ctrl/arch.contract.event-bus";
-import type { Event } from "@effect/experimental/Event";
-import type { EventGroup } from "@effect/experimental/EventGroup";
+import type { EventBus } from "@ctrl/arch.contract.event-bus";
 import type { Context } from "effect";
-
-/** All event tags from AppEvents — union of all possible tags */
-type AllTags = Event.Tag<EventGroup.Events<(typeof AppEvents)["groups"][number]>>;
-
-/** Payload for a specific tag */
-type PayloadFor<T extends AllTags> = Event.PayloadWithTag<
-	EventGroup.Events<(typeof AppEvents)["groups"][number]>,
-	T
->;
 
 type EventBusService = Context.Tag.Service<typeof EventBus>;
 
+/**
+ * Generic typed dispatch helper.
+ * Usage: `typedSend(bus)("ws.activate-panel", { panelId })`
+ * The caller provides tag and payload as plain strings/objects.
+ * Type safety is enforced at the call site by the consumer's EventGroup types.
+ */
 export const typedSend =
 	(bus: EventBusService) =>
-	<T extends AllTags>(tag: T, payload: PayloadFor<T>) =>
+	(tag: string, payload: unknown) =>
 		bus.send({
 			type: "command" as const,
 			action: tag,

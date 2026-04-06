@@ -5,15 +5,18 @@ import { FeatureRegistryLive } from "@ctrl/arch.impl.feature-registry";
 import { SpecRegistryLive } from "@ctrl/arch.impl.spec-registry";
 import { SpecRunnerLive, SpecRunnerPublicLive } from "@ctrl/arch.impl.spec-runner";
 import { WebSessionSpec } from "@ctrl/base.spec.web-session";
+import { EventBus } from "@ctrl/arch.contract.event-bus";
 import {
 	AppEvents,
-	EventBus,
+	AUTO_GROUP,
 	SettingsEvents,
+	STATE_SYNC_EVENT,
 	SystemEvents,
 	TerminalEvents,
+	UI_READY_ACTION,
 	UIEvents,
 	WorkspaceEvents,
-} from "@ctrl/arch.contract.event-bus";
+} from "@ctrl/base.event";
 import { StateSync } from "@ctrl/arch.contract.state-sync";
 import { makeDbClient } from "@ctrl/arch.impl.db";
 import { LayoutRepositoryLive } from "@ctrl/base.model.layout";
@@ -136,7 +139,7 @@ const WorkspaceHandlers = EventLog.group(WorkspaceEvents, (h) =>
 				const layout = yield* LayoutFeature;
 				const current = yield* layout.getLayout();
 				let groupId = payload.groupId;
-				if (groupId === "__auto__") {
+				if (groupId === AUTO_GROUP) {
 					groupId = findFirstGroupId(current) ?? current.id;
 				}
 				const updated = insertPanelIntoGroup(current, groupId, payload.panel);
@@ -420,7 +423,7 @@ const BrowserDomainLive = Layer.scopedDiscard(
 				type: "command",
 				action: "ws.add-panel",
 				payload: {
-					groupId: "__auto__",
+					groupId: AUTO_GROUP,
 					panel: {
 						id: session.id,
 						type: "session" as const,
@@ -483,7 +486,7 @@ const AutoStateSyncLive = Layer.scopedDiscard(
 			Stream.runForEach((cmd) =>
 				Effect.sync(() => {
 					dirty = true;
-					if (cmd.action === "ui.ready") lastJson = "";
+					if (cmd.action === UI_READY_ACTION) lastJson = "";
 				}),
 			),
 			Effect.forkScoped,
@@ -511,7 +514,7 @@ const AutoStateSyncLive = Layer.scopedDiscard(
 				lastJson = json;
 				yield* bus.publish({
 					type: "event",
-					name: "state-sync",
+					name: STATE_SYNC_EVENT,
 					payload: snapshot,
 					timestamp: Date.now(),
 				});

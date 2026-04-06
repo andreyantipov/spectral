@@ -1,4 +1,4 @@
-import { HistoryRepository } from "@ctrl/arch.contract.storage";
+import { HistoryRepository } from "./history.repository.tag";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { LibsqlClient } from "@effect/sql-libsql";
 import { Effect, Layer } from "effect";

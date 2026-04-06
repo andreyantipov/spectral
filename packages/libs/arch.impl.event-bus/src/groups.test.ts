@@ -3,7 +3,7 @@ import {
 	BookmarkEvents,
 	NavigationEvents,
 	SessionEvents,
-} from "@ctrl/arch.contract.event-bus";
+} from "@ctrl/base.event";
 import { EventGroup, EventLog } from "@effect/experimental";
 import { Effect, Schema } from "effect";
 import { describe, expect, it } from "vitest";

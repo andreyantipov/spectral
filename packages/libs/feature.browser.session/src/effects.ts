@@ -1,9 +1,10 @@
 import { Effects } from "@ctrl/base.op.browsing";
 import { EventBus } from "@ctrl/arch.contract.event-bus";
+import { AUTO_GROUP } from "@ctrl/base.event";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { eq } from "drizzle-orm";
 import { Effect } from "effect";
-import { pagesTable, sessionsTable } from "./schema";
+import { pagesTable, sessionsTable } from "@ctrl/base.model.session";
 
 const now = () => new Date().toISOString();
 const genId = () => crypto.randomUUID();
@@ -39,7 +40,7 @@ export const sessionEffects = Effect.gen(function* () {
 					type: "command",
 					action: "ws.add-panel",
 					payload: {
-						groupId: "__auto__",
+						groupId: AUTO_GROUP,
 						panel: { id, type: "session" as const, entityId: id, title: "New Tab", icon: null },
 					},
 					meta: { source: "system" },

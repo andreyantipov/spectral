@@ -1,5 +1,5 @@
 {
-	"name": "@ctrl/arch.impl.terminal",
+	"name": "@ctrl/base.event",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -7,10 +7,10 @@
 		".": "./src/index.ts"
 	},
 	"scripts": {
-		"check": "tsgo --noEmit",
-		"test": "bun test"
+		"check": "tsgo --noEmit"
 	},
 	"dependencies": {
-		"@ctrl/arch.contract.terminal": "workspace:*"
+		"@ctrl/base.error": "workspace:*",
+		"@ctrl/base.schema": "workspace:*"
 	}
 }

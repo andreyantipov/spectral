@@ -1,4 +1,3 @@
-import { type ShortcutBinding, ShortcutBindingSchema } from "@ctrl/base.schema";
 import { Schema } from "effect";
 
 export const AppCommandSchema = Schema.Struct({
@@ -19,6 +18,3 @@ export const AppEventSchema = Schema.Struct({
 	timestamp: Schema.Number,
 	causedBy: Schema.optional(Schema.String),
 });
-
-export type { ShortcutBinding };
-export { ShortcutBindingSchema };

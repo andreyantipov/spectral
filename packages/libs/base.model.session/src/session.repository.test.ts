@@ -1,5 +1,5 @@
 import { DEFAULT_TAB_URL } from "@ctrl/base.type";
-import { SessionRepository } from "@ctrl/arch.contract.storage";
+import { SessionRepository } from "./session.repository.tag";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { LibsqlClient } from "@effect/sql-libsql";
 import { Effect, Layer } from "effect";

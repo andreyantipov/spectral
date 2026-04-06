@@ -1,5 +1,4 @@
-import { TerminalError } from "@ctrl/base.error";
-import { TerminalPort } from "@ctrl/arch.contract.terminal";
+import { TerminalError, TerminalPort } from "@ctrl/arch.contract.terminal";
 import { Effect, Layer, PubSub, Stream } from "effect";
 
 const ALLOWED_SHELLS_FALLBACK = new Set([

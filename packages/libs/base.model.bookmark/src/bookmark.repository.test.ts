@@ -1,4 +1,4 @@
-import { BookmarkRepository } from "@ctrl/arch.contract.storage";
+import { BookmarkRepository } from "./bookmark.repository.tag";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { LibsqlClient } from "@effect/sql-libsql";
 import { Effect, Layer } from "effect";

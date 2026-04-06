@@ -10,8 +10,5 @@
 		"check": "tsgo --noEmit",
 		"test": "vitest run"
 	},
-	"dependencies": {
-		"@ctrl/base.error": "workspace:*",
-		"@ctrl/base.schema": "workspace:*"
-	}
+	"dependencies": {}
 }

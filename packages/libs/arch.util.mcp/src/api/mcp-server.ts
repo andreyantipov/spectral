@@ -6,6 +6,7 @@ import { Effect, Layer, Stream } from "effect";
 
 const MCP_PORT = 50100;
 const MAX_EVENTS = 100;
+const STATE_SYNC_EVENT = "state-sync";
 
 export const McpServerLive = Layer.scopedDiscard(
 	Effect.gen(function* () {
@@ -20,7 +21,7 @@ export const McpServerLive = Layer.scopedDiscard(
 				Effect.sync(() => {
 					recentEvents.push({ ...event, _receivedAt: Date.now() });
 					if (recentEvents.length > MAX_EVENTS) recentEvents.shift();
-					if (event.name === "state-sync" && event.payload) {
+					if (event.name === STATE_SYNC_EVENT && event.payload) {
 						latestState = event.payload as Record<string, unknown>;
 					}
 					if (event.name === "diag.screenshot-result" && screenshotResolver) {

@@ -13,6 +13,6 @@
 	"dependencies": {
 		"@ctrl/base.schema": "workspace:*",
 		"@ctrl/base.tracing": "workspace:*",
-		"@ctrl/arch.contract.event-bus": "workspace:*"
+		"@ctrl/base.event": "workspace:*"
 	}
 }

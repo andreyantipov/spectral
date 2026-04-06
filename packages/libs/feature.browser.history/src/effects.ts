@@ -1,7 +1,7 @@
 import { Effects } from "@ctrl/base.op.browsing";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { Effect } from "effect";
-import { historyTable } from "./schema";
+import { historyTable } from "@ctrl/base.model.history";
 
 export const historyEffects = Effect.gen(function* () {
 	const db = yield* SqliteDrizzle;
