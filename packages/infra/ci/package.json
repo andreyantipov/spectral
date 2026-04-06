@@ -3,9 +3,6 @@
 	"version": "0.0.0",
 	"type": "module",
 	"private": true,
-	"dependencies": {
-		"effect": "^3.21.0"
-	},
 	"scripts": {
 		"develop": "dagger develop",
 		"validate": "dagger develop && dagger functions"

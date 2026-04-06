@@ -15,8 +15,7 @@
 		"@ctrl/ui.base.components": "workspace:*",
 		"@ctrl/ui.scene.main": "workspace:*",
 		"@ctrl/wire.desktop.main": "workspace:*",
-		"@ctrl/wire.desktop.ui": "workspace:*",
-		"electrobun": "1.15.1"
+		"@ctrl/wire.desktop.ui": "workspace:*"
 	},
 	"scripts": {
 		"prebundle": "bun run build-view.ts && bun run prepare-native-deps.ts",

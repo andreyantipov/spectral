@@ -14,9 +14,7 @@
 		"@ctrl/base.error": "workspace:*",
 		"@ctrl/base.schema": "workspace:*",
 		"@ctrl/base.tracing": "workspace:*",
-		"@ctrl/base.type": "workspace:*",
-		"@effect/sql-drizzle": "^0.48.1",
-		"drizzle-orm": "^0.45.2"
+		"@ctrl/base.type": "workspace:*"
 	},
 	"devDependencies": {
 		"@ctrl/arch.impl.db": "workspace:*"

@@ -8,15 +8,13 @@
 	},
 	"dependencies": {
 		"@ctrl/arch.contract.event-bus": "workspace:*",
-		"@ctrl/arch.contract.spec-registry": "workspace:*",
-		"effect": "^3.21.0"
+		"@ctrl/arch.contract.spec-registry": "workspace:*"
 	},
 	"devDependencies": {
 		"@ctrl/arch.contract.feature-registry": "workspace:*",
 		"@ctrl/arch.impl.event-bus": "workspace:*",
 		"@ctrl/arch.impl.feature-registry": "workspace:*",
-		"@ctrl/arch.impl.spec-runner": "workspace:*",
-		"@effect/experimental": "^0.58.0"
+		"@ctrl/arch.impl.spec-runner": "workspace:*"
 	},
 	"scripts": {
 		"check": "tsc --noEmit",

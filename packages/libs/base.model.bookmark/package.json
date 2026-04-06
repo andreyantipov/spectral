@@ -13,9 +13,7 @@
 	"dependencies": {
 		"@ctrl/base.error": "workspace:*",
 		"@ctrl/base.schema": "workspace:*",
-		"@ctrl/base.tracing": "workspace:*",
-		"@effect/sql-drizzle": "^0.48.1",
-		"drizzle-orm": "^0.45.2"
+		"@ctrl/base.tracing": "workspace:*"
 	},
 	"devDependencies": {
 		"@ctrl/arch.impl.db": "workspace:*"

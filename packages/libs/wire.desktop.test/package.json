@@ -14,8 +14,7 @@
 		"@ctrl/arch.impl.feature-registry": "workspace:*",
 		"@ctrl/arch.impl.spec-registry": "workspace:*",
 		"@ctrl/arch.impl.spec-runner": "workspace:*",
-		"@ctrl/base.spec.web-session": "workspace:*",
-		"effect": "^3.21.0"
+		"@ctrl/base.spec.web-session": "workspace:*"
 	},
 	"scripts": {
 		"check": "tsc --noEmit",

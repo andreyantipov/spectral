@@ -7,8 +7,7 @@
 		".": "./src/index.ts"
 	},
 	"dependencies": {
-		"@ctrl/arch.contract.spec": "workspace:*",
-		"effect": "^3.21.0"
+		"@ctrl/arch.contract.spec": "workspace:*"
 	},
 	"scripts": {
 		"check": "tsc --noEmit",

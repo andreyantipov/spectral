@@ -6,9 +6,6 @@
 	"exports": {
 		".": "./src/index.ts"
 	},
-	"dependencies": {
-		"effect": "^3.21.0"
-	},
 	"scripts": {
 		"check": "tsc --noEmit",
 		"test": "bun test"
