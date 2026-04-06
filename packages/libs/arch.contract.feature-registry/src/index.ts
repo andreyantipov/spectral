@@ -1,1 +1,1 @@
-export { FeatureRegistry, type FeatureFn } from "./registry"
+export { type EffectResult, type FeatureFn, FeatureRegistry } from "./registry";
