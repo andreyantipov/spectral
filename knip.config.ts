@@ -11,10 +11,8 @@ const config: KnipConfig = {
 
 		// Library packages — all share the same structure
 		"packages/libs/*": {
-			entry: ["src/index.ts"],
+			entry: ["src/index.ts", "src/**/*.test-utils.ts"],
 			project: ["src/**/*.{ts,tsx}"],
-			// Test utils are entry points (consumed by test files in other packages)
-			ignore: ["src/**/*.test-utils.ts"],
 		},
 
 		// UI components — has storybook stories + panda config
