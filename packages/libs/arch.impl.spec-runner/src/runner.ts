@@ -1,6 +1,5 @@
 import { SpecRunner, type Action } from "@ctrl/arch.contract.spec-runner"
 import { FeatureRegistry } from "@ctrl/arch.contract.feature-registry"
-import { EventJournal } from "@effect/experimental/EventJournal"
 import { Context, Effect, FiberMap, Layer, Queue, Ref } from "effect"
 
 // Local spec definition type — runner does NOT import arch.contract.spec
@@ -37,64 +36,32 @@ const runInstance = (
 ) =>
   Effect.gen(function* () {
     const registry = yield* FeatureRegistry
-    const journal = yield* EventJournal
     const stateRef = yield* Ref.make(initialState)
-
-    console.info(`[SpecRunner] runInstance STARTED: ${spec.id} instance=${instanceId.slice(0, 8)} state=${initialState}`)
 
     yield* Effect.forever(
       Effect.gen(function* () {
         const action = yield* Queue.take(queue)
         const current = yield* Ref.get(stateRef)
         const stateDef = spec.states[current]
-        if (!stateDef?.on) {
-          console.info(`[SpecRunner] ${instanceId.slice(0, 8)}: state "${current}" has no transitions, dropping ${action._tag}`)
-          return
-        }
+        if (!stateDef?.on) return
         const transition = stateDef.on[action._tag]
-        if (!transition) {
-          console.info(`[SpecRunner] ${instanceId.slice(0, 8)}: no transition for ${action._tag} in state "${current}"`)
-          return
-        }
+        if (!transition) return
 
-        // Guards — execute sequentially, any falsy result drops the action
+        // Guards — sequential, any falsy → drop
         if (transition.guards) {
           for (const guard of transition.guards) {
             const result = yield* registry.execute(guard, action as Record<string, unknown>)
-            if (!result) {
-              console.info(`[SpecRunner] ${instanceId.slice(0, 8)}: guard "${guard}" blocked ${action._tag}`)
-              return
-            }
+            if (!result) return
           }
         }
 
-        console.info(`[SpecRunner] ${instanceId.slice(0, 8)}: transitioning ${current} → ${transition.target} (${action._tag})`)
-
-        // Journal write — state transition + effects run atomically inside
-        const previous = current
-        const payload = new TextEncoder().encode(JSON.stringify(action))
-        yield* journal.write({
-          event: action._tag,
-          primaryKey: instanceId,
-          payload,
-          effect: () =>
-            Effect.gen(function* () {
-              yield* Ref.set(stateRef, transition.target)
-              if (transition.effects) {
-                for (const effectName of transition.effects) {
-                  console.info(`[SpecRunner] ${instanceId.slice(0, 8)}: executing effect "${effectName}"`)
-                  yield* registry.execute(effectName, action as Record<string, unknown>)
-                }
-              }
-            }),
-        }).pipe(
-          Effect.catchAll((err) => {
-            console.error(`[SpecRunner] ${instanceId.slice(0, 8)}: journal.write FAILED for ${action._tag}:`, err)
-            return Effect.void
-          }),
-        )
-
-        console.info(`[SpecRunner] ${instanceId.slice(0, 8)}: transition complete ${previous} → ${transition.target}`)
+        // Transition: set state + run effects
+        yield* Ref.set(stateRef, transition.target)
+        if (transition.effects) {
+          for (const effectName of transition.effects) {
+            yield* registry.execute(effectName, action as Record<string, unknown>)
+          }
+        }
       }),
     )
   })

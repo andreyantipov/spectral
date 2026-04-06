@@ -1,6 +1,5 @@
 import { describe, it, expect } from "bun:test"
 import { Effect, Layer, Ref } from "effect"
-import { EventJournal, layerMemory } from "@effect/experimental/EventJournal"
 import { FeatureRegistry } from "@ctrl/arch.contract.feature-registry"
 import { FeatureRegistryLive } from "@ctrl/arch.impl.feature-registry"
 import { SpecRunnerInternal, SpecRunnerLive } from "./runner"
@@ -50,10 +49,9 @@ const GuardSpec = {
 const TestLayer = Layer.mergeAll(
   SpecRunnerLive,
   FeatureRegistryLive,
-  layerMemory,
 )
 
-const runTest = <A>(effect: Effect.Effect<A, unknown, SpecRunnerInternal | FeatureRegistry | EventJournal>) =>
+const runTest = <A>(effect: Effect.Effect<A, unknown, SpecRunnerInternal | FeatureRegistry>) =>
   Effect.runPromise(
     effect.pipe(Effect.scoped, Effect.provide(TestLayer)),
   )
@@ -107,7 +105,6 @@ describe("SpecRunner", () => {
       Effect.gen(function* () {
         const runner = yield* SpecRunnerInternal
         const registry = yield* FeatureRegistry
-        const journal = yield* EventJournal
         const log: Array<string> = []
 
         yield* registry.register("do.work", () =>
@@ -128,13 +125,6 @@ describe("SpecRunner", () => {
         yield* Effect.sleep("50 millis")
 
         expect(log).toEqual(["do.work", "do.more"])
-
-        // Verify journal has entries
-        const entries = yield* journal.entries
-        const tags = entries.map((e) => e.event)
-        expect(tags).toContain("DoWork")
-        expect(tags).toContain("DoMore")
-        expect(tags).toContain("Stop")
       }),
     )
   })
@@ -181,32 +171,6 @@ describe("SpecRunner", () => {
 
         const wasCalled = yield* Ref.get(called)
         expect(wasCalled).toBe(true)
-      }),
-    )
-  })
-
-  it("writes transitions to EventJournal", async () => {
-    await runTest(
-      Effect.gen(function* () {
-        const runner = yield* SpecRunnerInternal
-        const registry = yield* FeatureRegistry
-        const journal = yield* EventJournal
-
-        yield* registry.register("do.work", () => Effect.void)
-
-        yield* runner.registerSpec(SimpleSpec)
-        yield* runner.spawn("simple", "inst-6")
-        yield* runner.dispatch("inst-6", { _tag: "DoWork" })
-        yield* Effect.sleep("50 millis")
-
-        const entries = yield* journal.entries
-        expect(entries.length).toBeGreaterThanOrEqual(1)
-        expect(entries[0].event).toBe("DoWork")
-        expect(entries[0].primaryKey).toBe("inst-6")
-
-        // Verify payload is decodable
-        const decoded = JSON.parse(new TextDecoder().decode(entries[0].payload))
-        expect(decoded._tag).toBe("DoWork")
       }),
     )
   })

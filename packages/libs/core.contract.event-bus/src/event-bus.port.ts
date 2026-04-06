@@ -19,6 +19,13 @@ export type AppEvent = {
 
 export const EVENT_BUS_ID = "EventBus" as const;
 
+export type JournalEntry = {
+	readonly id: string;
+	readonly action: string;
+	readonly payload: unknown;
+	readonly timestamp: number;
+};
+
 export class EventBus extends Context.Tag(EVENT_BUS_ID)<
 	EventBus,
 	{
@@ -27,5 +34,6 @@ export class EventBus extends Context.Tag(EVENT_BUS_ID)<
 		readonly commands: Stream.Stream<AppCommand>;
 		readonly events: Stream.Stream<AppEvent>;
 		readonly on: (eventName: string) => Stream.Stream<AppEvent>;
+		readonly journal: Stream.Stream<JournalEntry>;
 	}
 >() {}

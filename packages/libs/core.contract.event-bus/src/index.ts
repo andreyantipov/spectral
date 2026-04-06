@@ -2,6 +2,7 @@ export {
 	type AppCommand,
 	type AppEvent,
 	type CommandSource,
+	type JournalEntry,
 	EVENT_BUS_ID,
 	EventBus,
 } from "./event-bus.port";
