@@ -18,9 +18,8 @@ type SpecDef = {
   readonly id: string
   readonly initial: string
   readonly states: Record<string, StateDef>
-  readonly onCreate?: ReadonlyArray<string>
-  readonly onRestore?: ReadonlyArray<string>
-  readonly onDestroy?: ReadonlyArray<string>
+  readonly onStart?: ReadonlyArray<string>
+  readonly onStop?: ReadonlyArray<string>
 }
 
 export class SpecRunnerInternal extends Context.Tag("SpecRunnerInternal")<
@@ -119,21 +118,19 @@ export const SpecRunnerLive = Layer.scoped(
           return yield* Effect.fail(new Error(`Spec "${specId}" not registered`))
         }
 
-        const isRestore = options?.initialState !== undefined
         const initial = options?.initialState ?? spec.initial
-        console.info(`[SpecRunner] spawn: ${specId} instance=${instanceId.slice(0, 8)} state=${initial} ${isRestore ? "(restore)" : "(new)"}`)
+        console.info(`[SpecRunner] spawn: ${specId} instance=${instanceId.slice(0, 8)} state=${initial}`)
 
         const queue = yield* Queue.unbounded<Action>()
         yield* Ref.update(queues, (m) => new Map(m).set(instanceId, queue))
 
-        // Lifecycle: onCreate or onRestore
-        const lifecycleHooks = isRestore ? spec.onRestore : spec.onCreate
-        if (lifecycleHooks) {
+        // Lifecycle: onStart
+        if (spec.onStart) {
           const registry = yield* FeatureRegistry
-          for (const effectName of lifecycleHooks) {
+          for (const effectName of spec.onStart) {
             yield* registry.execute(effectName, { instanceId, specId } as Record<string, unknown>).pipe(
               Effect.catchAll((err) => {
-                console.error(`[SpecRunner] lifecycle ${isRestore ? "onRestore" : "onCreate"} effect "${effectName}" failed:`, err)
+                console.error(`[SpecRunner] onStart effect "${effectName}" failed:`, err)
                 return Effect.void
               }),
             )
@@ -147,15 +144,15 @@ export const SpecRunnerLive = Layer.scoped(
 
     const destroy = (specId: string, instanceId: string) =>
       Effect.gen(function* () {
-        // Lifecycle: onDestroy
+        // Lifecycle: onStop
         const specMap = yield* Ref.get(specs)
         const spec = specMap.get(specId)
-        if (spec?.onDestroy) {
+        if (spec?.onStop) {
           const registry = yield* FeatureRegistry
-          for (const effectName of spec.onDestroy) {
+          for (const effectName of spec.onStop) {
             yield* registry.execute(effectName, { instanceId, specId } as Record<string, unknown>).pipe(
               Effect.catchAll((err) => {
-                console.error(`[SpecRunner] onDestroy effect "${effectName}" failed:`, err)
+                console.error(`[SpecRunner] onStop effect "${effectName}" failed:`, err)
                 return Effect.void
               }),
             )

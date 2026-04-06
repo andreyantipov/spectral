@@ -24,9 +24,8 @@ type BuiltSpec = {
   triggers: string[]
   terminalOn: string[]
   states: Record<string, StateNode>
-  onCreate?: string[]
-  onRestore?: string[]
-  onDestroy?: string[]
+  onStart?: string[]
+  onStop?: string[]
 }
 
 type SpecConfig = {
@@ -58,9 +57,8 @@ class SpecBuilder {
   private _triggers: string[] = []
   private _terminalOn: string[] = []
   private _states: Record<string, StateNode> = {}
-  private _onCreate: string[] | undefined = undefined
-  private _onRestore: string[] | undefined = undefined
-  private _onDestroy: string[] | undefined = undefined
+  private _onStart: string[] | undefined = undefined
+  private _onStop: string[] | undefined = undefined
 
   constructor(
     private readonly _id: string,
@@ -82,18 +80,13 @@ class SpecBuilder {
     return this
   }
 
-  onCreate(effects: string[]): this {
-    this._onCreate = effects
+  onStart(effects: string[]): this {
+    this._onStart = effects
     return this
   }
 
-  onRestore(effects: string[]): this {
-    this._onRestore = effects
-    return this
-  }
-
-  onDestroy(effects: string[]): this {
-    this._onDestroy = effects
+  onStop(effects: string[]): this {
+    this._onStop = effects
     return this
   }
 
@@ -148,9 +141,8 @@ class SpecBuilder {
       terminalOn: [...this._terminalOn],
       states: { ...this._states },
     }
-    if (this._onCreate) result.onCreate = [...this._onCreate]
-    if (this._onRestore) result.onRestore = [...this._onRestore]
-    if (this._onDestroy) result.onDestroy = [...this._onDestroy]
+    if (this._onStart) result.onStart = [...this._onStart]
+    if (this._onStop) result.onStop = [...this._onStop]
     return result
   }
 }
