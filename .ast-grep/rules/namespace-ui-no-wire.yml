@@ -1,0 +1,12 @@
+id: namespace-ui-no-wire
+language: TypeScript
+severity: error
+message: "ui.* packages must not import from wire/feature — ui depends on base (and arch via base)"
+note: "Dependency order: arch → base → feature → ui → wire"
+rule:
+  any:
+    - pattern: import $$$_ from "@ctrl/wire.$$$"
+    - pattern: import $$$_ from "@ctrl/feature.$$$"
+files:
+  - "packages/libs/ui.*/src/**/*.ts"
+  - "packages/libs/ui.*/src/**/*.tsx"
