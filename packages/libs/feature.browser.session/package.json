@@ -8,12 +8,9 @@
 	},
 	"dependencies": {
 		"@ctrl/base.error": "workspace:*",
-		"@ctrl/base.op.browsing": "workspace:*",
 		"@ctrl/base.schema": "workspace:*",
 		"@ctrl/base.tracing": "workspace:*",
 		"@ctrl/base.type": "workspace:*",
-		"@ctrl/base.event": "workspace:*",
-		"@ctrl/arch.contract.event-bus": "workspace:*",
 		"@ctrl/base.model.session": "workspace:*"
 	},
 	"scripts": {

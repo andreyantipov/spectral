@@ -1,6 +1,3 @@
-import { Effects } from "@ctrl/base.op.browsing";
-import { EventBus } from "@ctrl/arch.contract.event-bus";
-import { AUTO_GROUP } from "@ctrl/base.event";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { eq } from "drizzle-orm";
 import { Effect } from "effect";
@@ -9,12 +6,20 @@ import { pagesTable, sessionsTable } from "@ctrl/base.model.session";
 const now = () => new Date().toISOString();
 const genId = () => crypto.randomUUID();
 
+// Effect keys matching WebSession spec (PascalCase)
+const InsertSession = "InsertSession";
+const RemoveSession = "RemoveSession";
+const ActivateSession = "ActivateSession";
+const WriteUrl = "WriteUrl";
+const WriteTitle = "WriteTitle";
+const WriteFavicon = "WriteFavicon";
+const SetError = "SetError";
+
 export const sessionEffects = Effect.gen(function* () {
 	const db = yield* SqliteDrizzle;
-	const bus = yield* EventBus;
 
 	return {
-		[Effects.SESSION_CREATE]: (p: Record<string, unknown>) =>
+		[InsertSession]: (p: Record<string, unknown>) =>
 			Effect.gen(function* () {
 				const id = (p.instanceId as string) ?? genId();
 				const timestamp = now();
@@ -35,19 +40,19 @@ export const sessionEffects = Effect.gen(function* () {
 					pageIndex: 0,
 					loadedAt: timestamp,
 				});
-				// Choreography: tell workspace to add a panel for this session
-				yield* bus.send({
-					type: "command",
-					action: "ws.add-panel",
-					payload: {
-						groupId: AUTO_GROUP,
-						panel: { id, type: "session" as const, entityId: id, title: "New Tab", icon: null },
+				// Return EffectResult — SpecRunner dispatches emit
+				return {
+					data: { id },
+					emit: {
+						"ws.add-panel": {
+							groupId: "__auto__",
+							panel: { id, type: "session" as const, entityId: id, title: "New Tab", icon: null },
+						},
 					},
-					meta: { source: "system" },
-				});
+				};
 			}),
 
-		[Effects.SESSION_ACTIVATE]: (p: Record<string, unknown>) =>
+		[ActivateSession]: (p: Record<string, unknown>) =>
 			Effect.gen(function* () {
 				const id = p.instanceId as string;
 				// Set this session active, deactivate others
@@ -56,30 +61,28 @@ export const sessionEffects = Effect.gen(function* () {
 					.update(sessionsTable)
 					.set({ isActive: true, updatedAt: now() })
 					.where(eq(sessionsTable.id, id));
-				// Choreography: tell workspace to activate panel
-				yield* bus.send({
-					type: "command",
-					action: "ws.activate-panel",
-					payload: { panelId: id },
-					meta: { source: "system" },
-				});
+				return {
+					emit: {
+						"ws.activate-panel": { panelId: id },
+					},
+				};
 			}),
 
-		[Effects.SESSION_CLOSE]: (p: Record<string, unknown>) =>
+		[RemoveSession]: (p: Record<string, unknown>) =>
 			Effect.gen(function* () {
 				const id = p.instanceId as string;
 				yield* db.delete(pagesTable).where(eq(pagesTable.sessionId, id));
 				yield* db.delete(sessionsTable).where(eq(sessionsTable.id, id));
-				// Choreography: tell workspace to remove panel
-				yield* bus.send({
-					type: "command",
-					action: "ws.close-panel",
-					payload: { panelId: id },
-					meta: { source: "system" },
-				});
+				const remaining = yield* db.select().from(sessionsTable);
+				return {
+					data: { id, wasLast: remaining.length === 0 },
+					emit: {
+						"ws.close-panel": { panelId: id },
+					},
+				};
 			}),
 
-		[Effects.SESSION_UPDATE_URL]: (p: Record<string, unknown>) =>
+		[WriteUrl]: (p: Record<string, unknown>) =>
 			Effect.gen(function* () {
 				const sessionId = p.instanceId as string;
 				const url = p.url as string;
@@ -104,7 +107,7 @@ export const sessionEffects = Effect.gen(function* () {
 					.where(eq(sessionsTable.id, sessionId));
 			}),
 
-		[Effects.SESSION_UPDATE_TITLE]: (p: Record<string, unknown>) =>
+		[WriteTitle]: (p: Record<string, unknown>) =>
 			Effect.gen(function* () {
 				const sessionId = p.instanceId as string;
 				const title = p.title as string;
@@ -120,17 +123,14 @@ export const sessionEffects = Effect.gen(function* () {
 						.set({ updatedAt: now() })
 						.where(eq(sessionsTable.id, sessionId));
 				}
-				// Choreography: update panel title in workspace layout
-				yield* bus.send({
-					type: "command",
-					action: "ws.update-tab-meta",
-					payload: { panelId: sessionId, title },
-					meta: { source: "system" },
-				});
+				return {
+					emit: {
+						"ws.update-tab-meta": { panelId: sessionId, title },
+					},
+				};
 			}),
 
-		[Effects.SESSION_UPDATE_FAVICON]: (_p: Record<string, unknown>) => Effect.void,
-
-		[Effects.SESSION_SET_ERROR]: (_p: Record<string, unknown>) => Effect.void,
+		[WriteFavicon]: (_p: Record<string, unknown>) => Effect.void,
+		[SetError]: (_p: Record<string, unknown>) => Effect.void,
 	};
 });
