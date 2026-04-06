@@ -18,6 +18,9 @@ type SpecDef = {
   readonly id: string
   readonly initial: string
   readonly states: Record<string, StateDef>
+  readonly onCreate?: ReadonlyArray<string>
+  readonly onRestore?: ReadonlyArray<string>
+  readonly onDestroy?: ReadonlyArray<string>
 }
 
 export class SpecRunnerInternal extends Context.Tag("SpecRunnerInternal")<
@@ -115,19 +118,50 @@ export const SpecRunnerLive = Layer.scoped(
           console.error(`[SpecRunner] spawn failed: spec "${specId}" not registered`)
           return yield* Effect.fail(new Error(`Spec "${specId}" not registered`))
         }
-        console.info(`[SpecRunner] spawn: ${specId} instance=${instanceId.slice(0, 8)} initialState=${options?.initialState ?? spec.initial}`)
 
+        const isRestore = options?.initialState !== undefined
         const initial = options?.initialState ?? spec.initial
+        console.info(`[SpecRunner] spawn: ${specId} instance=${instanceId.slice(0, 8)} state=${initial} ${isRestore ? "(restore)" : "(new)"}`)
+
         const queue = yield* Queue.unbounded<Action>()
         yield* Ref.update(queues, (m) => new Map(m).set(instanceId, queue))
+
+        // Lifecycle: onCreate or onRestore
+        const lifecycleHooks = isRestore ? spec.onRestore : spec.onCreate
+        if (lifecycleHooks) {
+          const registry = yield* FeatureRegistry
+          for (const effectName of lifecycleHooks) {
+            yield* registry.execute(effectName, { instanceId, specId } as Record<string, unknown>).pipe(
+              Effect.catchAll((err) => {
+                console.error(`[SpecRunner] lifecycle ${isRestore ? "onRestore" : "onCreate"} effect "${effectName}" failed:`, err)
+                return Effect.void
+              }),
+            )
+          }
+        }
 
         yield* runInstance(spec, instanceId, queue, initial).pipe(
           FiberMap.run(fibers, instanceId),
         )
       })
 
-    const destroy = (_specId: string, instanceId: string) =>
+    const destroy = (specId: string, instanceId: string) =>
       Effect.gen(function* () {
+        // Lifecycle: onDestroy
+        const specMap = yield* Ref.get(specs)
+        const spec = specMap.get(specId)
+        if (spec?.onDestroy) {
+          const registry = yield* FeatureRegistry
+          for (const effectName of spec.onDestroy) {
+            yield* registry.execute(effectName, { instanceId, specId } as Record<string, unknown>).pipe(
+              Effect.catchAll((err) => {
+                console.error(`[SpecRunner] onDestroy effect "${effectName}" failed:`, err)
+                return Effect.void
+              }),
+            )
+          }
+        }
+
         yield* FiberMap.remove(fibers, instanceId)
         const queueMap = yield* Ref.get(queues)
         const queue = queueMap.get(instanceId)

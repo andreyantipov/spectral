@@ -20,6 +20,9 @@ export const FsmSpecSchema = Schema.Struct({
   triggers: Schema.Array(Schema.String),
   terminalOn: Schema.Array(Schema.String),
   states: Schema.Record({ key: Schema.String, value: StateNodeSchema }),
+  onCreate: Schema.optional(Schema.Array(Schema.String)),
+  onRestore: Schema.optional(Schema.Array(Schema.String)),
+  onDestroy: Schema.optional(Schema.Array(Schema.String)),
 })
 
 export type FsmSpec = typeof FsmSpecSchema.Type

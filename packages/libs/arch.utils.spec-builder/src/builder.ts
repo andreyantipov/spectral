@@ -24,6 +24,9 @@ type BuiltSpec = {
   triggers: string[]
   terminalOn: string[]
   states: Record<string, StateNode>
+  onCreate?: string[]
+  onRestore?: string[]
+  onDestroy?: string[]
 }
 
 type SpecConfig = {
@@ -55,6 +58,9 @@ class SpecBuilder {
   private _triggers: string[] = []
   private _terminalOn: string[] = []
   private _states: Record<string, StateNode> = {}
+  private _onCreate: string[] | undefined = undefined
+  private _onRestore: string[] | undefined = undefined
+  private _onDestroy: string[] | undefined = undefined
 
   constructor(
     private readonly _id: string,
@@ -73,6 +79,21 @@ class SpecBuilder {
 
   terminalOn(...taggedClasses: TaggedClass[]): this {
     this._terminalOn = taggedClasses.map((t) => t._tag)
+    return this
+  }
+
+  onCreate(effects: string[]): this {
+    this._onCreate = effects
+    return this
+  }
+
+  onRestore(effects: string[]): this {
+    this._onRestore = effects
+    return this
+  }
+
+  onDestroy(effects: string[]): this {
+    this._onDestroy = effects
     return this
   }
 
@@ -107,7 +128,17 @@ class SpecBuilder {
       }
     }
 
-    return {
+    // Lifecycle validation
+    if (this._config.mode === "instance") {
+      if (this._triggers.length === 0) {
+        throw new Error(`SpecBuilder: instance spec "${this._id}" must have at least one trigger`)
+      }
+      if (this._terminalOn.length === 0) {
+        throw new Error(`SpecBuilder: instance spec "${this._id}" must have at least one terminalOn`)
+      }
+    }
+
+    const result: BuiltSpec = {
       id: this._id,
       version: this._config.version,
       domain: this._config.domain,
@@ -117,6 +148,10 @@ class SpecBuilder {
       terminalOn: [...this._terminalOn],
       states: { ...this._states },
     }
+    if (this._onCreate) result.onCreate = [...this._onCreate]
+    if (this._onRestore) result.onRestore = [...this._onRestore]
+    if (this._onDestroy) result.onDestroy = [...this._onDestroy]
+    return result
   }
 }
 
