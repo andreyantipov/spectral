@@ -6,5 +6,8 @@
 	"scripts": {
 		"develop": "dagger develop",
 		"validate": "dagger develop && dagger functions"
+	},
+	"dependencies": {
+		"effect": "^3.21.0"
 	}
 }
