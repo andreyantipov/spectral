@@ -1,15 +1,17 @@
+import { EventBusLive } from "@ctrl/arch.impl.event-bus";
 import { FeatureRegistryLive } from "@ctrl/arch.impl.feature-registry";
 import { SpecRegistryLive } from "@ctrl/arch.impl.spec-registry";
 import { SpecRunnerLive } from "@ctrl/arch.impl.spec-runner";
-import { EventBusLive } from "@ctrl/arch.impl.event-bus";
 import { Layer } from "effect";
 
 /**
- * Test layer without EventBus — for pure FSM testing with mock effects.
- * Provides: SpecRunnerInternal, FeatureRegistry
+ * Test layer for FSM testing with mock effects.
+ * SpecRunner requires EventBus (for emit dispatch + transition events).
+ * Provides: SpecRunnerInternal, FeatureRegistry, EventBus
  */
-const RunnerWithRegistryLayer = SpecRunnerLive.pipe(Layer.provide(FeatureRegistryLive));
-export const TestSpecEngineLive = Layer.mergeAll(RunnerWithRegistryLayer, FeatureRegistryLive);
+const TestInfraLayer = Layer.mergeAll(EventBusLive, FeatureRegistryLive);
+const RunnerWithRegistryLayer = SpecRunnerLive.pipe(Layer.provide(TestInfraLayer));
+export const TestSpecEngineLive = Layer.mergeAll(RunnerWithRegistryLayer, TestInfraLayer);
 
 /**
  * Test layer with EventBus — for testing SpecRegistry auto-routing.
