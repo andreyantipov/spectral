@@ -70,6 +70,22 @@ bun run lint:dead-code
 
 Config: `knip.config.ts` — workspace-aware, handles Electrobun entry points, storybook, Dagger CI.
 
+## Dependency Consistency
+
+`sherif` checks all package.json files for version drift, empty deps, and ordering issues.
+
+```bash
+# Run dependency consistency check
+bun run lint:deps
+
+# CI enforces this — PR will fail if dependency versions drift
+```
+
+**When to run:**
+- After adding/changing dependencies in any package
+- After creating new packages
+- Before creating a PR
+
 ## CLI Tools (nix)
 
 Rust-based CLI tools available in `nix develop`:

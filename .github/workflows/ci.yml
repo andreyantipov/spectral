@@ -56,6 +56,8 @@ jobs:
         run: bun install --ignore-scripts
       - name: Check for dead code
         run: bun run lint:dead-code
+      - name: Check dependency consistency
+        run: bun run lint:deps
 
   docs:
     name: Docs

@@ -30,6 +30,7 @@
             pkgs.fd
             pkgs.sd
             pkgs.delta
+            pkgs.nodePackages.typescript-language-server
           ];
         };
       }

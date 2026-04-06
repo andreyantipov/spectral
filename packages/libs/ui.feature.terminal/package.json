@@ -9,6 +9,5 @@
 	"scripts": {
 		"check": "tsgo --noEmit",
 		"test": "vitest run"
-	},
-	"dependencies": {}
+	}
 }
