@@ -1,4 +1,4 @@
-import { Spec } from "@ctrl/arch.utils.spec-builder";
+import { Spec } from "@ctrl/arch.util.spec-builder";
 import { Schema } from "effect";
 
 const WebSession = Spec("web-session", { mode: "instance", domain: "session", version: 1 })

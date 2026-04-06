@@ -25,7 +25,7 @@
 		"@ctrl/arch.impl.event-bus": "workspace:*",
 		"@ctrl/arch.impl.ipc-bridge": "workspace:*",
 		"@ctrl/arch.util.otel": "workspace:*",
-		"@ctrl/arch.middleware.mcp": "workspace:*",
+		"@ctrl/arch.util.mcp": "workspace:*",
 		"@ctrl/feature.workspace.layout": "workspace:*",
 		"@ctrl/feature.system.settings": "workspace:*",
 		"@ctrl/feature.browser.session": "workspace:*",

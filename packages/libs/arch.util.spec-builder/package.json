@@ -1,5 +1,5 @@
 {
-	"name": "@ctrl/arch.utils.spec-builder",
+	"name": "@ctrl/arch.util.spec-builder",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",

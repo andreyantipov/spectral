@@ -8,7 +8,7 @@
 	},
 	"dependencies": {
 		"effect": "^3.19.0",
-		"@ctrl/arch.utils.spec-builder": "workspace:*"
+		"@ctrl/arch.util.spec-builder": "workspace:*"
 	},
 	"devDependencies": {
 		"@ctrl/arch.contract.spec": "workspace:*"

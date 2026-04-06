@@ -19,7 +19,7 @@ import { LayoutRepositoryLive, makeDbClient, SessionRepositoryLive } from "@ctrl
 import { EventBusLive } from "@ctrl/arch.impl.event-bus";
 import { type ElectrobunIpcHandle, IpcBridgeLive } from "@ctrl/arch.impl.ipc-bridge";
 import { StateSyncLive } from "@ctrl/arch.impl.state-sync";
-import { McpServerLive } from "@ctrl/arch.middleware.mcp";
+import { McpServerLive } from "@ctrl/arch.util.mcp";
 import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/arch.util.otel/node";
 import { historyEffects } from "@ctrl/feature.browser.history";
 import { navigationEffects } from "@ctrl/feature.browser.navigation";
