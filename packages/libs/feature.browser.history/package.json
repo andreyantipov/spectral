@@ -7,7 +7,6 @@
 		".": "./src/index.ts"
 	},
 	"dependencies": {
-		"@ctrl/base.op.browsing": "workspace:*",
 		"@ctrl/base.model.history": "workspace:*"
 	},
 	"scripts": {

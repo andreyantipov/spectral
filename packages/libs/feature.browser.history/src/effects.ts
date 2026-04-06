@@ -1,13 +1,15 @@
-import { Effects } from "@ctrl/base.op.browsing";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { Effect } from "effect";
 import { historyTable } from "@ctrl/base.model.history";
+
+// Effect key matching WebSession spec (PascalCase)
+const RecordHistory = "RecordHistory";
 
 export const historyEffects = Effect.gen(function* () {
 	const db = yield* SqliteDrizzle;
 
 	return {
-		[Effects.HISTORY_RECORD]: (p: Record<string, unknown>) =>
+		[RecordHistory]: (p: Record<string, unknown>) =>
 			Effect.gen(function* () {
 				const url = p.url as string;
 				const title = (p.title as string) ?? null;
