@@ -5,7 +5,15 @@ import { FeatureRegistryLive } from "@ctrl/arch.impl.feature-registry";
 import { SpecRegistryLive } from "@ctrl/arch.impl.spec-registry";
 import { SpecRunnerLive, SpecRunnerPublicLive } from "@ctrl/arch.impl.spec-runner";
 import { WebSessionSpec } from "@ctrl/base.spec.web-session";
-import { AppEvents, EventBus, TerminalEvents } from "@ctrl/core.contract.event-bus";
+import {
+	AppEvents,
+	EventBus,
+	SettingsEvents,
+	SystemEvents,
+	TerminalEvents,
+	UIEvents,
+	WorkspaceEvents,
+} from "@ctrl/core.contract.event-bus";
 import { StateSync } from "@ctrl/core.contract.state-sync";
 import { LayoutRepositoryLive, makeDbClient, SessionRepositoryLive } from "@ctrl/core.impl.db";
 import { EventBusLive } from "@ctrl/core.impl.event-bus";
@@ -13,22 +21,26 @@ import { type ElectrobunIpcHandle, IpcBridgeLive } from "@ctrl/core.impl.ipc-bri
 import { StateSyncLive } from "@ctrl/core.impl.state-sync";
 import { McpServerLive } from "@ctrl/core.middleware.mcp";
 import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/core.middleware.otel/node";
-import { LayoutFeatureLive } from "@ctrl/feature.workspace.layout";
-import { SessionFeature, SessionFeatureLive } from "@ctrl/feature.browser.session";
-import { SettingsFeatureLive } from "@ctrl/feature.system.settings";
-import {
-	SettingsHandlers,
-	SystemHandlers,
-	SystemServiceLive,
-	UIHandlers,
-} from "@ctrl/domain.service.system";
-import { WorkspaceHandlers, WorkspaceServiceLive } from "@ctrl/domain.service.workspace";
 import { historyEffects } from "@ctrl/feature.browser.history";
 import { navigationEffects } from "@ctrl/feature.browser.navigation";
-import { sessionEffects } from "@ctrl/feature.browser.session";
+import { SessionFeature, SessionFeatureLive, sessionEffects } from "@ctrl/feature.browser.session";
+import { SettingsFeature, SettingsFeatureLive } from "@ctrl/feature.system.settings";
+import {
+	findAndActivatePanel,
+	findAndMovePanel,
+	findAndRemovePanel,
+	findAndReorderPanel,
+	findAndResize,
+	findAndSplitPanel,
+	findAndUpdateTabMeta,
+	findFirstGroupId,
+	insertPanelIntoGroup,
+	LayoutFeature,
+	LayoutFeatureLive,
+} from "@ctrl/feature.workspace.layout";
 import { EventJournal, EventLog } from "@effect/experimental";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
-import { Effect, Layer, Stream } from "effect";
+import { Cause, Effect, Layer, Stream } from "effect";
 
 // -- Storage: Drizzle ORM + repositories --------------------------------------
 
@@ -43,6 +55,284 @@ const SessionFeatureLayer = SessionFeatureLive.pipe(Layer.provide(SessionReposit
 const LayoutFeatureLayer = LayoutFeatureLive.pipe(Layer.provide(LayoutRepositoryLayer));
 
 // -- EventLog: typed handlers + in-memory journal -----------------------------
+
+// -- Workspace handlers (inlined from domain.service.workspace) ---------------
+
+const WORKSPACE_SERVICE = "WorkspaceService" as const;
+
+const WorkspaceHandlers = EventLog.group(WorkspaceEvents, (h) =>
+	h
+		.handle("ws.update-layout", ({ payload }) =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				yield* layout.updateLayout(payload.layout);
+			}),
+		)
+		.handle("ws.split-panel", ({ payload }) =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				const current = yield* layout.getLayout();
+				const updated = findAndSplitPanel(
+					current,
+					payload.panelId,
+					payload.direction,
+					payload.newPanel,
+				);
+				yield* layout.updateLayout({ version: 2, root: updated });
+			}),
+		)
+		.handle("ws.move-panel", ({ payload }) =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				const current = yield* layout.getLayout();
+				const { node: stripped, panel } = findAndMovePanel(current, payload.panelId);
+				if (!panel || !stripped) return;
+				const updated = insertPanelIntoGroup(stripped, payload.targetGroupId, panel);
+				yield* layout.updateLayout({ version: 2, root: updated });
+			}),
+		)
+		.handle("ws.close-panel", ({ payload }) =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				const current = yield* layout.getLayout();
+				const { node } = findAndRemovePanel(current, payload.panelId);
+				if (!node) return;
+				yield* layout.updateLayout({ version: 2, root: node });
+			}),
+		)
+		.handle("ws.resize", ({ payload }) =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				const current = yield* layout.getLayout();
+				const updated = findAndResize(current, payload.splitId, payload.sizes);
+				yield* layout.updateLayout({ version: 2, root: updated });
+			}),
+		)
+		.handle("ws.activate-panel", ({ payload }) =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				const current = yield* layout.getLayout();
+				const updated = findAndActivatePanel(current, payload.panelId);
+				yield* layout.updateLayout({ version: 2, root: updated });
+			}),
+		)
+		.handle("ws.reorder-panel", ({ payload }) =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				const current = yield* layout.getLayout();
+				const updated = findAndReorderPanel(
+					current,
+					payload.groupId,
+					payload.panelId,
+					payload.index,
+				);
+				yield* layout.updateLayout({ version: 2, root: updated });
+			}),
+		)
+		.handle("ws.add-panel", ({ payload }) =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				const current = yield* layout.getLayout();
+				let groupId = payload.groupId;
+				if (groupId === "__auto__") {
+					groupId = findFirstGroupId(current) ?? current.id;
+				}
+				const updated = insertPanelIntoGroup(current, groupId, payload.panel);
+				yield* layout.updateLayout({ version: 2, root: updated });
+			}),
+		)
+		.handle("ws.update-tab-meta", ({ payload }) =>
+			Effect.gen(function* () {
+				const layout = yield* LayoutFeature;
+				const current = yield* layout.getLayout();
+				const updated = findAndUpdateTabMeta(current, payload.panelId, {
+					title: payload.title,
+					icon: payload.icon,
+				});
+				yield* layout.updateLayout({ version: 2, root: updated });
+			}),
+		),
+);
+
+const WorkspaceServiceLive = Layer.scopedDiscard(
+	Effect.gen(function* () {
+		const bus = yield* EventBus;
+		const client = yield* EventLog.makeClient(EventLog.schema(WorkspaceEvents));
+
+		const sync = yield* StateSync;
+		const layout = yield* LayoutFeature;
+		const sessions = yield* SessionFeature;
+		yield* sync.register("workspace", () =>
+			Effect.gen(function* () {
+				let root = yield* layout.getLayout();
+				if (root && root.type === "group" && root.panels.length === 0) {
+					const allSessions = yield* sessions.getAll();
+					if (allSessions.length > 0) {
+						const panels = allSessions.map((s) => ({
+							id: s.id,
+							type: "session" as const,
+							entityId: s.id,
+							title: "New Tab",
+							icon: null,
+						}));
+						const active = allSessions.find((s) => s.isActive);
+						root = { ...root, panels, activePanel: active?.id ?? allSessions[0]?.id ?? "" };
+						yield* layout.updateLayout({ version: 2, root });
+					}
+				}
+				return { root };
+			}).pipe(Effect.catchAll(() => Effect.succeed({ root: null }))),
+		);
+
+		yield* bus.commands.pipe(
+			Stream.filter((cmd) => cmd.action.startsWith("ws.")),
+			Stream.runForEach((cmd) => {
+				const action = cmd.action;
+				const payload = (cmd.payload ?? {}) as Record<string, unknown>;
+
+				return Effect.gen(function* () {
+					yield* Effect.logDebug(`[${WORKSPACE_SERVICE}] received: ${action}`);
+					yield* (client as (tag: string, p: unknown) => Effect.Effect<unknown, unknown>)(
+						action,
+						payload,
+					);
+				}).pipe(
+					Effect.catchAllCause((cause) => {
+						if (Cause.isFailure(cause)) {
+							return Effect.logError(`[${WORKSPACE_SERVICE}] ${action}: ${Cause.pretty(cause)}`);
+						}
+						return Effect.void;
+					}),
+				);
+			}),
+			Effect.forkScoped,
+		);
+
+		yield* Effect.logInfo(`${WORKSPACE_SERVICE} started`);
+	}),
+);
+
+// -- System handlers (inlined from domain.service.system) ---------------------
+
+const SYSTEM_SERVICE = "SystemService" as const;
+
+const SystemHandlers = EventLog.group(SystemEvents, (h) =>
+	h
+		.handle("diag.ping", () =>
+			Effect.gen(function* () {
+				const bus = yield* EventBus;
+				yield* bus.publish({
+					type: "event",
+					name: SystemEvents.events["diag.pong"].tag,
+					payload: { message: "EventBus alive" },
+					timestamp: Date.now(),
+				});
+			}),
+		)
+		.handle("diag.pong", () => Effect.void)
+		.handle("diag.eval-js", ({ payload }) =>
+			Effect.gen(function* () {
+				const bus = yield* EventBus;
+				yield* bus.publish({
+					type: "event",
+					name: "diag.eval-js-request",
+					payload,
+					timestamp: Date.now(),
+				});
+			}),
+		)
+		.handle("diag.eval-js-result", ({ payload }) =>
+			Effect.gen(function* () {
+				const bus = yield* EventBus;
+				yield* bus.publish({
+					type: "event",
+					name: "diag.eval-js-result",
+					payload,
+					timestamp: Date.now(),
+				});
+			}),
+		)
+		.handle("diag.screenshot", () =>
+			Effect.gen(function* () {
+				const bus = yield* EventBus;
+				yield* bus.publish({
+					type: "event",
+					name: "diag.screenshot-request",
+					payload: {},
+					timestamp: Date.now(),
+				});
+			}),
+		)
+		.handle("diag.screenshot-result", ({ payload }) =>
+			Effect.gen(function* () {
+				const bus = yield* EventBus;
+				yield* bus.publish({
+					type: "event",
+					name: "diag.screenshot-result",
+					payload,
+					timestamp: Date.now(),
+				});
+			}),
+		),
+);
+
+const UIHandlers = EventLog.group(UIEvents, (h) =>
+	h.handle("ui.toggle-omnibox", () => Effect.void).handle("ui.toggle-sidebar", () => Effect.void),
+);
+
+const SettingsHandlers = EventLog.group(SettingsEvents, (h) =>
+	h.handle("settings.shortcuts", () =>
+		Effect.gen(function* () {
+			const feature = yield* SettingsFeature;
+			return yield* feature.getShortcuts();
+		}),
+	),
+);
+
+const SystemServiceLive = Layer.scopedDiscard(
+	Effect.gen(function* () {
+		const bus = yield* EventBus;
+		const client = yield* EventLog.makeClient(
+			EventLog.schema(SystemEvents, UIEvents, SettingsEvents),
+		);
+
+		const sync = yield* StateSync;
+		const settings = yield* SettingsFeature;
+		yield* sync.register("settings", () =>
+			settings.getShortcuts().pipe(Effect.map((shortcuts) => ({ shortcuts }))),
+		);
+
+		yield* bus.commands.pipe(
+			Stream.filter(
+				(cmd) =>
+					cmd.action.startsWith("diag.") ||
+					cmd.action.startsWith("ui.") ||
+					cmd.action.startsWith("settings."),
+			),
+			Stream.runForEach((cmd) => {
+				const action = cmd.action;
+				const payload = (cmd.payload ?? {}) as Record<string, unknown>;
+
+				return Effect.gen(function* () {
+					yield* (client as (tag: string, p: unknown) => Effect.Effect<unknown, unknown>)(
+						action,
+						payload,
+					);
+				}).pipe(
+					Effect.catchAllCause((cause) => {
+						if (Cause.isFailure(cause)) {
+							return Effect.logError(`[${SYSTEM_SERVICE}] ${action}: ${Cause.pretty(cause)}`);
+						}
+						return Effect.void;
+					}),
+				);
+			}),
+			Effect.forkScoped,
+		);
+
+		yield* Effect.logInfo(`${SYSTEM_SERVICE} started`);
+	}),
+);
 
 // Stub terminal handlers — real implementation will be wired via domain.service.terminal
 const TerminalHandlers = EventLog.group(TerminalEvents, (h) =>
@@ -266,19 +556,6 @@ export const createMainProcess = (handle: ElectrobunIpcHandle, dbPath: string) =
 };
 
 // -- Terminal Service (activate after UI rework PR merges) --------------------
-// Replace the stub TerminalHandlers above with:
-//
-//   import { TerminalAdapterLive } from "@ctrl/core.impl.terminal";
-//   import { TerminalFeatureLive } from "@ctrl/feature.terminal.pty";
-//   import { TerminalHandlers as RealTerminalHandlers } from "@ctrl/domain.service.terminal";
-//
-//   const TerminalFeatureLayer = TerminalFeatureLive.pipe(
-//     Layer.provide(TerminalAdapterLive),
-//   );
-//
-//   // In HandlersLive, replace stub with:
-//   RealTerminalHandlers.pipe(Layer.provide(TerminalFeatureLayer)),
-//
-//   // Add to MUTATION_ACTIONS in browsing.handlers.ts:
-//   TerminalEvents.events["term.create"].tag,
-//   TerminalEvents.events["term.close"].tag,
+// Replace the stub TerminalHandlers above with real handlers using:
+//   TerminalFeatureLive from @ctrl/feature.terminal.pty
+//   TerminalAdapterLive from @ctrl/core.impl.terminal

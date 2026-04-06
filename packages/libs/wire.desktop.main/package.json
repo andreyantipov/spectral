@@ -25,11 +25,9 @@
 		"@ctrl/core.impl.event-bus": "workspace:*",
 		"@ctrl/core.impl.ipc-bridge": "workspace:*",
 		"@ctrl/core.middleware.otel": "workspace:*",
-		"@ctrl/feature.workspace.layout": "workspace:*",
-				"@ctrl/feature.system.settings": "workspace:*",
 		"@ctrl/core.middleware.mcp": "workspace:*",
-		"@ctrl/domain.service.system": "workspace:*",
-		"@ctrl/domain.service.workspace": "workspace:*",
+		"@ctrl/feature.workspace.layout": "workspace:*",
+		"@ctrl/feature.system.settings": "workspace:*",
 		"@ctrl/feature.browser.session": "workspace:*",
 		"@ctrl/feature.browser.navigation": "workspace:*",
 		"@ctrl/feature.browser.history": "workspace:*"
