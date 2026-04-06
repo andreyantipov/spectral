@@ -417,7 +417,7 @@ const BrowserDomainLive = Layer.scopedDiscard(
 		// 4. Restore existing sessions from DB as FSM instances + workspace panels
 		const sessions = yield* sessionFeature.getAll().pipe(Effect.catchAll(() => Effect.succeed([])));
 		for (const session of sessions) {
-			yield* runner.spawn("web-session", session.id, { initialState: "browsing" });
+			yield* runner.spawn("web-session", session.id, { initialState: "Browsing" });
 			// Restore workspace panel so webview renders
 			yield* bus.send({
 				type: "command",
