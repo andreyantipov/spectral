@@ -56,6 +56,7 @@ const runInstance = (
         }
 
         // Journal write — state transition + effects run atomically inside
+        const previous = current
         const payload = new TextEncoder().encode(JSON.stringify(action))
         yield* journal.write({
           event: action._tag,
@@ -71,6 +72,8 @@ const runInstance = (
               }
             }),
         })
+
+        console.info(`[SpecRunner] transition: ${previous} → ${transition.target} (${action._tag}) instance=${instanceId.slice(0, 8)}`)
       }),
     )
   })
@@ -89,7 +92,11 @@ export const SpecRunnerLive = Layer.scoped(
       Effect.gen(function* () {
         const specMap = yield* Ref.get(specs)
         const spec = specMap.get(specId)
-        if (!spec) return yield* Effect.fail(new Error(`Spec "${specId}" not registered`))
+        if (!spec) {
+          console.error(`[SpecRunner] spawn failed: spec "${specId}" not registered`)
+          return yield* Effect.fail(new Error(`Spec "${specId}" not registered`))
+        }
+        console.info(`[SpecRunner] spawn: ${specId} instance=${instanceId.slice(0, 8)} initialState=${options?.initialState ?? spec.initial}`)
 
         const initial = options?.initialState ?? spec.initial
         const queue = yield* Queue.unbounded<Action>()
@@ -119,7 +126,11 @@ export const SpecRunnerLive = Layer.scoped(
       Effect.gen(function* () {
         const queueMap = yield* Ref.get(queues)
         const queue = queueMap.get(instanceId)
-        if (!queue) return // silently drop if instance doesn't exist
+        if (!queue) {
+          console.info(`[SpecRunner] dispatch dropped: no instance ${instanceId.slice(0, 8)} for ${action._tag}`)
+          return
+        }
+        console.info(`[SpecRunner] dispatch: ${action._tag} → ${instanceId.slice(0, 8)}`)
         yield* Queue.offer(queue, action)
       })
 

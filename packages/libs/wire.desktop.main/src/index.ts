@@ -2,7 +2,8 @@ import { FeatureRegistry } from "@ctrl/arch.contract.feature-registry";
 import { SpecRegistry } from "@ctrl/arch.contract.spec-registry";
 import { FeatureRegistryLive } from "@ctrl/arch.impl.feature-registry";
 import { SpecRegistryLive } from "@ctrl/arch.impl.spec-registry";
-import { SpecRunnerLive } from "@ctrl/arch.impl.spec-runner";
+import { SpecRunnerLive, SpecRunnerPublicLive } from "@ctrl/arch.impl.spec-runner";
+import { SpecRunner } from "@ctrl/arch.contract.spec-runner";
 import { WebSessionSpec } from "@ctrl/base.spec.web-session";
 import { AppEvents, EventBus, TerminalEvents } from "@ctrl/core.contract.event-bus";
 import { StateSync } from "@ctrl/core.contract.state-sync";
@@ -17,7 +18,7 @@ import { StateSyncLive } from "@ctrl/core.impl.state-sync";
 import { McpServerLive } from "@ctrl/core.middleware.mcp";
 import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/core.middleware.otel/node";
 import { LayoutFeatureLive } from "@ctrl/domain.feature.layout";
-import { SessionFeatureLive } from "@ctrl/domain.feature.session";
+import { SessionFeature, SessionFeatureLive } from "@ctrl/domain.feature.session";
 import { SettingsFeatureLive } from "@ctrl/domain.feature.settings";
 import {
 	SettingsHandlers,
@@ -89,36 +90,79 @@ const EventLogLive = EventLog.layer(AppEvents).pipe(
 // SpecRegistryLive needs: SpecRunnerInternal + EventBus
 // FeatureRegistryLive is standalone
 
-// Step 1: FeatureRegistry (no deps)
-// Step 2: SpecRunner (needs FeatureRegistry + EventJournal from JournalLive)
-// Step 3: SpecRegistry (needs SpecRunnerInternal from SpecRunnerLive + EventBus from SharedLive)
-const SpecEngineLive = SpecRegistryLive.pipe(
+// SpecEngineLive exposes SpecRegistry + FeatureRegistry + SpecRunner (public)
+const SpecEngineLive = Layer.mergeAll(
+	SpecRegistryLive,
+	FeatureRegistryLive,
+	SpecRunnerPublicLive,
+).pipe(
 	Layer.provide(SpecRunnerLive),
 	Layer.provide(FeatureRegistryLive),
 	Layer.provide(JournalLive),
-	// EventBus provided by SharedLive in createMainProcess
 );
 
-// Register browser features and the WebSession spec via FeatureRegistry + SpecRegistry.
-// sessionEffects and historyEffects need SqliteDrizzle (provided via DrizzleLive).
-// navigationEffects is Effect.succeed (no deps).
+// BrowserDomainLive:
+// 1. Registers features (effects) in FeatureRegistry
+// 2. Registers WebSessionSpec in SpecRegistry (auto-routing kicks in)
+// 3. Registers browsing snapshot provider in StateSync (UI reads this)
+// 4. Restores existing DB sessions as FSM instances
 const BrowserDomainLive = Layer.scopedDiscard(
 	Effect.gen(function* () {
 		const featureReg = yield* FeatureRegistry;
 		const specReg = yield* SpecRegistry;
+		const sync = yield* StateSync;
+		const sessionFeature = yield* SessionFeature;
+		const runner = yield* SpecRunner;
+		const bus = yield* EventBus;
 
-		// Register all feature effect handlers
+		// 1. Register feature effects
 		yield* featureReg.registerAll(yield* sessionEffects);
 		yield* featureReg.registerAll(yield* navigationEffects);
 		yield* featureReg.registerAll(yield* historyEffects);
 
-		// Register spec — auto-routing kicks in via SpecRegistry EventBus subscription
+		// 2. Register browsing snapshot provider for UI state-sync
+		yield* sync.register("browsing", () =>
+			sessionFeature.getAll().pipe(
+				Effect.map((sessions) => ({ sessions, bookmarks: [], history: [] })),
+				Effect.catchAll(() => Effect.succeed({ sessions: [], bookmarks: [], history: [] })),
+			),
+		);
+
+		// 3. Register spec — auto-routing from EventBus
 		yield* specReg.register(WebSessionSpec);
+
+		// 4. Restore existing sessions from DB as FSM instances + workspace panels
+		const sessions = yield* sessionFeature.getAll().pipe(
+			Effect.catchAll(() => Effect.succeed([])),
+		);
+		for (const session of sessions) {
+			yield* runner.spawn("web-session", session.id, { initialState: "browsing" });
+			// Restore workspace panel so webview renders
+			yield* bus.send({
+				type: "command",
+				action: "ws.add-panel",
+				payload: { panelId: session.id, groupId: "__auto__" },
+				meta: { source: "system" },
+			});
+		}
+		// Activate first session
+		if (sessions.length > 0) {
+			const active = sessions.find((s) => s.isActive) ?? sessions[0];
+			yield* bus.send({
+				type: "command",
+				action: "ws.activate-panel",
+				payload: { panelId: active.id },
+				meta: { source: "system" },
+			});
+		}
+
+		// Choreography: session.create effect dispatches ws.add-panel directly.
+		// No bridge needed here — features handle outbound dispatch.
 	}),
 ).pipe(
 	Layer.provide(SpecEngineLive),
 	Layer.provide(DrizzleLive),
-	// EventBus provided by SharedLive in createMainProcess
+	Layer.provide(SessionFeatureLayer),
 );
 
 // -- Services -----------------------------------------------------------------

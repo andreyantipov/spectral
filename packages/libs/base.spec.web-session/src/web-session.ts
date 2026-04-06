@@ -12,6 +12,9 @@ export const WebSessionSpec = Spec.make("web-session", {
   .triggers(CreateSession)
   .terminalOn(CloseSession)
   .state("idle", (s) => s
+    .on(CreateSession, "browsing", {
+      effects: [Effects.SESSION_CREATE],
+    })
     .on(Navigate, "loading", {
       guards: [Effects.URL_IS_VALID],
       effects: [Effects.NAV_START],

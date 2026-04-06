@@ -43,6 +43,10 @@ export const SpecRegistryLive = Layer.scoped(
 
     const describe = (): Effect.Effect<readonly SpecEntry[]> => Ref.get(specs)
 
+    console.info("[SpecRegistry] started")
+    const registeredSpecs = yield* Ref.get(specs)
+    console.info(`[SpecRegistry] specs registered: ${registeredSpecs.length}`)
+
     // Subscribe to EventBus commands and route to SpecRunner instances
     yield* bus.commands.pipe(
       Stream.runForEach((cmd) =>
@@ -50,6 +54,7 @@ export const SpecRegistryLive = Layer.scoped(
           const actionTag = cmd.action
           const payload = (cmd.payload ?? {}) as Record<string, unknown>
           const action = { _tag: actionTag, ...payload }
+          console.info(`[SpecRegistry] cmd: ${actionTag}`)
 
           // 1. Trigger match: spawn new instance
           const triggers = yield* Ref.get(triggerMap)

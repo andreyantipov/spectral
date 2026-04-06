@@ -1,4 +1,5 @@
 import { Effects } from "@ctrl/base.op.browsing"
+import { EventBus } from "@ctrl/core.contract.event-bus"
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite"
 import { eq } from "drizzle-orm"
 import { Effect } from "effect"
@@ -9,6 +10,7 @@ const genId = () => crypto.randomUUID()
 
 export const sessionEffects = Effect.gen(function* () {
 	const db = yield* SqliteDrizzle
+	const bus = yield* EventBus
 
 	return {
 		[Effects.SESSION_CREATE]: (p: Record<string, unknown>) =>
@@ -31,6 +33,13 @@ export const sessionEffects = Effect.gen(function* () {
 					title: null,
 					pageIndex: 0,
 					loadedAt: timestamp,
+				})
+				// Choreography: tell workspace to add a panel for this session
+				yield* bus.send({
+					type: "command",
+					action: "ws.add-panel",
+					payload: { panelId: id, groupId: "__auto__" },
+					meta: { source: "system" },
 				})
 			}),
 

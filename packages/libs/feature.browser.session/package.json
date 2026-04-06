@@ -5,7 +5,8 @@
 	"type": "module",
 	"exports": { ".": "./src/index.ts" },
 	"dependencies": {
-		"@ctrl/base.op.browsing": "workspace:*"
+		"@ctrl/base.op.browsing": "workspace:*",
+		"@ctrl/core.contract.event-bus": "workspace:*"
 	},
 	"scripts": { "check": "tsc --noEmit", "test": "bun test" }
 }
