@@ -1,35 +1,17 @@
 import { SpecRunner, type Action } from "@ctrl/arch.contract.spec-runner";
 import { FeatureRegistry } from "@ctrl/arch.contract.feature-registry";
+import type { Spec } from "@ctrl/arch.contract.spec";
 import { Context, Effect, FiberMap, Layer, Queue, Ref } from "effect";
-
-// Local spec definition type — runner does NOT import arch.contract.spec
-type TransitionDef = {
-	readonly target: string;
-	readonly guards?: ReadonlyArray<string>;
-	readonly effects?: ReadonlyArray<string>;
-};
-
-type StateDef = {
-	readonly on?: Record<string, TransitionDef>;
-};
-
-type SpecDef = {
-	readonly id: string;
-	readonly initial: string;
-	readonly states: Record<string, StateDef>;
-	readonly onStart?: ReadonlyArray<string>;
-	readonly onStop?: ReadonlyArray<string>;
-};
 
 export class SpecRunnerInternal extends Context.Tag("SpecRunnerInternal")<
 	SpecRunnerInternal,
 	SpecRunner["Type"] & {
-		readonly registerSpec: (spec: SpecDef) => Effect.Effect<void>;
+		readonly registerSpec: (spec: Spec) => Effect.Effect<void>;
 	}
 >() {}
 
 const runInstance = (
-	spec: SpecDef,
+	spec: Spec,
 	instanceId: string,
 	queue: Queue.Queue<Action>,
 	initialState: string,
@@ -71,10 +53,10 @@ export const SpecRunnerLive = Layer.scoped(
 	Effect.gen(function* () {
 		const registry = yield* FeatureRegistry;
 		const fibers = yield* FiberMap.make<string>();
-		const specs = yield* Ref.make(new Map<string, SpecDef>());
+		const specs = yield* Ref.make(new Map<string, Spec>());
 		const queues = yield* Ref.make(new Map<string, Queue.Queue<Action>>());
 
-		const registerSpec = (spec: SpecDef) => Ref.update(specs, (m) => new Map(m).set(spec.id, spec));
+		const registerSpec = (spec: Spec) => Ref.update(specs, (m) => new Map(m).set(spec.id, spec));
 
 		const spawn = (specId: string, instanceId: string, options?: { initialState?: string }) =>
 			Effect.gen(function* () {
