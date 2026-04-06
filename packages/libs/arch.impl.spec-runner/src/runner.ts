@@ -126,6 +126,12 @@ const runInstance = (
 					action as Record<string, unknown>,
 					instanceId,
 					registry,
+				).pipe(
+					Effect.catchAllCause((cause) => {
+						return Effect.logError(
+							`[SpecRunner] effect failed in ${spec.id}/${instanceId}: ${action._tag} (${prevState}→${transition.target}): ${cause}`,
+						).pipe(Effect.as({ data: {}, emit: {} }));
+					}),
 				);
 				yield* dispatchEmits(acc.emit, bus);
 				yield* publishTransition(spec, instanceId, prevState, transition.target, action._tag, bus);
