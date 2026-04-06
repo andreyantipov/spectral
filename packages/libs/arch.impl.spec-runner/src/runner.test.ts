@@ -1,7 +1,9 @@
 import { describe, expect, it } from "bun:test";
+import { EventBus } from "@ctrl/arch.contract.event-bus";
 import { FeatureRegistry } from "@ctrl/arch.contract.feature-registry";
+import { EventBusLive } from "@ctrl/arch.impl.event-bus";
 import { FeatureRegistryLive } from "@ctrl/arch.impl.feature-registry";
-import { Effect, Layer, Ref } from "effect";
+import { Effect, Layer, Ref, Stream } from "effect";
 import { SpecRunnerInternal, SpecRunnerLive } from "./runner";
 
 const SimpleSpec = {
@@ -46,13 +48,57 @@ const GuardSpec = {
 	},
 };
 
+const EffectResultSpec = {
+	id: "effect-result",
+	version: 1,
+	domain: "test",
+	mode: "instance" as const,
+	initial: "idle",
+	triggers: ["Start"],
+	terminalOn: [],
+	states: {
+		idle: {
+			on: {
+				Go: {
+					target: "done",
+					effects: ["produce.data", "consume.data"],
+				},
+			},
+		},
+		done: {},
+	},
+};
+
+const EmitSpec = {
+	id: "emit-test",
+	version: 1,
+	domain: "test",
+	mode: "instance" as const,
+	initial: "idle",
+	triggers: ["Start"],
+	terminalOn: [],
+	states: {
+		idle: {
+			on: {
+				Go: {
+					target: "done",
+					effects: ["emit.something"],
+				},
+			},
+		},
+		done: {},
+	},
+};
+
 const TestLayer = Layer.mergeAll(
-	SpecRunnerLive.pipe(Layer.provide(FeatureRegistryLive)),
+	SpecRunnerLive.pipe(Layer.provide(Layer.mergeAll(FeatureRegistryLive, EventBusLive))),
 	FeatureRegistryLive,
+	EventBusLive,
 );
 
-const runTest = <A>(effect: Effect.Effect<A, unknown, SpecRunnerInternal | FeatureRegistry>) =>
-	Effect.runPromise(effect.pipe(Effect.scoped, Effect.provide(TestLayer)));
+const runTest = <A>(
+	effect: Effect.Effect<A, unknown, SpecRunnerInternal | FeatureRegistry | EventBus>,
+) => Effect.runPromise(effect.pipe(Effect.scoped, Effect.provide(TestLayer)));
 
 describe("SpecRunner", () => {
 	it("processes action through transition and calls effect", async () => {
@@ -232,6 +278,106 @@ describe("SpecRunner", () => {
 
 				const after = yield* Ref.get(count);
 				expect(after).toBe(1);
+			}),
+		);
+	});
+
+	it("collects EffectResult data and passes to next effect", async () => {
+		await runTest(
+			Effect.gen(function* () {
+				const runner = yield* SpecRunnerInternal;
+				const registry = yield* FeatureRegistry;
+				const receivedPayload = yield* Ref.make<Record<string, unknown>>({});
+
+				// First effect produces data
+				yield* registry.register("produce.data", () =>
+					Effect.succeed({ data: { sessionId: "abc-123", url: "https://example.com" } }),
+				);
+
+				// Second effect receives accumulated data in its payload
+				yield* registry.register("consume.data", (payload) =>
+					Ref.set(receivedPayload, payload).pipe(Effect.as(undefined)),
+				);
+
+				yield* runner.registerSpec(EffectResultSpec);
+				yield* runner.spawn("effect-result", "inst-er-1");
+				yield* runner.dispatch("inst-er-1", { _tag: "Go" });
+				yield* Effect.sleep("50 millis");
+
+				const received = yield* Ref.get(receivedPayload);
+				expect(received.sessionId).toBe("abc-123");
+				expect(received.url).toBe("https://example.com");
+				expect(received.instanceId).toBe("inst-er-1");
+			}),
+		);
+	});
+
+	it("collects emit and dispatches to EventBus", async () => {
+		await runTest(
+			Effect.gen(function* () {
+				const runner = yield* SpecRunnerInternal;
+				const registry = yield* FeatureRegistry;
+				const bus = yield* EventBus;
+
+				// Effect returns emit
+				yield* registry.register("emit.something", () =>
+					Effect.succeed({
+						emit: {
+							"ws.update-tab-meta": { panelId: "p1", title: "Hello" },
+						},
+					}),
+				);
+
+				// Subscribe to commands on the bus
+				const commands: Array<{ action: string; payload: unknown }> = [];
+				yield* Stream.runForEach(bus.commands, (cmd) =>
+					Effect.sync(() => {
+						commands.push({ action: cmd.action, payload: cmd.payload });
+					}),
+				).pipe(Effect.fork);
+				yield* Effect.sleep("10 millis");
+
+				yield* runner.registerSpec(EmitSpec);
+				yield* runner.spawn("emit-test", "inst-emit-1");
+				yield* runner.dispatch("inst-emit-1", { _tag: "Go" });
+				yield* Effect.sleep("50 millis");
+
+				const emitCmd = commands.find((c) => c.action === "ws.update-tab-meta");
+				expect(emitCmd).toBeDefined();
+				expect((emitCmd?.payload as Record<string, unknown>)?.panelId).toBe("p1");
+				expect((emitCmd?.payload as Record<string, unknown>)?.title).toBe("Hello");
+			}),
+		);
+	});
+
+	it("publishes spec.transition event after transition", async () => {
+		await runTest(
+			Effect.gen(function* () {
+				const runner = yield* SpecRunnerInternal;
+				const registry = yield* FeatureRegistry;
+				const bus = yield* EventBus;
+
+				yield* registry.register("do.work", () => Effect.succeed(undefined));
+
+				// Subscribe to spec.transition events
+				const events: Record<string, unknown>[] = [];
+				yield* Stream.runForEach(bus.on("spec.transition"), (evt) =>
+					Effect.sync(() => {
+						events.push(evt.payload as Record<string, unknown>);
+					}),
+				).pipe(Effect.fork);
+				yield* Effect.sleep("10 millis");
+
+				yield* runner.registerSpec(SimpleSpec);
+				yield* runner.spawn("simple", "inst-tr-1");
+				yield* runner.dispatch("inst-tr-1", { _tag: "DoWork" });
+				yield* Effect.sleep("50 millis");
+
+				expect(events.length).toBe(1);
+				expect(events[0]?.from).toBe("idle");
+				expect(events[0]?.to).toBe("working");
+				expect(events[0]?.action).toBe("DoWork");
+				expect(events[0]?.specId).toBe("simple");
 			}),
 		);
 	});

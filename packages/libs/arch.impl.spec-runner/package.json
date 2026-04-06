@@ -7,11 +7,13 @@
 		".": "./src/index.ts"
 	},
 	"dependencies": {
+		"@ctrl/arch.contract.event-bus": "workspace:*",
 		"@ctrl/arch.contract.spec": "workspace:*",
 		"@ctrl/arch.contract.spec-runner": "workspace:*",
 		"@ctrl/arch.contract.feature-registry": "workspace:*"
 	},
 	"devDependencies": {
+		"@ctrl/arch.impl.event-bus": "workspace:*",
 		"@ctrl/arch.impl.feature-registry": "workspace:*"
 	},
 	"scripts": {

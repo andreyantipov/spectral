@@ -7,7 +7,7 @@ export const AppCommandSchema = Schema.Struct({
 	payload: Schema.optional(Schema.Unknown),
 	meta: Schema.optional(
 		Schema.Struct({
-			source: Schema.Literal("keyboard", "menu", "agent", "ui", "system"),
+			source: Schema.Literal("keyboard", "menu", "agent", "ui", "system", "spec"),
 		}),
 	),
 });

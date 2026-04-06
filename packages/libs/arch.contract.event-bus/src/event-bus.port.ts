@@ -1,6 +1,6 @@
 import { Context, type Effect, type Stream } from "effect";
 
-export type CommandSource = "keyboard" | "menu" | "agent" | "ui" | "system";
+export type CommandSource = "keyboard" | "menu" | "agent" | "ui" | "system" | "spec";
 
 export type AppCommand = {
 	readonly type: "command";
