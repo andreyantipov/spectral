@@ -108,12 +108,10 @@ const buildActions = (
 ): Record<string, { readonly _tag: string; make: (props: unknown) => unknown }> => {
 	const actions: Record<string, { readonly _tag: string; make: (props: unknown) => unknown }> = {};
 	for (const [name, fields] of Object.entries(actionDefs)) {
-		// biome-ignore lint/suspicious/noExplicitAny: Schema.TaggedClass requires generic param that is dynamic here
-		const schemaClass = Schema.TaggedClass<any>()(name, fields);
+		const schemaClass = Schema.TaggedClass<Record<string, unknown>>()(name, fields);
 		actions[name] = {
 			_tag: name,
-			// biome-ignore lint/suspicious/noExplicitAny: TaggedClass constructor type cannot be narrowed dynamically
-			make: (props: unknown) => new (schemaClass as any)(props),
+			make: (props: unknown) => new (schemaClass as unknown as new (p: unknown) => unknown)(props),
 		};
 	}
 	return actions;

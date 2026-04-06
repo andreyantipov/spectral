@@ -2,6 +2,7 @@ import { EventBus } from "@ctrl/arch.contract.event-bus";
 import type { Spec } from "@ctrl/arch.contract.spec";
 import { SpecRegistry } from "@ctrl/arch.contract.spec-registry";
 import { SpecRunnerInternal } from "@ctrl/arch.contract.spec-runner";
+import type { Action } from "@ctrl/arch.contract.spec-runner";
 import { Effect, Layer, Ref, Stream } from "effect";
 
 // ---------------------------------------------------------------------------
@@ -11,8 +12,7 @@ import { Effect, Layer, Ref, Stream } from "effect";
 const handleTrigger = (
 	runner: Effect.Effect.Success<typeof SpecRunnerInternal>,
 	triggerSpec: Spec,
-	action: Record<string, unknown>,
-	_instanceId?: string,
+	action: Action,
 ) => {
 	const instanceId = triggerSpec.mode === "singleton" ? triggerSpec.id : crypto.randomUUID();
 	return Effect.gen(function* () {
@@ -26,7 +26,7 @@ const handleTrigger = (
 const handleTerminal = (
 	runner: Effect.Effect.Success<typeof SpecRunnerInternal>,
 	terminalSpec: Spec,
-	action: Record<string, unknown>,
+	action: Action,
 	instanceId: string,
 ) =>
 	Effect.gen(function* () {
@@ -85,7 +85,7 @@ export const SpecRegistryLive = Layer.scoped(
 				Effect.gen(function* () {
 					const actionTag = cmd.action;
 					const payload = (cmd.payload ?? {}) as Record<string, unknown>;
-					const action = { _tag: actionTag, ...payload };
+					const action: Action = { _tag: actionTag, ...payload };
 					yield* Effect.logDebug(`[SpecRegistry] cmd: ${actionTag}`);
 
 					const triggers = yield* Ref.get(triggerMap);
