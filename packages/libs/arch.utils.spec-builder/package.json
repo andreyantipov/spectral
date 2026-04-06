@@ -1,12 +1,17 @@
 {
-  "name": "@ctrl/arch.utils.spec-builder",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "exports": { ".": "./src/index.ts" },
-  "dependencies": {
-    "@ctrl/arch.contract.spec": "workspace:*",
-    "effect": "^3.21.0"
-  },
-  "scripts": { "check": "tsc --noEmit", "test": "bun test" }
+	"name": "@ctrl/arch.utils.spec-builder",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"dependencies": {
+		"@ctrl/arch.contract.spec": "workspace:*",
+		"effect": "^3.21.0"
+	},
+	"scripts": {
+		"check": "tsc --noEmit",
+		"test": "bun test"
+	}
 }

@@ -25,7 +25,7 @@
 		"@ctrl/core.impl.event-bus": "workspace:*",
 		"@ctrl/core.impl.ipc-bridge": "workspace:*",
 		"@ctrl/core.middleware.otel": "workspace:*",
-		"@ctrl/domain.feature.layout": "workspace:*",
+		"@ctrl/feature.workspace.layout": "workspace:*",
 		"@ctrl/domain.feature.session": "workspace:*",
 		"@ctrl/domain.feature.settings": "workspace:*",
 		"@ctrl/core.middleware.mcp": "workspace:*",

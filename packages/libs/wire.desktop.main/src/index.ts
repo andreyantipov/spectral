@@ -1,23 +1,19 @@
 import { FeatureRegistry } from "@ctrl/arch.contract.feature-registry";
 import { SpecRegistry } from "@ctrl/arch.contract.spec-registry";
+import { SpecRunner } from "@ctrl/arch.contract.spec-runner";
 import { FeatureRegistryLive } from "@ctrl/arch.impl.feature-registry";
 import { SpecRegistryLive } from "@ctrl/arch.impl.spec-registry";
 import { SpecRunnerLive, SpecRunnerPublicLive } from "@ctrl/arch.impl.spec-runner";
-import { SpecRunner } from "@ctrl/arch.contract.spec-runner";
 import { WebSessionSpec } from "@ctrl/base.spec.web-session";
 import { AppEvents, EventBus, TerminalEvents } from "@ctrl/core.contract.event-bus";
 import { StateSync } from "@ctrl/core.contract.state-sync";
-import {
-	LayoutRepositoryLive,
-	makeDbClient,
-	SessionRepositoryLive,
-} from "@ctrl/core.impl.db";
+import { LayoutRepositoryLive, makeDbClient, SessionRepositoryLive } from "@ctrl/core.impl.db";
 import { EventBusLive } from "@ctrl/core.impl.event-bus";
 import { type ElectrobunIpcHandle, IpcBridgeLive } from "@ctrl/core.impl.ipc-bridge";
 import { StateSyncLive } from "@ctrl/core.impl.state-sync";
 import { McpServerLive } from "@ctrl/core.middleware.mcp";
 import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/core.middleware.otel/node";
-import { LayoutFeatureLive } from "@ctrl/domain.feature.layout";
+import { LayoutFeatureLive } from "@ctrl/feature.workspace.layout";
 import { SessionFeature, SessionFeatureLive } from "@ctrl/domain.feature.session";
 import { SettingsFeatureLive } from "@ctrl/domain.feature.settings";
 import {
@@ -27,9 +23,9 @@ import {
 	UIHandlers,
 } from "@ctrl/domain.service.system";
 import { WorkspaceHandlers, WorkspaceServiceLive } from "@ctrl/domain.service.workspace";
-import { sessionEffects } from "@ctrl/feature.browser.session";
-import { navigationEffects } from "@ctrl/feature.browser.navigation";
 import { historyEffects } from "@ctrl/feature.browser.history";
+import { navigationEffects } from "@ctrl/feature.browser.navigation";
+import { sessionEffects } from "@ctrl/feature.browser.session";
 import { EventJournal, EventLog } from "@effect/experimental";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { Effect, Layer, Stream } from "effect";
@@ -73,10 +69,7 @@ const SystemHandlersLive = Layer.mergeAll(
 	TerminalHandlers,
 );
 
-const HandlersLive = Layer.mergeAll(
-	WorkspaceHandlersLive,
-	SystemHandlersLive,
-);
+const HandlersLive = Layer.mergeAll(WorkspaceHandlersLive, SystemHandlersLive);
 
 const EventLogLive = EventLog.layer(AppEvents).pipe(
 	Layer.provide(HandlersLive),
@@ -127,16 +120,23 @@ const BrowserDomainLive = Layer.scopedDiscard(
 		yield* specReg.register(WebSessionSpec);
 
 		// 4. Restore existing sessions from DB as FSM instances + workspace panels
-		const sessions = yield* sessionFeature.getAll().pipe(
-			Effect.catchAll(() => Effect.succeed([])),
-		);
+		const sessions = yield* sessionFeature.getAll().pipe(Effect.catchAll(() => Effect.succeed([])));
 		for (const session of sessions) {
 			yield* runner.spawn("web-session", session.id, { initialState: "browsing" });
 			// Restore workspace panel so webview renders
 			yield* bus.send({
 				type: "command",
 				action: "ws.add-panel",
-				payload: { panelId: session.id, groupId: "__auto__" },
+				payload: {
+					groupId: "__auto__",
+					panel: {
+						id: session.id,
+						type: "session" as const,
+						entityId: session.id,
+						title: "New Tab",
+						icon: null,
+					},
+				},
 				meta: { source: "system" },
 			});
 		}

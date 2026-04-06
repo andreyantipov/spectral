@@ -1,4 +1,4 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const sessionsTable = sqliteTable("sessions", {
 	id: text("id").primaryKey(),
@@ -7,7 +7,7 @@ export const sessionsTable = sqliteTable("sessions", {
 	currentIndex: integer("currentIndex").notNull().default(0),
 	createdAt: text("createdAt").notNull(),
 	updatedAt: text("updatedAt").notNull(),
-})
+});
 
 export const pagesTable = sqliteTable("pages", {
 	id: text("id").primaryKey(),
@@ -18,4 +18,4 @@ export const pagesTable = sqliteTable("pages", {
 	title: text("title"),
 	pageIndex: integer("pageIndex").notNull(),
 	loadedAt: text("loadedAt").notNull(),
-})
+});

@@ -1,4 +1,4 @@
-import { sqliteTable, text } from "drizzle-orm/sqlite-core"
+import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const historyTable = sqliteTable("history", {
 	id: text("id").primaryKey(),
@@ -6,4 +6,4 @@ export const historyTable = sqliteTable("history", {
 	title: text("title"),
 	query: text("query"),
 	visitedAt: text("visitedAt").notNull(),
-})
+});

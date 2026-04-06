@@ -1,6 +1,6 @@
 import { EventBus, WorkspaceEvents } from "@ctrl/core.contract.event-bus";
 import { StateSync } from "@ctrl/core.contract.state-sync";
-import { LayoutFeature } from "@ctrl/domain.feature.layout";
+import { LayoutFeature } from "@ctrl/feature.workspace.layout";
 import { SessionFeature } from "@ctrl/domain.feature.session";
 import { EventLog } from "@effect/experimental";
 import { Cause, Effect, Layer, Stream } from "effect";
@@ -40,11 +40,11 @@ export const WorkspaceServiceLive = Layer.scopedDiscard(
 		yield* bus.commands.pipe(
 			Stream.filter((cmd) => cmd.action.startsWith("ws.")),
 			Stream.runForEach((cmd) => {
-				console.info(`[WorkspaceService] received: ${cmd.action}`);
 				const action = cmd.action;
 				const payload = (cmd.payload ?? {}) as Record<string, unknown>;
 
 				return Effect.gen(function* () {
+					yield* Effect.logDebug(`[${WORKSPACE_SERVICE}] received: ${action}`);
 					yield* (client as (tag: string, p: unknown) => Effect.Effect<unknown, unknown>)(
 						action,
 						payload,
@@ -52,7 +52,7 @@ export const WorkspaceServiceLive = Layer.scopedDiscard(
 				}).pipe(
 					Effect.catchAllCause((cause) => {
 						if (Cause.isFailure(cause)) {
-							console.error(`[${WORKSPACE_SERVICE}] ${action}:`, Cause.pretty(cause));
+							return Effect.logError(`[${WORKSPACE_SERVICE}] ${action}: ${Cause.pretty(cause)}`);
 						}
 						return Effect.void;
 					}),
@@ -61,6 +61,6 @@ export const WorkspaceServiceLive = Layer.scopedDiscard(
 			Effect.forkScoped,
 		);
 
-		console.info(`[bun] ${WORKSPACE_SERVICE} started`);
+		yield* Effect.logInfo(`${WORKSPACE_SERVICE} started`);
 	}),
 );

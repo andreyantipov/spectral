@@ -1,6 +1,6 @@
-import { describe, it, expect } from "bun:test";
-import { WebSessionSpec } from "./web-session";
+import { describe, expect, it } from "bun:test";
 import { Effects } from "@ctrl/base.op.browsing";
+import { WebSessionSpec } from "./web-session";
 
 describe("WebSessionSpec", () => {
 	it("is JSON serializable", () => {

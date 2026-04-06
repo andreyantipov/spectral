@@ -1,6 +1,6 @@
-import { SpecRunner, type Action } from "@ctrl/arch.contract.spec-runner";
 import { FeatureRegistry } from "@ctrl/arch.contract.feature-registry";
 import type { Spec } from "@ctrl/arch.contract.spec";
+import { type Action, SpecRunner } from "@ctrl/arch.contract.spec-runner";
 import { Context, Effect, FiberMap, Layer, Queue, Ref } from "effect";
 
 export class SpecRunnerInternal extends Context.Tag("SpecRunnerInternal")<

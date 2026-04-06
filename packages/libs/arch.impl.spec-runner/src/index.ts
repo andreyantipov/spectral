@@ -1,2 +1,2 @@
-export { SpecRunnerLive, SpecRunnerPublicLive, SpecRunnerInternal } from "./runner"
-export { SpecRunner, type Action } from "@ctrl/arch.contract.spec-runner"
+export { type Action, SpecRunner } from "@ctrl/arch.contract.spec-runner";
+export { SpecRunnerInternal, SpecRunnerLive, SpecRunnerPublicLive } from "./runner";

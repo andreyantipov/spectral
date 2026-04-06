@@ -35,7 +35,10 @@ export function useApi() {
 
 	/** Dispatch a TaggedClass action — extracts _tag as action name, rest as payload */
 	function dispatchAction(action: { readonly _tag: string }): void {
-		const { _tag, ...payload } = action as { readonly _tag: string; readonly [key: string]: unknown };
+		const { _tag, ...payload } = action as {
+			readonly _tag: string;
+			readonly [key: string]: unknown;
+		};
 		const cmd: AppCommand = { type: "command", action: _tag, payload, meta: { source: "ui" } };
 		void runtime.runPromise(bus.send(cmd));
 	}

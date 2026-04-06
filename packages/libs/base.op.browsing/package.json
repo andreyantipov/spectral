@@ -3,7 +3,14 @@
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
-	"exports": { ".": "./src/index.ts" },
-	"dependencies": { "effect": "^3.19.0" },
-	"scripts": { "check": "tsc --noEmit", "test": "bun test" }
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"dependencies": {
+		"effect": "^3.19.0"
+	},
+	"scripts": {
+		"check": "tsc --noEmit",
+		"test": "bun test"
+	}
 }

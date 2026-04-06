@@ -1,2 +1,2 @@
-export { SpecRegistry } from "./registry"
-export type { Spec } from "@ctrl/arch.contract.spec"
+export type { Spec } from "@ctrl/arch.contract.spec";
+export { SpecRegistry } from "./registry";

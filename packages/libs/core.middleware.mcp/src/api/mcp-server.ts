@@ -22,7 +22,6 @@ export const McpServerLive = Layer.scopedDiscard(
 					if (recentEvents.length > MAX_EVENTS) recentEvents.shift();
 					if (event.name === "state-sync" && event.payload) {
 						latestState = event.payload as Record<string, unknown>;
-						console.info("[MCP] state-sync received, paths:", Object.keys(latestState));
 					}
 					if (event.name === "diag.screenshot-result" && screenshotResolver) {
 						screenshotResolver(event.payload);
@@ -178,7 +177,7 @@ export const McpServerLive = Layer.scopedDiscard(
 			},
 		});
 
-		console.info(`[MCP] Server listening on http://localhost:${MCP_PORT}/mcp`);
+		yield* Effect.logInfo(`[MCP] Server listening on http://localhost:${MCP_PORT}/mcp`);
 
 		yield* Effect.addFinalizer(() =>
 			Effect.sync(() => {

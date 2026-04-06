@@ -1,1 +1,1 @@
-export { SpecRegistryLive } from "./spec-registry"
+export { SpecRegistryLive } from "./spec-registry";

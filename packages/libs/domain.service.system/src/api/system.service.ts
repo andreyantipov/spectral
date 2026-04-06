@@ -114,7 +114,7 @@ export const SystemServiceLive = Layer.scopedDiscard(
 				}).pipe(
 					Effect.catchAllCause((cause) => {
 						if (Cause.isFailure(cause)) {
-							console.error(`[${SYSTEM_SERVICE}] ${action}:`, Cause.pretty(cause));
+							return Effect.logError(`[${SYSTEM_SERVICE}] ${action}: ${Cause.pretty(cause)}`);
 						}
 						return Effect.void;
 					}),
@@ -123,6 +123,6 @@ export const SystemServiceLive = Layer.scopedDiscard(
 			Effect.forkScoped,
 		);
 
-		console.info(`[bun] ${SYSTEM_SERVICE} started`);
+		yield* Effect.logInfo(`${SYSTEM_SERVICE} started`);
 	}),
 );

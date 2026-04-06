@@ -1,1 +1,1 @@
-export { Spec } from "./builder"
+export { Spec } from "./builder";

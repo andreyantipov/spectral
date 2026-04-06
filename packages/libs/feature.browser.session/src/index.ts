@@ -1,2 +1,2 @@
-export { sessionEffects } from "./effects"
-export { sessionsTable, pagesTable } from "./schema"
+export { sessionEffects } from "./effects";
+export { pagesTable, sessionsTable } from "./schema";

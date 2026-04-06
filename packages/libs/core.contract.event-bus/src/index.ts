@@ -2,9 +2,9 @@ export {
 	type AppCommand,
 	type AppEvent,
 	type CommandSource,
-	type JournalEntry,
 	EVENT_BUS_ID,
 	EventBus,
+	type JournalEntry,
 } from "./event-bus.port";
 export { AppCommandSchema, AppEventSchema } from "./event-bus.schema";
 export { BookmarkEvents } from "./groups/bookmark";

@@ -19,7 +19,6 @@ const WATCH_DIRS = [
 	"packages/libs/domain.feature.history/src",
 	"packages/libs/domain.feature.layout/src",
 	"packages/libs/domain.feature.omnibox/src",
-	"packages/libs/domain.service.browsing/src",
 	"packages/libs/domain.service.workspace/src",
 	"packages/libs/ui.base.api/src",
 ];

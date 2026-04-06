@@ -1,1 +1,1 @@
-export { FeatureRegistryLive } from "./feature-registry"
+export { FeatureRegistryLive } from "./feature-registry";

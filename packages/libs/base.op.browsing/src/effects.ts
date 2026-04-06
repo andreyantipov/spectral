@@ -10,4 +10,4 @@ export const Effects = {
 	SESSION_SET_ERROR: "session.setError",
 	HISTORY_RECORD: "history.record",
 	URL_IS_VALID: "url.isValid",
-} as const
+} as const;

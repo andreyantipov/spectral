@@ -1,4 +1,9 @@
-import { type AppCommand, type AppEvent, type JournalEntry, EventBus } from "@ctrl/core.contract.event-bus";
+import {
+	type AppCommand,
+	type AppEvent,
+	EventBus,
+	type JournalEntry,
+} from "@ctrl/core.contract.event-bus";
 import { Effect, Layer, PubSub, Stream } from "effect";
 
 export const EventBusLive = Layer.effect(

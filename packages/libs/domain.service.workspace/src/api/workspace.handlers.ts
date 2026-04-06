@@ -10,7 +10,7 @@ import {
 	findFirstGroupId,
 	insertPanelIntoGroup,
 	LayoutFeature,
-} from "@ctrl/domain.feature.layout";
+} from "@ctrl/feature.workspace.layout";
 import { EventLog } from "@effect/experimental";
 import { Effect } from "effect";
 

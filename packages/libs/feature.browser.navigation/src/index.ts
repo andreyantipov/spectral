@@ -1,1 +1,1 @@
-export { navigationEffects } from "./effects"
+export { navigationEffects } from "./effects";

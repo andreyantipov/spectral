@@ -1,4 +1,4 @@
-import { Schema } from "effect"
+import { Schema } from "effect";
 
 export class Navigate extends Schema.TaggedClass<Navigate>()("Navigate", {
 	instanceId: Schema.String,

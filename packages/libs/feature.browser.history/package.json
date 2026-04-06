@@ -3,9 +3,14 @@
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
-	"exports": { ".": "./src/index.ts" },
+	"exports": {
+		".": "./src/index.ts"
+	},
 	"dependencies": {
 		"@ctrl/base.op.browsing": "workspace:*"
 	},
-	"scripts": { "check": "tsc --noEmit", "test": "bun test" }
+	"scripts": {
+		"check": "tsc --noEmit",
+		"test": "bun test"
+	}
 }
