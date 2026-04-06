@@ -1,5 +1,5 @@
 import { TerminalEvents } from "@ctrl/core.contract.event-bus";
-import { TerminalFeature } from "@ctrl/domain.feature.terminal";
+import { TerminalFeature } from "@ctrl/feature.terminal.pty";
 import { EventLog } from "@effect/experimental";
 import { Effect } from "effect";
 

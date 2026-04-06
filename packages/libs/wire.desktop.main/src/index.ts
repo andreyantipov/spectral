@@ -269,7 +269,7 @@ export const createMainProcess = (handle: ElectrobunIpcHandle, dbPath: string) =
 // Replace the stub TerminalHandlers above with:
 //
 //   import { TerminalAdapterLive } from "@ctrl/core.impl.terminal";
-//   import { TerminalFeatureLive } from "@ctrl/domain.feature.terminal";
+//   import { TerminalFeatureLive } from "@ctrl/feature.terminal.pty";
 //   import { TerminalHandlers as RealTerminalHandlers } from "@ctrl/domain.service.terminal";
 //
 //   const TerminalFeatureLayer = TerminalFeatureLive.pipe(

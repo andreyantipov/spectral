@@ -12,6 +12,6 @@
 	"dependencies": {
 		"@ctrl/core.contract.event-bus": "workspace:*",
 		"@ctrl/core.contract.terminal": "workspace:*",
-		"@ctrl/domain.feature.terminal": "workspace:*"
+		"@ctrl/feature.terminal.pty": "workspace:*"
 	}
 }
