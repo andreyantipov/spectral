@@ -1,3 +1,10 @@
+# [0.18.0](https://github.com/andreyantipov/spectral/compare/v0.17.0...v0.18.0) (2026-04-04)
+
+
+### Features
+
+* arch: replace dockview with CSS Grid tiling — tree model, services, MCP ([#26](https://github.com/andreyantipov/spectral/issues/26)) ([dce5c69](https://github.com/andreyantipov/spectral/commit/dce5c690b756ca1f30de7e93afcf8b9ce86a0558)), closes [7/#8](https://github.com/andreyantipov/spectral/issues/8)
+
 # [0.17.0](https://github.com/andreyantipov/spectral/compare/v0.16.2...v0.17.0) (2026-04-03)
 
 
