@@ -4,6 +4,7 @@
 	"private": true,
 	"type": "module",
 	"dependencies": {
+		"@ctrl/base.op.browsing": "workspace:*",
 		"@ctrl/base.schema": "workspace:*",
 		"@ctrl/base.tracing": "workspace:*",
 		"@ctrl/base.type": "workspace:*",

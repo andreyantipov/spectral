@@ -6,6 +6,7 @@ import rootPkg from "../../../../../package.json";
 
 const APP_VERSION = rootPkg.version;
 
+import { CreateSession } from "@ctrl/base.op.browsing";
 import { EventBus } from "@ctrl/core.contract.event-bus";
 import { type ElectrobunIpcHandle, ensureSchema } from "@ctrl/wire.desktop.main";
 import { Effect, ManagedRuntime } from "effect";
@@ -89,13 +90,14 @@ ApplicationMenu.setApplicationMenu([
 ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
 	const data = (event as { data?: { action?: string } })?.data;
 	if (data?.action === "new-tab") {
+		const { _tag, ...payload } = CreateSession.make({ mode: "visual" });
 		void runtime.runPromise(
 			EventBus.pipe(
 				Effect.flatMap((bus) =>
 					bus.send({
 						type: "command",
-						action: "session.create",
-						payload: { mode: "visual" },
+						action: _tag,
+						payload,
 						meta: { source: "keyboard" },
 					}),
 				),

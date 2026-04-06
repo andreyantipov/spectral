@@ -33,6 +33,13 @@ export function useApi() {
 		void runtime.runPromise(bus.send(cmd));
 	}
 
+	/** Dispatch a TaggedClass action — extracts _tag as action name, rest as payload */
+	function dispatchAction(action: { readonly _tag: string; readonly [key: string]: unknown }): void {
+		const { _tag, ...payload } = action;
+		const cmd: AppCommand = { type: "command", action: _tag, payload, meta: { source: "ui" } };
+		void runtime.runPromise(bus.send(cmd));
+	}
+
 	const owner = getOwner();
 	const subscriptions = new Map<string, Accessor<unknown>>();
 	const stateSignals = new Map<string, [Accessor<unknown>, (v: unknown) => void]>();
@@ -104,5 +111,5 @@ export function useApi() {
 		return value as Accessor<T | undefined>;
 	}
 
-	return { dispatch, send, on, state };
+	return { dispatch, dispatchAction, send, on, state };
 }

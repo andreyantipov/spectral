@@ -1,3 +1,11 @@
+import {
+	ActivateSession,
+	CloseSession,
+	CreateSession,
+	Navigate,
+	TitleChanged,
+	UrlCommitted,
+} from "@ctrl/base.op.browsing";
 import type { BrowsingState, Session } from "@ctrl/base.schema";
 import { withWebTracing } from "@ctrl/base.tracing";
 import { currentUrl } from "@ctrl/base.type";
@@ -50,7 +58,7 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		const s = state();
 		if (s && s.sessions.length === 0 && !autoCreated) {
 			autoCreated = true;
-			api.dispatch("session.create", { mode: "visual" });
+			api.dispatchAction(CreateSession.make({ mode: "visual" }));
 		}
 	});
 
@@ -81,19 +89,19 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		navigate: (input: string) => {
 			const session = activeSession();
 			if (session) {
-				api.dispatch("nav.navigate", { id: session.id, input });
+				api.dispatchAction(Navigate.make({ instanceId: session.id, url: input }));
 			}
 		},
-		createSession: () => api.dispatch("session.create", { mode: "visual" }),
+		createSession: () => api.dispatchAction(CreateSession.make({ mode: "visual" })),
 		switchSession: (id: string) => {
-			api.dispatch("session.activate", { id });
+			api.dispatchAction(ActivateSession.make({ instanceId: id }));
 			api.dispatch("ws.activate-panel", { panelId: id });
 		},
-		closeSession: (id: string) => api.dispatch("session.close", { id }),
+		closeSession: (id: string) => api.dispatchAction(CloseSession.make({ instanceId: id })),
 		reportNavigation: (sessionId: string, url: string) =>
-			api.dispatch("nav.report", { id: sessionId, url }),
+			api.dispatchAction(UrlCommitted.make({ instanceId: sessionId, url, title: "", favicon: "" })),
 		updateTitle: (sessionId: string, title: string) =>
-			api.dispatch("nav.update-title", { id: sessionId, title }),
+			api.dispatchAction(TitleChanged.make({ instanceId: sessionId, title })),
 	});
 
 	const activeUrl = () => {
