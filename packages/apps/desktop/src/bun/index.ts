@@ -6,8 +6,8 @@ import rootPkg from "../../../../../package.json";
 
 const APP_VERSION = rootPkg.version;
 
-import { WebSessionActions } from "@ctrl/base.spec.web-session";
 import { EventBus } from "@ctrl/arch.contract.event-bus";
+import { WebSessionActions } from "@ctrl/base.spec.web-session";
 import { type ElectrobunIpcHandle, ensureSchema } from "@ctrl/wire.desktop.main";
 import { Effect, ManagedRuntime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
