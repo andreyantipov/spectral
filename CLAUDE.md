@@ -52,6 +52,53 @@ A local Ollama instance is available via MCP tools (`ollama_chat`, `ollama_gener
 
 All CLI sessions and agents must run inside `nix develop` to ensure tools are available (ast-grep, tsgo, bun, etc.).
 
+## Dead Code Detection
+
+`knip` detects unused files, dependencies, and exports across the monorepo.
+
+```bash
+# Run dead code check
+bun run lint:dead-code
+
+# CI enforces this — PR will fail if dead code is introduced
+```
+
+**When to run:**
+- After any refactoring (rename, move, delete packages or files)
+- After removing features or imports
+- Before creating a PR that changes architecture
+
+Config: `knip.config.ts` — workspace-aware, handles Electrobun entry points, storybook, Dagger CI.
+
+## Dependency Consistency
+
+`sherif` checks all package.json files for version drift, empty deps, and ordering issues.
+
+```bash
+# Run dependency consistency check
+bun run lint:deps
+
+# CI enforces this — PR will fail if dependency versions drift
+```
+
+**When to run:**
+- After adding/changing dependencies in any package
+- After creating new packages
+- Before creating a PR
+
+## CLI Tools (nix)
+
+Rust-based CLI tools available in `nix develop`:
+
+| Tool | Use for | Example |
+|------|---------|---------|
+| `fd` | Find files fast (replaces `find`) | `fd '\.test\.ts$' packages/libs/` |
+| `sd` | Search-and-replace in files (replaces `sed`) | `sd 'OldName' 'NewName' $(fd -e ts)` |
+| `tokei` | Lines of code stats by language/package | `tokei packages/libs/domain.feature.session/` |
+| `delta` | Syntax-highlighted git diffs | `git diff \| delta` (auto if configured) |
+
+**Prefer `fd` + `sd` for mass renames** — faster and safer than manual grep+edit loops.
+
 ## ast-grep — structural code linting
 
 Architecture boundaries are enforced by ast-grep rules in `.ast-grep/rules/`.

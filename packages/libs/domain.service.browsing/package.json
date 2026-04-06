@@ -11,9 +11,7 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
-		"@ctrl/base.error": "workspace:*",
 		"@ctrl/base.schema": "workspace:*",
-		"@ctrl/base.tracing": "workspace:*",
 		"@ctrl/base.type": "workspace:*",
 		"@ctrl/core.contract.event-bus": "workspace:*",
 		"@ctrl/core.contract.state-sync": "workspace:*",
