@@ -68,7 +68,8 @@ export const SpecRegistryLive = Layer.scoped(
             if (triggerSpec.mode !== "singleton") {
               yield* runner.spawn(triggerSpec.id, instanceId)
             }
-            yield* runner.dispatch(instanceId, action)
+            // Inject instanceId into action so features know which instance they serve
+            yield* runner.dispatch(instanceId, { ...action, instanceId })
             return
           }
 

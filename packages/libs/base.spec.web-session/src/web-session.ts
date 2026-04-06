@@ -13,7 +13,7 @@ export const WebSessionSpec = Spec.make("web-session", {
   .terminalOn(CloseSession)
   .state("idle", (s) => s
     .on(CreateSession, "browsing", {
-      effects: [Effects.SESSION_CREATE],
+      effects: [Effects.SESSION_CREATE, Effects.SESSION_ACTIVATE],
     })
     .on(Navigate, "loading", {
       guards: [Effects.URL_IS_VALID],
