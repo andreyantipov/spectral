@@ -1,29 +1,41 @@
-import { Schema } from "effect"
+// ---------------------------------------------------------------------------
+// Spec — JSON-serializable contract (used by runner/registry). No runtime fns.
+// ---------------------------------------------------------------------------
 
-export const TransitionSchema = Schema.Struct({
-  target: Schema.String,
-  guards: Schema.optional(Schema.Array(Schema.String)),
-  effects: Schema.optional(Schema.Array(Schema.String)),
-  compensate: Schema.optional(Schema.Array(Schema.String)),
-})
+export type Transition = {
+	readonly target: string;
+	readonly guards?: readonly string[];
+	readonly effects?: readonly string[];
+};
 
-export const StateNodeSchema = Schema.Struct({
-  on: Schema.optional(Schema.Record({ key: Schema.String, value: TransitionSchema })),
-})
+export type StateNode = {
+	readonly on?: Record<string, Transition>;
+};
 
-export const FsmSpecSchema = Schema.Struct({
-  id: Schema.String,
-  version: Schema.Number,
-  domain: Schema.String,
-  mode: Schema.Literal("instance", "singleton"),
-  initial: Schema.String,
-  triggers: Schema.Array(Schema.String),
-  terminalOn: Schema.Array(Schema.String),
-  states: Schema.Record({ key: Schema.String, value: StateNodeSchema }),
-  onStart: Schema.optional(Schema.Array(Schema.String)),
-  onStop: Schema.optional(Schema.Array(Schema.String)),
-})
+export type Spec = {
+	readonly id: string;
+	readonly version: number;
+	readonly domain: string;
+	readonly mode: "instance" | "singleton";
+	readonly initial: string;
+	readonly triggers: readonly string[];
+	readonly terminalOn: readonly string[];
+	readonly states: Record<string, StateNode>;
+	readonly onStart?: readonly string[];
+	readonly onStop?: readonly string[];
+	readonly effectKeys: ReadonlySet<string>;
+	readonly emitKeys: ReadonlySet<string>;
+	readonly guardKeys: ReadonlySet<string>;
+	readonly actionTags: ReadonlySet<string>;
+};
 
-export type FsmSpec = typeof FsmSpecSchema.Type
-export type Transition = typeof TransitionSchema.Type
-export type StateNode = typeof StateNodeSchema.Type
+// ---------------------------------------------------------------------------
+// BuiltSpec — extends Spec with runtime capabilities (returned by builder).
+// ---------------------------------------------------------------------------
+
+export type BuiltSpec = Spec & {
+	readonly actions: Record<string, { readonly _tag: string; make: (props: unknown) => unknown }>;
+	readonly implement: (
+		handlers: Record<string, (...args: never) => unknown>,
+	) => Record<string, (...args: never) => unknown>;
+};

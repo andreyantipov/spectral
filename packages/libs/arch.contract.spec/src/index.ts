@@ -1,1 +1,1 @@
-export { FsmSpecSchema, type FsmSpec, type Transition, type StateNode } from "./spec"
+export type { BuiltSpec, Spec, StateNode, Transition } from "./spec";
