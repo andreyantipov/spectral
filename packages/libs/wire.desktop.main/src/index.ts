@@ -15,7 +15,7 @@ import { McpServerLive } from "@ctrl/core.middleware.mcp";
 import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/core.middleware.otel/node";
 import { LayoutFeatureLive } from "@ctrl/feature.workspace.layout";
 import { SessionFeature, SessionFeatureLive } from "@ctrl/feature.browser.session";
-import { SettingsFeatureLive } from "@ctrl/domain.feature.settings";
+import { SettingsFeatureLive } from "@ctrl/feature.system.settings";
 import {
 	SettingsHandlers,
 	SystemHandlers,

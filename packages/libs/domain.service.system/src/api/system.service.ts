@@ -1,6 +1,6 @@
 import { EventBus, SettingsEvents, SystemEvents, UIEvents } from "@ctrl/core.contract.event-bus";
 import { StateSync } from "@ctrl/core.contract.state-sync";
-import { SettingsFeature } from "@ctrl/domain.feature.settings";
+import { SettingsFeature } from "@ctrl/feature.system.settings";
 import { EventLog } from "@effect/experimental";
 import { Cause, Effect, Layer, Stream } from "effect";
 import { SYSTEM_SERVICE } from "../lib/constants";

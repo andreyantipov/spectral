@@ -13,6 +13,6 @@
 	"dependencies": {
 		"@ctrl/core.contract.event-bus": "workspace:*",
 		"@ctrl/core.contract.state-sync": "workspace:*",
-		"@ctrl/domain.feature.settings": "workspace:*"
+		"@ctrl/feature.system.settings": "workspace:*"
 	}
 }
