@@ -3,34 +3,34 @@
 id: feature-no-peer-feature
 language: TypeScript
 severity: error
-message: "domain.feature.* cannot import other domain.feature.*"
+message: "feature.* cannot import other feature.* packages"
 files:
-  - "packages/libs/domain.feature.*/src/**/*.ts"
-  - "packages/libs/domain.feature.*/src/**/*.tsx"
+  - "packages/libs/feature.*/src/**/*.ts"
+  - "packages/libs/feature.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
   pattern: import $_ from "$PATH"
 constraints:
   PATH:
-    regex: "domain\\.feature\\."
+    regex: "feature\\."
 
 ---
 
-id: adapter-no-peer-adapter
+id: impl-no-peer-impl
 language: TypeScript
 severity: error
-message: "domain.adapter.* cannot import other domain.adapter.*"
+message: "arch.impl.* cannot import other arch.impl.* packages"
 files:
-  - "packages/libs/domain.adapter.*/src/**/*.ts"
-  - "packages/libs/domain.adapter.*/src/**/*.tsx"
+  - "packages/libs/arch.impl.*/src/**/*.ts"
+  - "packages/libs/arch.impl.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
   pattern: import $_ from "$PATH"
 constraints:
   PATH:
-    regex: "domain\\.adapter\\."
+    regex: "arch\\.impl\\."
 
 ---
 

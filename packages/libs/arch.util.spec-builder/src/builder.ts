@@ -144,6 +144,9 @@ const makeBuilder = (data: BuilderData) => ({
 		const actions: Record<string, { readonly _tag: string; make: (props: unknown) => unknown }> =
 			{};
 		for (const [name, fields] of Object.entries(actionDefs)) {
+			// Schema.TaggedClass returns a class type that Effect's type system cannot
+			// narrow without the concrete generic parameter, which is dynamic here.
+			// The `as any` casts are unavoidable at this Schema API boundary.
 			const schemaClass = Schema.TaggedClass<any>()(name, fields);
 			actions[name] = {
 				_tag: name,
@@ -201,9 +204,11 @@ const makeBuilder = (data: BuilderData) => ({
 					for (const e of t.effects) if (!allEffectKeys.includes(e)) allEffectKeys.push(e);
 					for (const g of t.guards) if (!allGuardKeys.includes(g)) allGuardKeys.push(g);
 
-					const transition: Transition = { target: t.target };
-					if (t.guards.length > 0) (transition as any).guards = t.guards;
-					if (t.effects.length > 0) (transition as any).effects = t.effects;
+					const transition: Transition = {
+						target: t.target,
+						...(t.guards.length > 0 && { guards: t.guards }),
+						...(t.effects.length > 0 && { effects: t.effects }),
+					};
 					on[t.action] = transition;
 				}
 				states[stateRef.name] = { on };

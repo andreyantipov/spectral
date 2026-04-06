@@ -8,7 +8,7 @@ export type EffectResult = {
 
 export type FeatureFn = (
 	payload: Record<string, unknown>,
-) => Effect.Effect<EffectResult | undefined | unknown, unknown>;
+) => Effect.Effect<EffectResult | void, unknown>;
 
 export class FeatureRegistry extends Context.Tag("FeatureRegistry")<
 	FeatureRegistry,

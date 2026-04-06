@@ -7,8 +7,8 @@ rule:
     - pattern: 'export * from "@ctrl/arch.impl.$$$"'
     - pattern: 'export * as $$_ from "@ctrl/arch.impl.$$$"'
 files:
-  - "packages/libs/domain.feature.*/src/**/*.ts"
-message: "domain.feature.* cannot import arch.impl.* directly. Use port tags via DI."
+  - "packages/libs/feature.*/src/**/*.ts"
+message: "feature.* cannot import arch.impl.* directly. Use contract tags via DI."
 severity: error
 ---
 id: no-deleted-service-factory

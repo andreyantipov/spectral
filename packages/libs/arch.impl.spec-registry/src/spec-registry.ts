@@ -87,7 +87,12 @@ export const SpecRegistryLive = Layer.scoped(
 					// 3. Normal dispatch by instanceId
 					if (payload.instanceId) {
 						yield* runner.dispatch(payload.instanceId as string, action);
+						return;
 					}
+
+					yield* Effect.logDebug(
+						`[SpecRegistry] unrouted: ${actionTag} (no trigger, no terminal, no instanceId)`,
+					);
 				}),
 			),
 			Effect.forkScoped,

@@ -13,7 +13,11 @@ const checkGuards = (
 	Effect.gen(function* () {
 		if (!guards) return true;
 		for (const guard of guards) {
-			const result = yield* registry.execute(guard, action);
+			const result = yield* registry.execute(guard, action).pipe(
+				Effect.catchAll((err) => {
+					return Effect.logWarning(`guard "${guard}" threw: ${err}`).pipe(Effect.as(false));
+				}),
+			);
 			if (!result) return false;
 		}
 		return true;
@@ -24,12 +28,19 @@ type AccResult = {
 	emit: Record<string, unknown>;
 };
 
-/** Merge an EffectResult into the accumulator (mutates acc). */
-const mergeResult = (acc: AccResult, result: unknown): void => {
-	if (!result || typeof result !== "object") return;
-	const er = result as { data?: Record<string, unknown>; emit?: Record<string, unknown> };
-	if (er.data) acc.data = { ...acc.data, ...er.data };
-	if (er.emit) acc.emit = { ...acc.emit, ...er.emit };
+/** Merge an EffectResult into the accumulator (pure — returns new AccResult). */
+const mergeResult = (acc: AccResult, result: unknown): AccResult => {
+	if (!result || typeof result !== "object") return acc;
+	const er = result as Record<string, unknown>;
+	const newData =
+		er.data && typeof er.data === "object"
+			? { ...acc.data, ...(er.data as Record<string, unknown>) }
+			: acc.data;
+	const newEmit =
+		er.emit && typeof er.emit === "object"
+			? { ...acc.emit, ...(er.emit as Record<string, unknown>) }
+			: acc.emit;
+	return { data: newData, emit: newEmit };
 };
 
 /** Run effects sequentially, accumulating data and emit from EffectResult. */
@@ -40,13 +51,13 @@ const runEffects = (
 	registry: FeatureRegistry["Type"],
 ) =>
 	Effect.gen(function* () {
-		const acc: AccResult = { data: {}, emit: {} };
+		let acc: AccResult = { data: {}, emit: {} };
 		if (!effects) return acc;
 
 		for (const effectName of effects) {
 			const payload = { ...action, ...acc.data, instanceId } as Record<string, unknown>;
 			const result = yield* registry.execute(effectName, payload);
-			mergeResult(acc, result);
+			acc = mergeResult(acc, result);
 		}
 		return acc;
 	});
@@ -62,7 +73,11 @@ const dispatchEmits = (emits: Record<string, unknown>, bus: EventBus["Type"]) =>
 					payload: emitPayload as Record<string, unknown>,
 					meta: { source: "spec" },
 				})
-				.pipe(Effect.catchAll(() => Effect.void));
+				.pipe(
+					Effect.catchAll((err) =>
+						Effect.logWarning(`emit dispatch failed: ${emitAction}: ${err}`),
+					),
+				);
 		}
 	});
 
