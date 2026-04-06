@@ -11,8 +11,8 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
+		"@ctrl/base.model.layout": "workspace:*",
 		"@ctrl/base.schema": "workspace:*",
-		"@ctrl/base.tracing": "workspace:*",
-		"@ctrl/base.model.layout": "workspace:*"
+		"@ctrl/base.tracing": "workspace:*"
 	}
 }

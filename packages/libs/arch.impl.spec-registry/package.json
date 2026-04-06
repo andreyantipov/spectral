@@ -7,15 +7,15 @@
 		".": "./src/index.ts"
 	},
 	"dependencies": {
-		"effect": "^3.19.0",
+		"@ctrl/arch.contract.event-bus": "workspace:*",
 		"@ctrl/arch.contract.spec-registry": "workspace:*",
-		"@ctrl/arch.contract.event-bus": "workspace:*"
+		"effect": "^3.21.0"
 	},
 	"devDependencies": {
-		"@ctrl/arch.impl.spec-runner": "workspace:*",
 		"@ctrl/arch.contract.feature-registry": "workspace:*",
-		"@ctrl/arch.impl.feature-registry": "workspace:*",
 		"@ctrl/arch.impl.event-bus": "workspace:*",
+		"@ctrl/arch.impl.feature-registry": "workspace:*",
+		"@ctrl/arch.impl.spec-runner": "workspace:*",
 		"@effect/experimental": "^0.58.0"
 	},
 	"scripts": {

@@ -11,12 +11,12 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
+		"@ctrl/base.event": "workspace:*",
 		"@ctrl/base.schema": "workspace:*",
 		"@ctrl/base.tracing": "workspace:*",
 		"@ctrl/base.type": "workspace:*",
-		"@ctrl/base.event": "workspace:*",
 		"@ctrl/feature.system.settings": "workspace:*",
-		"@ctrl/ui.base.components": "workspace:*",
-		"@ctrl/ui.base.api": "workspace:*"
+		"@ctrl/ui.base.api": "workspace:*",
+		"@ctrl/ui.base.components": "workspace:*"
 	}
 }

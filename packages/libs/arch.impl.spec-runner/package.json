@@ -8,9 +8,9 @@
 	},
 	"dependencies": {
 		"@ctrl/arch.contract.event-bus": "workspace:*",
+		"@ctrl/arch.contract.feature-registry": "workspace:*",
 		"@ctrl/arch.contract.spec": "workspace:*",
-		"@ctrl/arch.contract.spec-runner": "workspace:*",
-		"@ctrl/arch.contract.feature-registry": "workspace:*"
+		"@ctrl/arch.contract.spec-runner": "workspace:*"
 	},
 	"devDependencies": {
 		"@ctrl/arch.impl.event-bus": "workspace:*",

@@ -11,8 +11,8 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
+		"@ctrl/arch.contract.terminal": "workspace:*",
 		"@ctrl/base.error": "workspace:*",
-		"@ctrl/base.tracing": "workspace:*",
-		"@ctrl/arch.contract.terminal": "workspace:*"
+		"@ctrl/base.tracing": "workspace:*"
 	}
 }
