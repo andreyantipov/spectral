@@ -1,7 +1,7 @@
 import { EventBus, WorkspaceEvents } from "@ctrl/core.contract.event-bus";
 import { StateSync } from "@ctrl/core.contract.state-sync";
 import { LayoutFeature } from "@ctrl/feature.workspace.layout";
-import { SessionFeature } from "@ctrl/domain.feature.session";
+import { SessionFeature } from "@ctrl/feature.browser.session";
 import { EventLog } from "@effect/experimental";
 import { Cause, Effect, Layer, Stream } from "effect";
 import { WORKSPACE_SERVICE } from "../lib/constants";

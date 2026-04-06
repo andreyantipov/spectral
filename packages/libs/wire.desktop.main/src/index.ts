@@ -14,7 +14,7 @@ import { StateSyncLive } from "@ctrl/core.impl.state-sync";
 import { McpServerLive } from "@ctrl/core.middleware.mcp";
 import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/core.middleware.otel/node";
 import { LayoutFeatureLive } from "@ctrl/feature.workspace.layout";
-import { SessionFeature, SessionFeatureLive } from "@ctrl/domain.feature.session";
+import { SessionFeature, SessionFeatureLive } from "@ctrl/feature.browser.session";
 import { SettingsFeatureLive } from "@ctrl/domain.feature.settings";
 import {
 	SettingsHandlers,

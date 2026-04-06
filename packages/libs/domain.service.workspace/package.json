@@ -17,6 +17,6 @@
 		"@ctrl/core.contract.state-sync": "workspace:*",
 		"@ctrl/core.contract.storage": "workspace:*",
 		"@ctrl/feature.workspace.layout": "workspace:*",
-		"@ctrl/domain.feature.session": "workspace:*"
+		"@ctrl/feature.browser.session": "workspace:*"
 	}
 }
