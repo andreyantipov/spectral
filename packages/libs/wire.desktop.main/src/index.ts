@@ -1,8 +1,12 @@
+import { FeatureRegistry } from "@ctrl/arch.contract.feature-registry";
+import { SpecRegistry } from "@ctrl/arch.contract.spec-registry";
+import { FeatureRegistryLive } from "@ctrl/arch.impl.feature-registry";
+import { SpecRegistryLive } from "@ctrl/arch.impl.spec-registry";
+import { SpecRunnerLive } from "@ctrl/arch.impl.spec-runner";
+import { WebSessionSpec } from "@ctrl/base.spec.web-session";
 import { AppEvents, EventBus, TerminalEvents } from "@ctrl/core.contract.event-bus";
 import { StateSync } from "@ctrl/core.contract.state-sync";
 import {
-	BookmarkRepositoryLive,
-	HistoryRepositoryLive,
 	LayoutRepositoryLive,
 	makeDbClient,
 	SessionRepositoryLive,
@@ -12,18 +16,9 @@ import { type ElectrobunIpcHandle, IpcBridgeLive } from "@ctrl/core.impl.ipc-bri
 import { StateSyncLive } from "@ctrl/core.impl.state-sync";
 import { McpServerLive } from "@ctrl/core.middleware.mcp";
 import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/core.middleware.otel/node";
-import { BookmarkFeatureLive } from "@ctrl/domain.feature.bookmark";
-import { HistoryFeatureLive } from "@ctrl/domain.feature.history";
 import { LayoutFeatureLive } from "@ctrl/domain.feature.layout";
-import { OmniboxFeatureLive } from "@ctrl/domain.feature.omnibox";
 import { SessionFeatureLive } from "@ctrl/domain.feature.session";
 import { SettingsFeatureLive } from "@ctrl/domain.feature.settings";
-import {
-	BookmarkHandlers,
-	NavigationHandlers,
-	SessionHandlers,
-	WebBrowsingServiceLive,
-} from "@ctrl/domain.service.browsing";
 import {
 	SettingsHandlers,
 	SystemHandlers,
@@ -31,6 +26,9 @@ import {
 	UIHandlers,
 } from "@ctrl/domain.service.system";
 import { WorkspaceHandlers, WorkspaceServiceLive } from "@ctrl/domain.service.workspace";
+import { sessionEffects } from "@ctrl/feature.browser.session";
+import { navigationEffects } from "@ctrl/feature.browser.navigation";
+import { historyEffects } from "@ctrl/feature.browser.history";
 import { EventJournal, EventLog } from "@effect/experimental";
 import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { Effect, Layer, Stream } from "effect";
@@ -40,15 +38,11 @@ import { Effect, Layer, Stream } from "effect";
 const DrizzleLive = drizzleLayer;
 
 const SessionRepositoryLayer = SessionRepositoryLive.pipe(Layer.provide(DrizzleLive));
-const BookmarkRepositoryLayer = BookmarkRepositoryLive.pipe(Layer.provide(DrizzleLive));
-const HistoryRepositoryLayer = HistoryRepositoryLive.pipe(Layer.provide(DrizzleLive));
 const LayoutRepositoryLayer = LayoutRepositoryLive.pipe(Layer.provide(DrizzleLive));
 
-// -- Features -----------------------------------------------------------------
+// -- Features (legacy — workspace/system still use old feature layers) --------
 
 const SessionFeatureLayer = SessionFeatureLive.pipe(Layer.provide(SessionRepositoryLayer));
-const BookmarkFeatureLayer = BookmarkFeatureLive.pipe(Layer.provide(BookmarkRepositoryLayer));
-const HistoryFeatureLayer = HistoryFeatureLive.pipe(Layer.provide(HistoryRepositoryLayer));
 const LayoutFeatureLayer = LayoutFeatureLive.pipe(Layer.provide(LayoutRepositoryLayer));
 
 // -- EventLog: typed handlers + in-memory journal -----------------------------
@@ -67,18 +61,6 @@ const IdentityLive = Layer.effect(
 );
 const JournalLive = EventJournal.layerMemory;
 
-// Browsing handlers (session, navigation, bookmark)
-const BrowsingHandlersLive = Layer.mergeAll(
-	SessionHandlers.pipe(Layer.provide(SessionFeatureLayer)),
-	NavigationHandlers.pipe(
-		Layer.provide(SessionFeatureLayer),
-		Layer.provide(OmniboxFeatureLive),
-		Layer.provide(HistoryFeatureLayer),
-		Layer.provide(EventBusLive),
-	),
-	BookmarkHandlers.pipe(Layer.provide(BookmarkFeatureLayer)),
-);
-
 // Workspace handlers
 const WorkspaceHandlersLive = WorkspaceHandlers.pipe(Layer.provide(LayoutFeatureLayer));
 
@@ -91,7 +73,6 @@ const SystemHandlersLive = Layer.mergeAll(
 );
 
 const HandlersLive = Layer.mergeAll(
-	BrowsingHandlersLive,
 	WorkspaceHandlersLive,
 	SystemHandlersLive,
 );
@@ -102,17 +83,47 @@ const EventLogLive = EventLog.layer(AppEvents).pipe(
 	Layer.provide(IdentityLive),
 );
 
+// -- FSM Spec Engine ----------------------------------------------------------
+
+// SpecRunnerLive needs: FeatureRegistry + EventJournal
+// SpecRegistryLive needs: SpecRunnerInternal + EventBus
+// FeatureRegistryLive is standalone
+
+// Step 1: FeatureRegistry (no deps)
+// Step 2: SpecRunner (needs FeatureRegistry + EventJournal from JournalLive)
+// Step 3: SpecRegistry (needs SpecRunnerInternal from SpecRunnerLive + EventBus from SharedLive)
+const SpecEngineLive = SpecRegistryLive.pipe(
+	Layer.provide(SpecRunnerLive),
+	Layer.provide(FeatureRegistryLive),
+	Layer.provide(JournalLive),
+	// EventBus provided by SharedLive in createMainProcess
+);
+
+// Register browser features and the WebSession spec via FeatureRegistry + SpecRegistry.
+// sessionEffects and historyEffects need SqliteDrizzle (provided via DrizzleLive).
+// navigationEffects is Effect.succeed (no deps).
+const BrowserDomainLive = Layer.scopedDiscard(
+	Effect.gen(function* () {
+		const featureReg = yield* FeatureRegistry;
+		const specReg = yield* SpecRegistry;
+
+		// Register all feature effect handlers
+		yield* featureReg.registerAll(yield* sessionEffects);
+		yield* featureReg.registerAll(yield* navigationEffects);
+		yield* featureReg.registerAll(yield* historyEffects);
+
+		// Register spec — auto-routing kicks in via SpecRegistry EventBus subscription
+		yield* specReg.register(WebSessionSpec);
+	}),
+).pipe(
+	Layer.provide(SpecEngineLive),
+	Layer.provide(DrizzleLive),
+	// EventBus provided by SharedLive in createMainProcess
+);
+
 // -- Services -----------------------------------------------------------------
 
 // Services get EventBusLive + StateSyncLive from SharedLive (provided in createMainProcess)
-const BrowsingServiceLayer = WebBrowsingServiceLive.pipe(
-	Layer.provide(EventLogLive),
-	Layer.provide(SessionFeatureLayer),
-	Layer.provide(BookmarkFeatureLayer),
-	Layer.provide(HistoryFeatureLayer),
-	Layer.provide(OmniboxFeatureLive),
-);
-
 const WorkspaceServiceLayer = WorkspaceServiceLive.pipe(
 	Layer.provide(EventLogLive),
 	Layer.provide(LayoutFeatureLayer),
@@ -198,7 +209,7 @@ export const createMainProcess = (handle: ElectrobunIpcHandle, dbPath: string) =
 	const OtelLayer = OtelLive(OTEL_SERVICE_NAMES.main, "node");
 	const SharedLive = Layer.merge(EventBusLive, StateSyncLive);
 	const ServicesLive = Layer.mergeAll(
-		BrowsingServiceLayer,
+		BrowserDomainLive,
 		WorkspaceServiceLayer,
 		SystemServiceLayer,
 		McpServerLive,

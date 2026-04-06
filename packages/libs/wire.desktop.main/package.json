@@ -10,6 +10,12 @@
 		"check": "tsgo --noEmit"
 	},
 	"dependencies": {
+		"@ctrl/arch.contract.feature-registry": "workspace:*",
+		"@ctrl/arch.contract.spec-registry": "workspace:*",
+		"@ctrl/arch.impl.feature-registry": "workspace:*",
+		"@ctrl/arch.impl.spec-registry": "workspace:*",
+		"@ctrl/arch.impl.spec-runner": "workspace:*",
+		"@ctrl/base.spec.web-session": "workspace:*",
 		"@ctrl/core.contract.event-bus": "workspace:*",
 		"@ctrl/core.contract.state-sync": "workspace:*",
 		"@ctrl/core.contract.storage": "workspace:*",
@@ -18,15 +24,14 @@
 		"@ctrl/core.impl.event-bus": "workspace:*",
 		"@ctrl/core.impl.ipc-bridge": "workspace:*",
 		"@ctrl/core.middleware.otel": "workspace:*",
-		"@ctrl/domain.feature.bookmark": "workspace:*",
-		"@ctrl/domain.feature.history": "workspace:*",
 		"@ctrl/domain.feature.layout": "workspace:*",
-		"@ctrl/domain.feature.omnibox": "workspace:*",
 		"@ctrl/domain.feature.session": "workspace:*",
 		"@ctrl/domain.feature.settings": "workspace:*",
 		"@ctrl/core.middleware.mcp": "workspace:*",
-		"@ctrl/domain.service.browsing": "workspace:*",
 		"@ctrl/domain.service.system": "workspace:*",
-		"@ctrl/domain.service.workspace": "workspace:*"
+		"@ctrl/domain.service.workspace": "workspace:*",
+		"@ctrl/feature.browser.session": "workspace:*",
+		"@ctrl/feature.browser.navigation": "workspace:*",
+		"@ctrl/feature.browser.history": "workspace:*"
 	}
 }
