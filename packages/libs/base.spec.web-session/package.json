@@ -1,0 +1,16 @@
+{
+  "name": "@ctrl/base.spec.web-session",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": {
+    "effect": "^3.19.0",
+    "@ctrl/arch.utils.spec-builder": "workspace:*",
+    "@ctrl/base.op.browsing": "workspace:*"
+  },
+  "devDependencies": {
+    "@ctrl/arch.contract.spec": "workspace:*"
+  },
+  "scripts": { "check": "tsc --noEmit", "test": "bun test" }
+}
