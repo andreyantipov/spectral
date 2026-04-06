@@ -8,9 +8,7 @@
 	},
 	"dependencies": {
 		"effect": "^3.19.0",
-		"@effect/experimental": "^0.51.0",
 		"@ctrl/arch.contract.feature-registry": "workspace:*",
-		"@ctrl/arch.contract.spec-runner": "workspace:*",
 		"@ctrl/arch.contract.spec-registry": "workspace:*",
 		"@ctrl/arch.impl.feature-registry": "workspace:*",
 		"@ctrl/arch.impl.spec-runner": "workspace:*",

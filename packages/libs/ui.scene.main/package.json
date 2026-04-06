@@ -13,7 +13,6 @@
 	"dependencies": {
 		"@ctrl/base.schema": "workspace:*",
 		"@ctrl/base.type": "workspace:*",
-		"@ctrl/feature.workspace.layout": "workspace:*",
 		"@ctrl/ui.base.api": "workspace:*",
 		"@ctrl/ui.base.components": "workspace:*",
 		"@ctrl/ui.feature.keyboard-provider": "workspace:*",

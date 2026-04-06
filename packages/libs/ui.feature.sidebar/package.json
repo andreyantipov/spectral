@@ -17,7 +17,6 @@
 		"@ctrl/base.event": "workspace:*",
 		"@ctrl/feature.system.settings": "workspace:*",
 		"@ctrl/ui.base.components": "workspace:*",
-		"@ctrl/ui.base.api": "workspace:*",
-		"@ctrl/feature.browser.session": "workspace:*"
+		"@ctrl/ui.base.api": "workspace:*"
 	}
 }

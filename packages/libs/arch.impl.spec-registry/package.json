@@ -9,7 +9,6 @@
 	"dependencies": {
 		"effect": "^3.19.0",
 		"@ctrl/arch.contract.spec-registry": "workspace:*",
-		"@ctrl/arch.contract.spec-runner": "workspace:*",
 		"@ctrl/arch.contract.event-bus": "workspace:*"
 	},
 	"devDependencies": {

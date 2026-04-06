@@ -4,7 +4,7 @@ import { SpecRunner } from "@ctrl/arch.contract.spec-runner";
 import { FeatureRegistryLive } from "@ctrl/arch.impl.feature-registry";
 import { SpecRegistryLive } from "@ctrl/arch.impl.spec-registry";
 import { SpecRunnerLive, SpecRunnerPublicLive } from "@ctrl/arch.impl.spec-runner";
-import { WebSessionSpec } from "@ctrl/base.spec.web-session";
+import { WebSession } from "@ctrl/base.spec.web-session";
 import { EventBus } from "@ctrl/arch.contract.event-bus";
 import {
 	AppEvents,
@@ -386,7 +386,7 @@ const SpecEngineLive = Layer.mergeAll(SpecRegistryLayer, SpecRunnerPublicLayer, 
 
 // BrowserDomainLive:
 // 1. Registers features (effects) in FeatureRegistry
-// 2. Registers WebSessionSpec in SpecRegistry (auto-routing kicks in)
+// 2. Registers WebSession in SpecRegistry (auto-routing kicks in)
 // 3. Registers browsing snapshot provider in StateSync (UI reads this)
 // 4. Restores existing DB sessions as FSM instances
 const BrowserDomainLive = Layer.scopedDiscard(
@@ -412,7 +412,7 @@ const BrowserDomainLive = Layer.scopedDiscard(
 		);
 
 		// 3. Register spec — auto-routing from EventBus
-		yield* specReg.register(WebSessionSpec);
+		yield* specReg.register(WebSession);
 
 		// 4. Restore existing sessions from DB as FSM instances + workspace panels
 		const sessions = yield* sessionFeature.getAll().pipe(Effect.catchAll(() => Effect.succeed([])));
