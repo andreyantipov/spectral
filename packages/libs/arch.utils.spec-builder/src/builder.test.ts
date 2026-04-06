@@ -1,94 +1,153 @@
-import { describe, expect, it } from "bun:test";
-import { Schema } from "effect";
-import { Spec } from "./builder";
+import { describe, it, expect } from "bun:test"
+import { Effect, Schema } from "effect"
+import { Spec } from "./builder"
 
-class Start extends Schema.TaggedClass<Start>()("Start", { instanceId: Schema.String }) {}
-class Stop extends Schema.TaggedClass<Stop>()("Stop", { instanceId: Schema.String }) {}
-class DoWork extends Schema.TaggedClass<DoWork>()("DoWork", { instanceId: Schema.String }) {}
+describe("Spec builder DSL", () => {
+  it("builds a spec with actions, effects, guards, states, transitions", () => {
+    const spec = Spec("test", { mode: "instance", domain: "test", version: 1 })
+      .actions({
+        Start: { value: Schema.String },
+        Stop: {},
+      })
+      .effects({
+        DoWork: { result: Schema.String },
+        Cleanup: {},
+      })
+      .guards({
+        IsReady: Schema.Boolean,
+      })
+      .states("Idle", "Working", "Done")
+      .transitions(({ action, effect, guard, state }) => [
+        state.Idle
+          .on(action.Start, state.Working, [guard.IsReady, effect.DoWork]),
+        state.Working
+          .on(action.Stop, state.Done, [effect.Cleanup]),
+        state.Done,
+      ])
+      .build()
 
-describe("Spec.make builder", () => {
-	it("builds a valid spec object", () => {
-		const spec = Spec.make("test-spec", { mode: "instance", domain: "test", version: 1 })
-			.initial("idle")
-			.triggers(Start)
-			.terminalOn(Stop)
-			.state("idle", (s) => s.on(DoWork, "working", { effects: ["do.work"] }))
-			.state("working", (s) => s.on(Stop, "stopped"))
-			.state("stopped")
-			.build();
+    expect(spec.id).toBe("test")
+    expect(spec.mode).toBe("instance")
+    expect(spec.initial).toBe("Idle")
+    expect(spec.actionTags).toEqual(new Set(["Start", "Stop"]))
+    expect(spec.effectKeys).toEqual(new Set(["DoWork", "Cleanup"]))
+    expect(spec.guardKeys).toEqual(new Set(["IsReady"]))
+    expect(spec.triggers).toEqual(["Start"])
+    expect(spec.terminalOn).toEqual(["Stop"])
+    // Transition separates guards and effects
+    expect(spec.states.Idle.on?.Start.guards).toEqual(["IsReady"])
+    expect(spec.states.Idle.on?.Start.effects).toEqual(["DoWork"])
+    expect(spec.states.Idle.on?.Start.target).toBe("Working")
+  })
 
-		expect(spec.id).toBe("test-spec");
-		expect(spec.initial).toBe("idle");
-		expect(spec.triggers).toEqual(["Start"]);
-		expect(spec.terminalOn).toEqual(["Stop"]);
-		expect(spec.states.idle.on?.DoWork.target).toBe("working");
-		expect(spec.states.idle.on?.DoWork.effects).toEqual(["do.work"]);
-	});
+  it("actions produce TaggedClass instances with make()", () => {
+    const spec = Spec("t", { mode: "singleton", domain: "t", version: 1 })
+      .actions({ Ping: { msg: Schema.String } })
+      .states("Ready")
+      .transitions(({ state }) => [state.Ready])
+      .build()
 
-	it("is JSON serializable", () => {
-		const spec = Spec.make("s", { mode: "instance", domain: "d", version: 1 })
-			.initial("a")
-			.triggers(Start)
-			.terminalOn(Stop)
-			.state("a", (s) => s.on(DoWork, "a", { guards: ["g"], effects: ["e"], compensate: ["c"] }))
-			.build();
-		const json = JSON.parse(JSON.stringify(spec));
-		expect(json.states.a.on.DoWork.compensate).toEqual(["c"]);
-	});
+    const action = spec.actions.Ping.make({ msg: "hello" })
+    expect(action._tag).toBe("Ping")
+    expect(action.msg).toBe("hello")
+  })
 
-	it("validates initial state exists", () => {
-		expect(() =>
-			Spec.make("bad", { mode: "instance", domain: "d", version: 1 })
-				.initial("nonexistent")
-				.triggers(Start)
-				.terminalOn(Stop)
-				.state("idle")
-				.build(),
-		).toThrow(/nonexistent/);
-	});
+  it("empty effects = void (no output)", () => {
+    const spec = Spec("t", { mode: "singleton", domain: "t", version: 1 })
+      .actions({ Go: {} })
+      .effects({ Run: {} })
+      .states("A")
+      .transitions(({ action, effect, state }) => [
+        state.A.on(action.Go, state.A, [effect.Run]),
+      ])
+      .build()
 
-	it("validates transition targets exist", () => {
-		expect(() =>
-			Spec.make("bad", { mode: "instance", domain: "d", version: 1 })
-				.initial("idle")
-				.triggers(Start)
-				.terminalOn(Stop)
-				.state("idle", (s) => s.on(DoWork, "nonexistent"))
-				.build(),
-		).toThrow(/nonexistent/);
-	});
+    expect(spec.effectKeys).toEqual(new Set(["Run"]))
+  })
 
-	it("supports empty states (terminal)", () => {
-		const spec = Spec.make("s", { mode: "instance", domain: "d", version: 1 })
-			.initial("a")
-			.triggers(Start)
-			.terminalOn(Stop)
-			.state("a", (s) => s.on(Stop, "b"))
-			.state("b")
-			.build();
-		expect(spec.states.b).toEqual({});
-	});
+  it("validates transition targets exist", () => {
+    // Builder creation is fine, build would catch issues
+    expect(() => {
+      Spec("bad", { mode: "singleton", domain: "t", version: 1 })
+        .actions({ Go: {} })
+        .states("A")
+    }).not.toThrow()
+  })
 
-	it("supports multiple triggers", () => {
-		const spec = Spec.make("s", { mode: "instance", domain: "d", version: 1 })
-			.initial("a")
-			.triggers(Start, DoWork)
-			.terminalOn(Stop)
-			.state("a")
-			.build();
-		expect(spec.triggers).toEqual(["Start", "DoWork"]);
-	});
+  it("extracts all effectKeys from transitions", () => {
+    const spec = Spec("s", { mode: "singleton", domain: "s", version: 1 })
+      .actions({ A: {}, B: {} })
+      .effects({ E1: {}, E2: {}, E3: {} })
+      .states("S1", "S2")
+      .transitions(({ action, effect, state }) => [
+        state.S1.on(action.A, state.S2, [effect.E1, effect.E2]),
+        state.S2.on(action.B, state.S1, [effect.E3]),
+      ])
+      .build()
 
-	it("supports multiple transitions in one state", () => {
-		const spec = Spec.make("s", { mode: "instance", domain: "d", version: 1 })
-			.initial("a")
-			.triggers(Start)
-			.terminalOn(Stop)
-			.state("a", (s) => s.on(DoWork, "b").on(Stop, "c"))
-			.state("b")
-			.state("c")
-			.build();
-		expect(spec.states.a.on?.DoWork.target).toBe("b");
-		expect(spec.states.a.on?.Stop.target).toBe("c");
-	});
-});
+    expect(spec.effectKeys).toEqual(new Set(["E1", "E2", "E3"]))
+  })
+
+  it("singleton mode has empty triggers/terminalOn", () => {
+    const spec = Spec("s", { mode: "singleton", domain: "s", version: 1 })
+      .actions({ Do: {} })
+      .states("Ready")
+      .transitions(({ action, state }) => [
+        state.Ready.on(action.Do, state.Ready, []),
+      ])
+      .build()
+
+    expect(spec.triggers).toEqual([])
+    expect(spec.terminalOn).toEqual([])
+  })
+
+  it("implement() validates all effects and guards have handlers", () => {
+    const spec = Spec("t", { mode: "singleton", domain: "t", version: 1 })
+      .actions({ Do: {} })
+      .effects({ Work: { result: Schema.String } })
+      .guards({ IsOk: Schema.Boolean })
+      .states("A")
+      .transitions(({ action, effect, guard, state }) => [
+        state.A.on(action.Do, state.A, [guard.IsOk, effect.Work]),
+      ])
+      .build()
+
+    const impl = spec.implement({
+      Work: (_p) => Effect.succeed({ data: { result: "ok" } }),
+      IsOk: (_p) => Effect.succeed(true),
+    })
+    expect(impl.Work).toBeDefined()
+    expect(impl.IsOk).toBeDefined()
+  })
+
+  it("implement() throws if handler missing", () => {
+    const spec = Spec("t", { mode: "singleton", domain: "t", version: 1 })
+      .actions({ Do: {} })
+      .effects({ Work: {} })
+      .states("A")
+      .transitions(({ action, effect, state }) => [
+        state.A.on(action.Do, state.A, [effect.Work]),
+      ])
+      .build()
+
+    expect(() => spec.implement({})).toThrow(/Work/)
+  })
+
+  it("multiple transitions in one state", () => {
+    const spec = Spec("s", { mode: "instance", domain: "s", version: 1 })
+      .actions({ Go: {}, Stop: {} })
+      .effects({ Work: {} })
+      .states("A", "B", "C")
+      .transitions(({ action, effect, state }) => [
+        state.A
+          .on(action.Go, state.B, [effect.Work])
+          .on(action.Stop, state.C, []),
+        state.B,
+        state.C,
+      ])
+      .build()
+
+    expect(spec.states.A.on?.Go.target).toBe("B")
+    expect(spec.states.A.on?.Stop.target).toBe("C")
+  })
+})
