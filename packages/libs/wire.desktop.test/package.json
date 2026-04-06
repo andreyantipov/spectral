@@ -15,7 +15,6 @@
 		"@ctrl/arch.impl.feature-registry": "workspace:*",
 		"@ctrl/arch.impl.spec-runner": "workspace:*",
 		"@ctrl/arch.impl.spec-registry": "workspace:*",
-		"@ctrl/base.op.browsing": "workspace:*",
 		"@ctrl/base.spec.web-session": "workspace:*",
 		"@ctrl/arch.contract.event-bus": "workspace:*",
 		"@ctrl/arch.impl.event-bus": "workspace:*"
