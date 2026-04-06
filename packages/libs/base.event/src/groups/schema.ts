@@ -8,10 +8,9 @@ import { TerminalEvents } from "./terminal";
 import { UIEvents } from "./ui";
 import { WorkspaceEvents } from "./workspace";
 
+/** EventLog schema — only events with handlers in wire.desktop.main.
+ * Session/Navigation/Bookmark are handled by SpecRunner (FSM), not EventLog. */
 export const AppEvents = EventLog.schema(
-	SessionEvents,
-	NavigationEvents,
-	BookmarkEvents,
 	WorkspaceEvents,
 	UIEvents,
 	SystemEvents,

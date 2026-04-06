@@ -548,7 +548,7 @@ export const createMainProcess = (handle: ElectrobunIpcHandle, dbPath: string) =
 		SystemServiceLayer,
 		McpServerLive,
 		AutoStateSyncLive,
-	).pipe(Layer.provide(SharedLive));
+	).pipe(Layer.provide(SharedLive), Layer.provide(DbClientLive), Layer.provide(FeatureRegistryLive));
 	const MainProcessLive = Layer.merge(SharedLive, ServicesLive);
 	return Layer.mergeAll(
 		DbClientLive,
