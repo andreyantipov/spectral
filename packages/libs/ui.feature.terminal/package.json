@@ -10,7 +10,5 @@
 		"check": "tsgo --noEmit",
 		"test": "vitest run"
 	},
-	"dependencies": {
-		"@ctrl/core.contract.terminal": "workspace:*"
-	}
+	"dependencies": {}
 }

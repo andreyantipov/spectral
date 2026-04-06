@@ -13,6 +13,7 @@
 		"@ctrl/ui.base.api": "workspace:*",
 		"@ctrl/ui.base.components": "workspace:*",
 		"@ctrl/ui.scene.main": "workspace:*",
+		"@ctrl/core.impl.db": "workspace:*",
 		"@ctrl/wire.desktop.main": "workspace:*",
 		"@ctrl/wire.desktop.ui": "workspace:*",
 		"electrobun": "1.15.1"

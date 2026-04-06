@@ -46,6 +46,17 @@ jobs:
           module: packages/infra/ci
           args: build --source=.
 
+  dead-code:
+    name: Dead Code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: bun install --ignore-scripts
+      - name: Check for dead code
+        run: bun run lint:dead-code
+
   docs:
     name: Docs
     runs-on: ubuntu-latest

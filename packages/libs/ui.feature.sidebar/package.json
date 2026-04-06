@@ -16,7 +16,6 @@
 		"@ctrl/base.type": "workspace:*",
 		"@ctrl/core.contract.event-bus": "workspace:*",
 		"@ctrl/ui.base.components": "workspace:*",
-		"@ctrl/ui.base.api": "workspace:*",
-		"@ctrl/domain.feature.session": "workspace:*"
+		"@ctrl/ui.base.api": "workspace:*"
 	}
 }
