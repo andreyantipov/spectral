@@ -1,0 +1,17 @@
+{
+	"name": "@ctrl/arch.impl.terminal",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check": "tsgo --noEmit",
+		"test": "bun test"
+	},
+	"dependencies": {
+		"@ctrl/base.error": "workspace:*",
+		"@ctrl/arch.contract.terminal": "workspace:*"
+	}
+}

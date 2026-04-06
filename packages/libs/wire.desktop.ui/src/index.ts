@@ -1,6 +1,6 @@
-import { EventBusLive } from "@ctrl/core.impl.event-bus";
-import { type ElectrobunIpcHandle, IpcBridgeLive } from "@ctrl/core.impl.ipc-bridge";
-import { initGlobalWebTracer, OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/core.middleware.otel/web";
+import { EventBusLive } from "@ctrl/arch.impl.event-bus";
+import { type ElectrobunIpcHandle, IpcBridgeLive } from "@ctrl/arch.impl.ipc-bridge";
+import { initGlobalWebTracer, OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/arch.util.otel/web";
 import { Layer } from "effect";
 
 export type { ElectrobunIpcHandle };

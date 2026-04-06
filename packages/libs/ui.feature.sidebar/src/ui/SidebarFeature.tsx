@@ -9,7 +9,7 @@ import {
 import type { BrowsingState, Session } from "@ctrl/base.schema";
 import { withWebTracing } from "@ctrl/base.tracing";
 import { currentUrl } from "@ctrl/base.type";
-import { DEFAULT_SHORTCUTS, NavigationEvents, SessionEvents } from "@ctrl/core.contract.event-bus";
+import { DEFAULT_SHORTCUTS, NavigationEvents, SessionEvents } from "@ctrl/arch.contract.event-bus";
 import { useApi } from "@ctrl/ui.base.api";
 import {
 	AppShellTemplate,

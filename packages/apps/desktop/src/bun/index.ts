@@ -7,7 +7,7 @@ import rootPkg from "../../../../../package.json";
 const APP_VERSION = rootPkg.version;
 
 import { CreateSession } from "@ctrl/base.op.browsing";
-import { EventBus } from "@ctrl/core.contract.event-bus";
+import { EventBus } from "@ctrl/arch.contract.event-bus";
 import { type ElectrobunIpcHandle, ensureSchema } from "@ctrl/wire.desktop.main";
 import { Effect, ManagedRuntime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";

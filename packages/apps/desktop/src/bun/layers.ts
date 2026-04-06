@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { makeDbClient } from "@ctrl/core.impl.db";
+import { makeDbClient } from "@ctrl/arch.impl.db";
 import { createMainProcess, type ElectrobunIpcHandle } from "@ctrl/wire.desktop.main";
 
 const dbPath = join(homedir(), ".spectral", "data.db");

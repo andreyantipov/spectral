@@ -51,10 +51,10 @@ packages/libs/domain.service.browsing/  — replaced by SpecRunner + WebSessionS
 ### Packages unchanged in this PR:
 
 ```
-packages/libs/core.impl.event-bus/      — stays, EventBus = transport
-packages/libs/core.impl.ipc-bridge/     — stays, IPC = transport
-packages/libs/core.middleware.otel/     — stays
-packages/libs/core.middleware.mcp/      — stays
+packages/libs/arch.impl.event-bus/      — stays, EventBus = transport
+packages/libs/arch.impl.ipc-bridge/     — stays, IPC = transport
+packages/libs/arch.util.otel/     — stays
+packages/libs/arch.middleware.mcp/      — stays
 packages/libs/domain.service.workspace/ — migrated in follow-up PR
 packages/libs/domain.service.system/    — migrated in follow-up PR
 packages/libs/ui.*                      — unchanged this PR
@@ -1153,7 +1153,7 @@ Dependencies: `@ctrl/arch.contract.feature-registry`, `@ctrl/base.op.browsing`, 
 
 - [ ] **Step 1: Create feature.browser.session with Drizzle schema**
 
-Move `sessionsTable` and `pagesTable` from `core.impl.db/src/model/` into feature package:
+Move `sessionsTable` and `pagesTable` from `arch.impl.db/src/model/` into feature package:
 
 ```ts
 // src/schema.ts
@@ -1395,8 +1395,8 @@ Remove `BrowsingServiceLayer` from `Layer.mergeAll(...)`. Keep WorkspaceServiceL
 // packages/libs/wire.desktop.main/src/integration.test.ts
 import { describe, it, expect } from "bun:test"
 import { Effect, Layer } from "effect"
-import { EventBus } from "@ctrl/core.contract.event-bus"
-import { EventBusLive } from "@ctrl/core.impl.event-bus"
+import { EventBus } from "@ctrl/arch.contract.event-bus"
+import { EventBusLive } from "@ctrl/arch.impl.event-bus"
 import { FeatureRegistry } from "@ctrl/arch.contract.feature-registry"
 import { SpecRegistry } from "@ctrl/arch.contract.spec-registry"
 

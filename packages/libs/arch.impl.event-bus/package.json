@@ -1,0 +1,16 @@
+{
+	"name": "@ctrl/arch.impl.event-bus",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check": "tsgo --noEmit",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@ctrl/arch.contract.event-bus": "workspace:*"
+	}
+}

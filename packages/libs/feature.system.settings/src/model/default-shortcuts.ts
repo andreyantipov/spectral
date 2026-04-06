@@ -4,7 +4,7 @@ import {
 	SessionEvents,
 	UIEvents,
 	WorkspaceEvents,
-} from "@ctrl/core.contract.event-bus";
+} from "@ctrl/arch.contract.event-bus";
 
 export const DEFAULT_SHORTCUTS: readonly ShortcutBinding[] = [
 	{

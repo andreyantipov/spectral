@@ -13,6 +13,6 @@
 	"dependencies": {
 		"@ctrl/base.schema": "workspace:*",
 		"@ctrl/base.tracing": "workspace:*",
-		"@ctrl/core.contract.storage": "workspace:*"
+		"@ctrl/arch.contract.storage": "workspace:*"
 	}
 }

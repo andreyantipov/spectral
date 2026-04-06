@@ -17,8 +17,8 @@
 		"@ctrl/arch.impl.spec-registry": "workspace:*",
 		"@ctrl/base.op.browsing": "workspace:*",
 		"@ctrl/base.spec.web-session": "workspace:*",
-		"@ctrl/core.contract.event-bus": "workspace:*",
-		"@ctrl/core.impl.event-bus": "workspace:*"
+		"@ctrl/arch.contract.event-bus": "workspace:*",
+		"@ctrl/arch.impl.event-bus": "workspace:*"
 	},
 	"scripts": {
 		"check": "tsc --noEmit",

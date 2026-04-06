@@ -1,6 +1,6 @@
 import type { Page, Session } from "@ctrl/base.schema";
 import { DEFAULT_TAB_URL } from "@ctrl/base.type";
-import { SessionRepository } from "@ctrl/core.contract.storage";
+import { SessionRepository } from "@ctrl/arch.contract.storage";
 import { type Context, Effect, Layer } from "effect";
 import { describe, expect, it } from "vitest";
 import { SessionFeature, SessionFeatureLive } from "./session.feature";

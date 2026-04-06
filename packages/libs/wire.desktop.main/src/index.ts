@@ -13,14 +13,14 @@ import {
 	TerminalEvents,
 	UIEvents,
 	WorkspaceEvents,
-} from "@ctrl/core.contract.event-bus";
-import { StateSync } from "@ctrl/core.contract.state-sync";
-import { LayoutRepositoryLive, makeDbClient, SessionRepositoryLive } from "@ctrl/core.impl.db";
-import { EventBusLive } from "@ctrl/core.impl.event-bus";
-import { type ElectrobunIpcHandle, IpcBridgeLive } from "@ctrl/core.impl.ipc-bridge";
-import { StateSyncLive } from "@ctrl/core.impl.state-sync";
-import { McpServerLive } from "@ctrl/core.middleware.mcp";
-import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/core.middleware.otel/node";
+} from "@ctrl/arch.contract.event-bus";
+import { StateSync } from "@ctrl/arch.contract.state-sync";
+import { LayoutRepositoryLive, makeDbClient, SessionRepositoryLive } from "@ctrl/arch.impl.db";
+import { EventBusLive } from "@ctrl/arch.impl.event-bus";
+import { type ElectrobunIpcHandle, IpcBridgeLive } from "@ctrl/arch.impl.ipc-bridge";
+import { StateSyncLive } from "@ctrl/arch.impl.state-sync";
+import { McpServerLive } from "@ctrl/arch.middleware.mcp";
+import { OTEL_SERVICE_NAMES, OtelLive } from "@ctrl/arch.util.otel/node";
 import { historyEffects } from "@ctrl/feature.browser.history";
 import { navigationEffects } from "@ctrl/feature.browser.navigation";
 import { SessionFeature, SessionFeatureLive, sessionEffects } from "@ctrl/feature.browser.session";
@@ -525,7 +525,7 @@ const _McpLayer = McpServerLive;
 
 // -- Compose ------------------------------------------------------------------
 
-export { ensureSchema } from "@ctrl/core.impl.db";
+export { ensureSchema } from "@ctrl/arch.impl.db";
 export type { ElectrobunIpcHandle };
 
 /**
@@ -558,4 +558,4 @@ export const createMainProcess = (handle: ElectrobunIpcHandle, dbPath: string) =
 // -- Terminal Service (activate after UI rework PR merges) --------------------
 // Replace the stub TerminalHandlers above with real handlers using:
 //   TerminalFeatureLive from @ctrl/feature.terminal.pty
-//   TerminalAdapterLive from @ctrl/core.impl.terminal
+//   TerminalAdapterLive from @ctrl/arch.impl.terminal

@@ -1,6 +1,6 @@
 import { type Spec, SpecRegistry } from "@ctrl/arch.contract.spec-registry";
 import { SpecRunnerInternal } from "@ctrl/arch.impl.spec-runner";
-import { EventBus } from "@ctrl/core.contract.event-bus";
+import { EventBus } from "@ctrl/arch.contract.event-bus";
 import { Effect, Layer, Ref, Stream } from "effect";
 
 export const SpecRegistryLive = Layer.scoped(

@@ -247,7 +247,7 @@ server.tool(
 	{
 		name: z
 			.string()
-			.describe("Package name (e.g. core.contract.storage or @ctrl/core.contract.storage)"),
+			.describe("Package name (e.g. arch.contract.storage or @ctrl/arch.contract.storage)"),
 	},
 	({ name }) => {
 		return { content: [{ type: "text", text: handleGetPackageDeps(name) }] };

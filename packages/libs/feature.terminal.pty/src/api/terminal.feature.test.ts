@@ -1,4 +1,4 @@
-import { TerminalPort } from "@ctrl/core.contract.terminal";
+import { TerminalPort } from "@ctrl/arch.contract.terminal";
 import { Effect, Layer, Stream } from "effect";
 import { describe, expect, it } from "vitest";
 import { TerminalFeature, TerminalFeatureLive } from "./terminal.feature";

@@ -1,5 +1,5 @@
 import { withTracing } from "@ctrl/base.tracing";
-import { LayoutRepository } from "@ctrl/core.contract.storage";
+import { LayoutRepository } from "@ctrl/arch.contract.storage";
 import { Context, Effect, Layer } from "effect";
 import { LAYOUT_FEATURE } from "../lib/constants";
 import { makeGroupNode } from "../lib/tree-ops";

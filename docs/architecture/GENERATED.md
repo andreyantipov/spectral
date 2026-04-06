@@ -12,43 +12,43 @@ Generated: 2026-03-29T19:24:11.339Z
 | @ctrl/base.error | base | — |
 | @ctrl/base.schema | base | — |
 | @ctrl/base.tracing | base | — |
-| @ctrl/core.contract.event-bus | core.contract | base.error, base.schema |
-| @ctrl/core.contract.storage | core.contract | base.error, base.schema, base.tracing |
-| @ctrl/core.contract.native | core.contract | — |
-| @ctrl/core.impl.db | core.impl | base.error, base.schema, base.tracing, base.type, core.contract.storage |
-| @ctrl/core.impl.native | core.impl | base.tracing, core.contract.native |
-| @ctrl/core.impl.event-bus | core.impl | core.contract.event-bus, base.tracing |
-| @ctrl/core.middleware.otel | core.middleware | — |
-| @ctrl/domain.feature.layout | domain.feature | base.schema, base.tracing, core.contract.storage |
+| @ctrl/arch.contract.event-bus | core.contract | base.error, base.schema |
+| @ctrl/arch.contract.storage | core.contract | base.error, base.schema, base.tracing |
+| @ctrl/arch.contract.native | core.contract | — |
+| @ctrl/arch.impl.db | core.impl | base.error, base.schema, base.tracing, base.type, arch.contract.storage |
+| @ctrl/arch.impl.native | core.impl | base.tracing, arch.contract.native |
+| @ctrl/arch.impl.event-bus | core.impl | arch.contract.event-bus, base.tracing |
+| @ctrl/arch.util.otel | core.middleware | — |
+| @ctrl/domain.feature.layout | domain.feature | base.schema, base.tracing, arch.contract.storage |
 | @ctrl/domain.feature.omnibox | domain.feature | base.tracing |
-| @ctrl/domain.feature.history | domain.feature | base.error, base.schema, base.tracing, core.contract.storage |
-| @ctrl/domain.feature.session | domain.feature | base.error, base.schema, base.tracing, base.type, core.contract.storage |
-| @ctrl/domain.feature.bookmark | domain.feature | base.error, base.schema, base.tracing, core.contract.storage |
-| @ctrl/domain.feature.settings | domain.feature | base.tracing, core.contract.event-bus |
-| @ctrl/domain.service.browsing | domain.service | base.error, base.schema, base.tracing, base.type, core.contract.event-bus, core.contract.storage, domain.feature.bookmark, domain.feature.history, domain.feature.layout, domain.feature.omnibox, domain.feature.session, domain.feature.settings |
-| @ctrl/domain.service.workspace | domain.service | base.error, base.tracing, core.contract.event-bus, core.contract.storage, domain.feature.layout |
-| @ctrl/wire.desktop.ui | wire.desktop | core.impl.event-bus |
-| @ctrl/wire.desktop.main | wire.desktop | core.contract.event-bus, core.contract.storage, core.impl.db, core.impl.event-bus, domain.feature.bookmark, domain.feature.history, domain.feature.layout, domain.feature.omnibox, domain.feature.session, domain.feature.settings, domain.service.browsing, domain.service.workspace |
-| @ctrl/ui.api | ui | core.contract.event-bus |
+| @ctrl/domain.feature.history | domain.feature | base.error, base.schema, base.tracing, arch.contract.storage |
+| @ctrl/domain.feature.session | domain.feature | base.error, base.schema, base.tracing, base.type, arch.contract.storage |
+| @ctrl/domain.feature.bookmark | domain.feature | base.error, base.schema, base.tracing, arch.contract.storage |
+| @ctrl/domain.feature.settings | domain.feature | base.tracing, arch.contract.event-bus |
+| @ctrl/domain.service.browsing | domain.service | base.error, base.schema, base.tracing, base.type, arch.contract.event-bus, arch.contract.storage, domain.feature.bookmark, domain.feature.history, domain.feature.layout, domain.feature.omnibox, domain.feature.session, domain.feature.settings |
+| @ctrl/domain.service.workspace | domain.service | base.error, base.tracing, arch.contract.event-bus, arch.contract.storage, domain.feature.layout |
+| @ctrl/wire.desktop.ui | wire.desktop | arch.impl.event-bus |
+| @ctrl/wire.desktop.main | wire.desktop | arch.contract.event-bus, arch.contract.storage, arch.impl.db, arch.impl.event-bus, domain.feature.bookmark, domain.feature.history, domain.feature.layout, domain.feature.omnibox, domain.feature.session, domain.feature.settings, domain.service.browsing, domain.service.workspace |
+| @ctrl/ui.api | ui | arch.contract.event-bus |
 | @ctrl/ui.design | ui | — |
 | @ctrl/ui.components | ui | ui.design |
-| @ctrl/ui.feature.workspace | ui.feature | base.schema, core.contract.event-bus, ui.api |
-| @ctrl/ui.feature.sidebar | ui.feature | base.schema, base.tracing, base.type, core.contract.event-bus, ui.components, ui.api, domain.feature.session |
-| @ctrl/ui.feature.keyboard-provider | ui.feature | core.contract.event-bus, ui.api |
+| @ctrl/ui.feature.workspace | ui.feature | base.schema, arch.contract.event-bus, ui.api |
+| @ctrl/ui.feature.sidebar | ui.feature | base.schema, base.tracing, base.type, arch.contract.event-bus, ui.components, ui.api, domain.feature.session |
+| @ctrl/ui.feature.keyboard-provider | ui.feature | arch.contract.event-bus, ui.api |
 | @ctrl/ui.scene.main | ui.scene | base.type, ui.components, ui.feature.keyboard-provider, ui.feature.sidebar, ui.feature.workspace |
 
 ## Services (14)
 
 | Service | Package | Requires | Methods |
 |---------|---------|----------|---------|
-| EventBus | @ctrl/core.contract.event-bus | — | send, publish, commands, events, on |
-| DatabaseService | @ctrl/core.contract.storage | — | query, transaction |
-| BookmarkRepository | @ctrl/core.contract.storage | — | getAll, create, remove, findByUrl |
-| HistoryRepository | @ctrl/core.contract.storage | — | getAll, record, clear |
-| LayoutRepository | @ctrl/core.contract.storage | — | getLayout, saveLayout |
-| SessionRepository | @ctrl/core.contract.storage | — | getAll, getById, create, remove, setActive, updateCurrentIndex, addPage, removePagesAfterIndex, updatePageTitle, updatePageUrl |
-| NativeApi | @ctrl/core.contract.native | — | clipboard, read, write, shell, openExternal, dialog, showOpen, window, setTitle, minimize, close |
-| Lifecycle | @ctrl/core.contract.lifecycle | — | manifest, activate, deactivate, status |
+| EventBus | @ctrl/arch.contract.event-bus | — | send, publish, commands, events, on |
+| DatabaseService | @ctrl/arch.contract.storage | — | query, transaction |
+| BookmarkRepository | @ctrl/arch.contract.storage | — | getAll, create, remove, findByUrl |
+| HistoryRepository | @ctrl/arch.contract.storage | — | getAll, record, clear |
+| LayoutRepository | @ctrl/arch.contract.storage | — | getLayout, saveLayout |
+| SessionRepository | @ctrl/arch.contract.storage | — | getAll, getById, create, remove, setActive, updateCurrentIndex, addPage, removePagesAfterIndex, updatePageTitle, updatePageUrl |
+| NativeApi | @ctrl/arch.contract.native | — | clipboard, read, write, shell, openExternal, dialog, showOpen, window, setTitle, minimize, close |
+| Lifecycle | @ctrl/arch.contract.lifecycle | — | manifest, activate, deactivate, status |
 | LayoutFeature | @ctrl/domain.feature.layout | LayoutRepository | getLayout, getPersistedLayout, updateLayout |
 | OmniboxFeature | @ctrl/domain.feature.omnibox | — | resolve |
 | HistoryFeature | @ctrl/domain.feature.history | HistoryRepository | getAll, record, clear |

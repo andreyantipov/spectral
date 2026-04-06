@@ -1,7 +1,7 @@
 import { FeatureRegistryLive } from "@ctrl/arch.impl.feature-registry";
 import { SpecRegistryLive } from "@ctrl/arch.impl.spec-registry";
 import { SpecRunnerLive } from "@ctrl/arch.impl.spec-runner";
-import { EventBusLive } from "@ctrl/core.impl.event-bus";
+import { EventBusLive } from "@ctrl/arch.impl.event-bus";
 import { Layer } from "effect";
 
 /**

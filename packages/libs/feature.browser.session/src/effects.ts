@@ -1,5 +1,5 @@
 import { Effects } from "@ctrl/base.op.browsing";
-import { EventBus } from "@ctrl/core.contract.event-bus";
+import { EventBus } from "@ctrl/arch.contract.event-bus";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { eq } from "drizzle-orm";
 import { Effect } from "effect";

@@ -20,30 +20,30 @@ u  ui.*                Presentation — design, components, api, features, scene
 
 | Tier | Package format | Hex role | Depends on |
 |------|---------------|----------|------------|
-| contract | `core.contract.<name>` | Port (pure interface, Context.Tag + type signatures) | nothing |
-| impl | `core.impl.<name>` | Driven adapter (implements contracts). **One Layer per package.** | `core.contract.*`, `base.*` |
+| contract | `arch.contract.<name>` | Port (pure interface, Context.Tag + type signatures) | nothing |
+| impl | `arch.impl.<name>` | Driven adapter (implements contracts). **One Layer per package.** | `arch.contract.*`, `base.*` |
 
 ## Domain Tiers (`feature → service`)
 
 | Tier | Package format | Hex role | Depends on |
 |------|---------------|----------|------------|
-| feature | `domain.feature.<name>` | Atomic domain logic (single concern) | `core.contract.*`, `base.*` via DI |
-| service | `domain.service.<name>` | Application service (composes features) | `domain.feature.*`, `core.contract.*`, `base.*` |
+| feature | `domain.feature.<name>` | Atomic domain logic (single concern) | `arch.contract.*`, `base.*` via DI |
+| service | `domain.service.<name>` | Application service (composes features) | `domain.feature.*`, `arch.contract.*`, `base.*` |
 
 ## Wire Packages (`wire.<target>.<side>`)
 
 | Package | Role | Depends on |
 |---------|------|------------|
 | `wire.desktop.main` | Main-process Layer composition for desktop | everything above |
-| `wire.desktop.ui` | Webview-process Layer composition for desktop | `core.impl.*` |
+| `wire.desktop.ui` | Webview-process Layer composition for desktop | `arch.impl.*` |
 
 ## UI Packages
 
 | Package | Role | Depends on |
 |---------|------|------------|
 | `ui.base.components` | Design tokens, Panda CSS, styled-system, component toolkit | nothing (uses `@styled-system/*` path alias internally) |
-| `ui.base.api` | Hooks (`useApi`, `RuntimeProvider`) | `core.contract.*` |
-| `ui.feature.<name>` | Wires a domain service to a component | `ui.base.api`, `ui.base.components`, `core.contract.*` |
+| `ui.base.api` | Hooks (`useApi`, `RuntimeProvider`) | `arch.contract.*` |
+| `ui.feature.<name>` | Wires a domain service to a component | `ui.base.api`, `ui.base.components`, `arch.contract.*` |
 | `ui.scene.<name>` | Scene composition per concern | `ui.feature.*`, `ui.base.components` |
 
 ## Base Packages (always 1-level)
@@ -72,6 +72,6 @@ Everything else is internal. ast-grep and GritQL enforce this.
 4. The resulting name is both the directory name and the npm package name: `@ctrl/<name>`.
 
 Examples:
-- A new DB-backed repository for bookmarks → `core.impl.bookmark` → `@ctrl/core.impl.bookmark`
+- A new DB-backed repository for bookmarks → `arch.impl.bookmark` → `@ctrl/arch.impl.bookmark`
 - Atomic business logic for bookmarks → `domain.feature.bookmark` → `@ctrl/domain.feature.bookmark`
 - A new page composed from features → add it to `ui.scene.main` → `@ctrl/ui.scene.main`

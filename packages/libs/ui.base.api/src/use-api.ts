@@ -3,7 +3,7 @@ import {
 	type AppEvent,
 	type AppEvents,
 	EventBus,
-} from "@ctrl/core.contract.event-bus";
+} from "@ctrl/arch.contract.event-bus";
 import type { Event } from "@effect/experimental/Event";
 import type { EventGroup } from "@effect/experimental/EventGroup";
 import { Effect, Fiber, type ManagedRuntime, PubSub, Stream } from "effect";

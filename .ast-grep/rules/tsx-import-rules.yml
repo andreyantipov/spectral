@@ -53,9 +53,9 @@ constraints:
 id: core-no-domain-or-ui--tsx
 language: Tsx
 severity: error
-message: "core.* cannot import domain.* or ui.*"
+message: "arch.* cannot import domain.* or ui.*"
 files:
-  - "packages/libs/core.*/src/**/*.tsx"
+  - "packages/libs/arch.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
