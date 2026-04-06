@@ -5,7 +5,7 @@ import { LayoutRepository } from "@ctrl/arch.contract.storage";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { eq } from "drizzle-orm";
 import { Effect, Layer, Schema } from "effect";
-import { workspaceLayoutTable } from "../model/workspace-layout.schema";
+import { workspaceLayoutTable } from "./workspace-layout.schema";
 
 const decodePersistedLayout = Schema.decodeUnknown(PersistedLayoutSchema);
 

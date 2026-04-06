@@ -6,8 +6,8 @@ import { SessionRepository } from "@ctrl/arch.contract.storage";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { Effect, Layer } from "effect";
-import { pagesTable } from "../model/pages.schema";
-import { sessionsTable } from "../model/sessions.schema";
+import { pagesTable } from "./pages.schema";
+import { sessionsTable } from "./sessions.schema";
 
 export const SessionRepositoryLive = Layer.effect(
 	SessionRepository,

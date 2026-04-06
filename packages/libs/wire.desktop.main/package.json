@@ -21,6 +21,8 @@
 		"@ctrl/arch.contract.state-sync": "workspace:*",
 		"@ctrl/arch.contract.storage": "workspace:*",
 		"@ctrl/arch.impl.db": "workspace:*",
+		"@ctrl/base.model.session": "workspace:*",
+		"@ctrl/base.model.layout": "workspace:*",
 		"@ctrl/arch.impl.state-sync": "workspace:*",
 		"@ctrl/arch.impl.event-bus": "workspace:*",
 		"@ctrl/arch.impl.ipc-bridge": "workspace:*",

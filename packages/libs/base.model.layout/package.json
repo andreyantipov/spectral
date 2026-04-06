@@ -1,0 +1,21 @@
+{
+	"name": "@ctrl/base.model.layout",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check": "tsgo --noEmit",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@ctrl/base.error": "workspace:*",
+		"@ctrl/base.schema": "workspace:*",
+		"@ctrl/base.tracing": "workspace:*",
+		"@ctrl/arch.contract.storage": "workspace:*",
+		"drizzle-orm": "^0.45.2",
+		"@effect/sql-drizzle": "^0.48.0"
+	}
+}

@@ -4,7 +4,7 @@ import { layer as drizzleLayer } from "@effect/sql-drizzle/Sqlite";
 import { LibsqlClient } from "@effect/sql-libsql";
 import { Effect, Layer } from "effect";
 import { describe, expect, it } from "vitest";
-import { ensureSchema } from "./ensure-schema";
+import { ensureSchema } from "@ctrl/arch.impl.db";
 import { LayoutRepositoryLive } from "./layout.repository";
 
 const makeTestLayer = () => {

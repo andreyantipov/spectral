@@ -5,7 +5,7 @@ import { BookmarkRepository } from "@ctrl/arch.contract.storage";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { desc, eq } from "drizzle-orm";
 import { Effect, Layer } from "effect";
-import { bookmarksTable } from "../model/bookmarks.schema";
+import { bookmarksTable } from "./bookmarks.schema";
 
 export const BookmarkRepositoryLive = Layer.effect(
 	BookmarkRepository,

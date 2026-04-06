@@ -5,7 +5,7 @@ import { HistoryRepository } from "@ctrl/arch.contract.storage";
 import { SqliteDrizzle } from "@effect/sql-drizzle/Sqlite";
 import { desc, sql } from "drizzle-orm";
 import { Effect, Layer } from "effect";
-import { historyTable } from "../model/history.schema";
+import { historyTable } from "./history.schema";
 
 export const HistoryRepositoryLive = Layer.effect(
 	HistoryRepository,

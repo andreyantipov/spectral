@@ -4,7 +4,7 @@ import { LibsqlClient } from "@effect/sql-libsql";
 import { Effect, Layer } from "effect";
 import { describe, expect, it } from "vitest";
 import { BookmarkRepositoryLive } from "./bookmark.repository";
-import { ensureSchema } from "./ensure-schema";
+import { ensureSchema } from "@ctrl/arch.impl.db";
 
 const makeTestLayer = () => {
 	const DbLive = LibsqlClient.layer({ url: "file::memory:" });

@@ -1,12 +1,3 @@
-export { BookmarkRepositoryLive } from "./api/bookmark.repository";
 export { ensureSchema } from "./api/ensure-schema";
-export { HistoryRepositoryLive } from "./api/history.repository";
-export { LayoutRepositoryLive } from "./api/layout.repository";
-export { SessionRepositoryLive } from "./api/session.repository";
 export { makeDbClient } from "./lib/client";
 export { makeRepository } from "./lib/make-repository";
-export { bookmarksTable } from "./model/bookmarks.schema";
-export { historyTable } from "./model/history.schema";
-export { pagesTable } from "./model/pages.schema";
-export { sessionsTable } from "./model/sessions.schema";
-export { workspaceLayoutTable } from "./model/workspace-layout.schema";

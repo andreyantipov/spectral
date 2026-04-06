@@ -15,7 +15,9 @@ import {
 	WorkspaceEvents,
 } from "@ctrl/arch.contract.event-bus";
 import { StateSync } from "@ctrl/arch.contract.state-sync";
-import { LayoutRepositoryLive, makeDbClient, SessionRepositoryLive } from "@ctrl/arch.impl.db";
+import { makeDbClient } from "@ctrl/arch.impl.db";
+import { LayoutRepositoryLive } from "@ctrl/base.model.layout";
+import { SessionRepositoryLive } from "@ctrl/base.model.session";
 import { EventBusLive } from "@ctrl/arch.impl.event-bus";
 import { type ElectrobunIpcHandle, IpcBridgeLive } from "@ctrl/arch.impl.ipc-bridge";
 import { StateSyncLive } from "@ctrl/arch.impl.state-sync";
