@@ -13,13 +13,13 @@ import { resolve } from "node:path";
 const ROOT = resolve(import.meta.dir, "../..");
 
 const WATCH_DIRS = [
-	"packages/libs/core.contract.event-bus/src",
-	"packages/libs/domain.feature.session/src",
-	"packages/libs/domain.feature.bookmark/src",
-	"packages/libs/domain.feature.history/src",
-	"packages/libs/domain.feature.layout/src",
-	"packages/libs/domain.feature.omnibox/src",
-	"packages/libs/domain.service.workspace/src",
+	"packages/libs/arch.contract.event-bus/src",
+	"packages/libs/base.event/src",
+	"packages/libs/base.spec.web-session/src",
+	"packages/libs/feature.browser.session/src",
+	"packages/libs/feature.browser.history/src",
+	"packages/libs/feature.workspace.layout/src",
+	"packages/libs/wire.desktop.main/src",
 	"packages/libs/ui.base.api/src",
 ];
 
