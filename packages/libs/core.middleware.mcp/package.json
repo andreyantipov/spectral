@@ -10,7 +10,6 @@
 		"check": "tsgo --noEmit"
 	},
 	"dependencies": {
-		"@ctrl/core.contract.event-bus": "workspace:*",
-		"@ctrl/core.contract.state-sync": "workspace:*"
+		"@ctrl/core.contract.event-bus": "workspace:*"
 	}
 }
