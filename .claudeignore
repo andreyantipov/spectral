@@ -55,7 +55,7 @@ temp/
 *.swo
 
 # Documentation build outputs
-docs/architecture/GENERATED.md
+# Note: GENERATED.md is kept for architecture reference
 docs/architecture/*.svg
 
 # Monorepo cache

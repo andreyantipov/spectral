@@ -32,7 +32,7 @@ bun run lint:deps       # sherif
 
 # Build & test
 bun run build --force
-bun test
+bun run test  # or: turbo test
 
 # Documentation
 bun run docs:build
