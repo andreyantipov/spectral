@@ -1,3 +1,15 @@
+# [0.19.0](https://github.com/andreyantipov/spectral/compare/v0.18.0...v0.19.0) (2026-04-07)
+
+
+### Bug Fixes
+
+* **ci:** skip CI on chore(release) commits + clobber release assets ([#28](https://github.com/andreyantipov/spectral/issues/28)) ([e7a263b](https://github.com/andreyantipov/spectral/commit/e7a263b847c9d7fd62cdb33344486c87b2742bac))
+
+
+### Features
+
+* sort imports in arch.impl.spec-registry to satisfy biome organizeImports ([#30](https://github.com/andreyantipov/spectral/issues/30)) ([bc8f222](https://github.com/andreyantipov/spectral/commit/bc8f2228f172ef0c6755622d29ad8095eae92f8f))
+
 # [0.18.0](https://github.com/andreyantipov/spectral/compare/v0.17.0...v0.18.0) (2026-04-04)
 
 
