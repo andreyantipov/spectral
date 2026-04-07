@@ -1,0 +1,62 @@
+# Dependencies
+node_modules/
+.pnpm/
+.yarn/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+.turbo/
+
+# Lock files (heavy, rarely needed)
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+bun.lockb
+
+# Generated files
+**/*.map
+**/*.min.js
+**/*.min.css
+**/coverage/
+**/.cache/
+
+# Binary files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.woff*
+*.ttf
+*.eot
+*.mp4
+*.webm
+
+# Logs and temp
+*.log
+logs/
+tmp/
+temp/
+.DS_Store
+
+# Test artifacts
+**/__snapshots__/
+**/test-results/
+
+# IDE
+.idea/
+.vscode/settings.json
+*.swp
+*.swo
+
+# Documentation build outputs
+docs/architecture/GENERATED.md
+docs/architecture/*.svg
+
+# Monorepo cache
+.nx/
