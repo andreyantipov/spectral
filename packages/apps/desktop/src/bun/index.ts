@@ -35,6 +35,29 @@ const win = new BrowserWindow({
 // The Electrobun RPC handle doubles as the IPC channel for EventBus bridging
 const rpcHandle = win.webview.rpc as unknown as ElectrobunIpcHandle;
 
+// Enable CDP in development mode for e2e testing with Stagehand
+if (process.env.NODE_ENV === "development" || process.env.ENABLE_CDP === "true" || process.env.ENABLE_E2E === "true") {
+	// Attach Chrome DevTools Protocol for programmatic access
+	win.webview.cdpAttach?.();
+	console.info("[bun] CDP attached for development/testing");
+
+	// Optional: Listen for CDP events if needed
+	win.webview.cdpOn?.("Page.loadEventFired", () => {
+		console.info("[bun] Page loaded, CDP ready");
+	});
+
+	// In CI, we might want to auto-quit after tests
+	if (process.env.CI === "true") {
+		// Listen for a special quit signal from tests
+		win.webview.cdpOn?.("Runtime.consoleAPICalled", (params) => {
+			if (params.args?.[0]?.value === "E2E_TESTS_COMPLETE") {
+				console.info("[bun] E2E tests complete, exiting...");
+				process.exit(0);
+			}
+		});
+	}
+}
+
 // Ensure database schema exists BEFORE services start (they query on startup)
 await Effect.runPromise(ensureSchema.pipe(Effect.provide(DbOnlyLive)));
 

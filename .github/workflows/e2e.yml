@@ -1,0 +1,216 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-linux:
+    name: E2E Tests (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      # Install system dependencies for GUI apps
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            xvfb \
+            libgtk-3-0 \
+            libnotify-dev \
+            libgconf-2-4 \
+            libnss3 \
+            libxss1 \
+            libasound2 \
+            libxtst6 \
+            xauth \
+            xorg \
+            libxcb-xkb1 \
+            x11-xkb-utils \
+            libx11-xcb1 \
+            libxcb-dri3-0 \
+            libxcb-icccm4 \
+            libxcb-image0 \
+            libxcb-keysyms1 \
+            libxcb-randr0 \
+            libxcb-render-util0 \
+            libxcb-xinerama0
+
+      - name: Install dependencies
+        run: bun install --ignore-scripts
+
+      - name: Build desktop app with E2E support
+        working-directory: packages/apps/desktop
+        run: bun run build:e2e
+
+      # Start virtual display
+      - name: Start xvfb
+        run: |
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
+          sleep 3
+
+      # Run the app in background with virtual display
+      - name: Start app in background
+        working-directory: packages/apps/desktop
+        run: |
+          export DISPLAY=:99
+          ./build/spectral > /tmp/app.log 2>&1 &
+          echo $! > /tmp/app.pid
+
+      # Wait for CDP to be ready
+      - name: Wait for CDP
+        working-directory: packages/apps/desktop-e2e
+        run: bun run wait:cdp
+
+      # Run E2E tests
+      - name: Run E2E tests
+        working-directory: packages/apps/desktop-e2e
+        env:
+          DISPLAY: :99
+          CI: true
+        run: bun run test:e2e:ci
+
+      # Cleanup
+      - name: Stop app
+        if: always()
+        run: |
+          if [ -f /tmp/app.pid ]; then
+            kill $(cat /tmp/app.pid) || true
+          fi
+
+      # Upload logs on failure
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-logs-linux
+          path: |
+            /tmp/app.log
+            packages/apps/desktop-e2e/test-results/
+
+  e2e-macos:
+    name: E2E Tests (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --ignore-scripts
+
+      - name: Build desktop app with E2E support
+        working-directory: packages/apps/desktop
+        run: bun run build:e2e
+
+      # macOS doesn't need xvfb but may need accessibility permissions
+      - name: Grant screen recording permissions (if needed)
+        run: |
+          # This is typically handled by the CI runner
+          # But we can try to ensure the app has permissions
+          echo "macOS CI runner should have necessary permissions"
+
+      # Run the app in background
+      - name: Start app in background
+        working-directory: packages/apps/desktop
+        run: |
+          ./build/Spectral.app/Contents/MacOS/Spectral > /tmp/app.log 2>&1 &
+          echo $! > /tmp/app.pid
+          sleep 5
+
+      # Wait for CDP to be ready
+      - name: Wait for CDP
+        working-directory: packages/apps/desktop-e2e
+        run: bun run wait:cdp
+
+      # Run E2E tests
+      - name: Run E2E tests
+        working-directory: packages/apps/desktop-e2e
+        env:
+          CI: true
+        run: bun run test:e2e:ci
+
+      # Cleanup
+      - name: Stop app
+        if: always()
+        run: |
+          if [ -f /tmp/app.pid ]; then
+            kill $(cat /tmp/app.pid) || true
+          fi
+
+      # Upload logs on failure
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-logs-macos
+          path: |
+            /tmp/app.log
+            packages/apps/desktop-e2e/test-results/
+
+  e2e-windows:
+    name: E2E Tests (Windows)
+    runs-on: windows-latest
+    if: false  # TODO: Enable when Windows build is ready
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --ignore-scripts
+
+      - name: Build desktop app with E2E support
+        working-directory: packages/apps/desktop
+        run: bun run build:e2e
+
+      # Windows runs GUI apps natively in CI
+      - name: Start app in background
+        working-directory: packages/apps/desktop
+        shell: pwsh
+        run: |
+          Start-Process -FilePath ".\build\Spectral.exe" `
+                       -RedirectStandardOutput "C:\temp\app.log" `
+                       -RedirectStandardError "C:\temp\app-error.log" `
+                       -PassThru | Out-File -FilePath "C:\temp\app.pid"
+
+      # Wait for CDP to be ready
+      - name: Wait for CDP
+        working-directory: packages/apps/desktop-e2e
+        run: bun run wait:cdp
+
+      # Run E2E tests
+      - name: Run E2E tests
+        working-directory: packages/apps/desktop-e2e
+        env:
+          CI: true
+        run: bun run test:e2e:ci
+
+      # Cleanup
+      - name: Stop app
+        if: always()
+        shell: pwsh
+        run: |
+          $pid = Get-Content "C:\temp\app.pid" -ErrorAction SilentlyContinue
+          if ($pid) { Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue }
+
+      # Upload logs on failure
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-logs-windows
+          path: |
+            C:\temp\app*.log
+            packages/apps/desktop-e2e/test-results/

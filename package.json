@@ -19,6 +19,7 @@
 		"lint:fix": "biome check --write .",
 		"fmt": "biome format --write .",
 		"build:ci": "turbo build --filter=!@ctrl/desktop",
+		"test:e2e": "bun run packages/tools/run-e2e-tests.ts",
 		"lint:ci": "biome check . && ast-grep scan",
 		"test": "turbo test",
 		"docs:meta": "bun run packages/tools/extract-metadata.ts > metadata.json",

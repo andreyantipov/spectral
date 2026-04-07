@@ -22,8 +22,10 @@
 		"prebundle": "bun run build-view.ts && bun run prepare-native-deps.ts",
 		"prebundle:bun": "bun build src/bun/index.ts --target=bun --external=@libsql/client --outfile=build/index.js",
 		"build": "bun install && bun run prebundle && bun run prebundle:bun && electrobun build --env stable",
+		"build:e2e": "ENABLE_E2E=true bun install && bun run prebundle && bun run prebundle:bun && electrobun build --env stable",
 		"start": "bun run build && electrobun dev",
 		"dev": "bun run prebundle && bun run prebundle:bun && electrobun dev --watch",
+		"dev:e2e": "NODE_ENV=development ENABLE_CDP=true bun run prebundle && bun run prebundle:bun && electrobun dev --watch",
 		"dev:watch-ui": "bun run dev-view.ts",
 		"check": "tsgo --noEmit 2>&1 | (! grep -v 'node_modules/' | grep 'error TS')"
 	}

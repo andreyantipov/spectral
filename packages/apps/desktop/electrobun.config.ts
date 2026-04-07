@@ -2,6 +2,7 @@ import type { ElectrobunConfig } from "electrobun";
 import rootPkg from "../../../package.json";
 
 const isDev = process.argv[2] === "dev";
+const isE2E = process.env.ENABLE_E2E === "true";  // For CI builds
 
 export default {
   app: {
@@ -11,6 +12,13 @@ export default {
   },
   runtime: {
     exitOnLastWindowClosed: true,
+    // Enable CDP for e2e testing in dev mode or CI
+    ...((isDev && process.env.ENABLE_CDP === "true") || isE2E ? {
+      cef: {
+        remoteDebuggingPort: 9222,
+        enableDevTools: isDev,  // DevTools only in dev, not CI
+      }
+    } : {}),
   },
   build: {
     bun: {
@@ -25,7 +33,16 @@ export default {
       "build/bun-deps/node_modules": "bun/node_modules",
       "../../libs/arch.impl.db/src/migrations": "bun/migrations",
     },
-    watch: ["build/main-ui"],
+    watch: [
+      "build/main-ui",
+      "build/index.js",  // Watch main process changes
+      "src/**/*.ts",     // Watch TypeScript source files
+    ],
+    watchIgnore: [
+      "**/*.d.ts",
+      "**/*.map",
+      "**/node_modules/**",
+    ],
     mac: {
       defaultRenderer: "native",
       icons: isDev ? "assets/icon-dev.iconset" : "assets/icon.iconset",

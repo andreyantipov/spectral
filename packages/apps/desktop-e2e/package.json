@@ -1,0 +1,21 @@
+{
+  "name": "@ctrl/desktop-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test stagehand-web-browsing.e2e.ts",
+    "test:simple": "playwright test simple-web-browsing.e2e.ts",
+    "test:ci": "playwright test stagehand-web-browsing.e2e.ts --reporter=json",
+    "test:debug": "playwright test --debug",
+    "wait:cdp": "node wait-for-cdp.js"
+  },
+  "devDependencies": {
+    "@browserbasehq/stagehand": "^1.10.0",
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.0.0",
+    "playwright": "^1.49.0",
+    "typescript": "^6.0.2",
+    "dotenv": "^16.4.5"
+  }
+}

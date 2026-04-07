@@ -87,3 +87,6 @@ jobs:
         run: bun run build
       - name: Verify .app exists
         run: find packages/apps/desktop/build -name "*.app" -type d | head -1 | xargs ls -la
+
+  # E2E tests run separately via e2e.yml workflow
+  # Triggered automatically on PR and main branch

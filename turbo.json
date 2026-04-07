@@ -35,6 +35,16 @@
 		"build-storybook": {
 			"dependsOn": ["^build"],
 			"outputs": ["storybook-static/**"]
+		},
+		"test:e2e": {
+			"dependsOn": ["@ctrl/desktop#build"],
+			"inputs": ["tests/**", ".stagehand/cache/**"],
+			"cache": false
+		},
+		"test:e2e:record": {
+			"dependsOn": ["@ctrl/desktop#build"],
+			"outputs": [".stagehand/cache/**"],
+			"cache": false
 		}
 	}
 }
