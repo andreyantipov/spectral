@@ -6,7 +6,8 @@ import rootPkg from "../../../../../package.json";
 
 const APP_VERSION = rootPkg.version;
 
-import { EventBus } from "@ctrl/core.contract.event-bus";
+import { EventBus } from "@ctrl/arch.contract.event-bus";
+import { WebSessionActions } from "@ctrl/base.spec.web-session";
 import { type ElectrobunIpcHandle, ensureSchema } from "@ctrl/wire.desktop.main";
 import { Effect, ManagedRuntime } from "effect";
 import { ApplicationMenu, BrowserWindow } from "electrobun/bun";
@@ -89,13 +90,17 @@ ApplicationMenu.setApplicationMenu([
 ApplicationMenu.on("application-menu-clicked", (event: unknown) => {
 	const data = (event as { data?: { action?: string } })?.data;
 	if (data?.action === "new-tab") {
+		const { _tag, ...payload } = WebSessionActions.CreateSession.make({ mode: "visual" }) as {
+			readonly _tag: string;
+			readonly [key: string]: unknown;
+		};
 		void runtime.runPromise(
 			EventBus.pipe(
 				Effect.flatMap((bus) =>
 					bus.send({
 						type: "command",
-						action: "session.create",
-						payload: { mode: "visual" },
+						action: _tag,
+						payload,
 						meta: { source: "keyboard" },
 					}),
 				),

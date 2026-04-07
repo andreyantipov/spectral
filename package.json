@@ -47,13 +47,13 @@
 		"@opentelemetry/sdk-trace-web": "^2.6.0",
 		"@zag-js/solid": "^1.36.0",
 		"@zag-js/toast": "^1.36.0",
-		"drizzle-orm": "^0.45.1",
-		"effect": "^3.19.19",
+		"drizzle-orm": "^0.45.2",
+		"effect": "^3.21.0",
 		"electrobun": "1.15.1",
 		"solid-js": "^1.9.11"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "^2.4.7",
+		"@biomejs/biome": "2.4.7",
 		"@dschz/bun-plugin-solid": "^1.0.4",
 		"@effect/language-service": "^0.84.2",
 		"@eventcatalog/sdk": "^2.18.3",
@@ -75,6 +75,7 @@
 		"storybook-solidjs-vite": "^10.0.0",
 		"ts-morph": "^27.0.2",
 		"turbo": "^2.8.12",
+		"typescript": "^6.0.2",
 		"vite": "^6.0.0",
 		"vitest": "^4.1.0",
 		"zod": "^4.3.6"

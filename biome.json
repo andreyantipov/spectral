@@ -44,7 +44,10 @@
 			"!**/*.config.ts",
 			"!**/*.config.js",
 			"!**/drizzle",
-			"!packages/infra/ci/sdk"
+			"!packages/infra/ci/sdk",
+			"!**/.eventcatalog-core",
+			"!**/.astro",
+			"!**/metadata.json"
 		]
 	},
 	"overrides": [

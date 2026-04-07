@@ -10,8 +10,8 @@
 		"check": "tsgo --noEmit"
 	},
 	"dependencies": {
-		"@ctrl/core.impl.event-bus": "workspace:*",
-		"@ctrl/core.impl.ipc-bridge": "workspace:*",
-		"@ctrl/core.middleware.otel": "workspace:*"
+		"@ctrl/arch.impl.event-bus": "workspace:*",
+		"@ctrl/arch.impl.ipc-bridge": "workspace:*",
+		"@ctrl/arch.util.otel": "workspace:*"
 	}
 }

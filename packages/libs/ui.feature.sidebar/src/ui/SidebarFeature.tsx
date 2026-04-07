@@ -1,7 +1,8 @@
+import { NavigationEvents, SessionEvents } from "@ctrl/base.event";
 import type { BrowsingState, Session } from "@ctrl/base.schema";
 import { withWebTracing } from "@ctrl/base.tracing";
 import { currentUrl } from "@ctrl/base.type";
-import { DEFAULT_SHORTCUTS, NavigationEvents, SessionEvents } from "@ctrl/core.contract.event-bus";
+import { DEFAULT_SHORTCUTS } from "@ctrl/feature.system.settings";
 import { useApi } from "@ctrl/ui.base.api";
 import {
 	AppShellTemplate,
@@ -50,7 +51,7 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 		const s = state();
 		if (s && s.sessions.length === 0 && !autoCreated) {
 			autoCreated = true;
-			api.dispatch("session.create", { mode: "visual" });
+			api.send("CreateSession", { mode: "visual" });
 		}
 	});
 
@@ -77,23 +78,30 @@ export function SidebarFeature(props: SidebarFeatureProps) {
 	const activeItemId = () => mappedSessions().find((item) => item.active)?.id ?? null;
 	const activeSession = () => state()?.sessions?.find((s) => s.isActive);
 
+	const resolveUrl = (input: string): string => {
+		const trimmed = input.trim();
+		if (/^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)) return trimmed;
+		if (/^[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}/.test(trimmed)) return `https://${trimmed}`;
+		if (/^localhost(:\d+)?$/.test(trimmed)) return `http://${trimmed}`;
+		return `https://www.google.com/search?q=${encodeURIComponent(trimmed)}`;
+	};
+
 	const ops = withWebTracing(SIDEBAR_FEATURE, {
 		navigate: (input: string) => {
 			const session = activeSession();
 			if (session) {
-				api.dispatch("nav.navigate", { id: session.id, input });
+				api.send("Navigate", { instanceId: session.id, url: resolveUrl(input) });
 			}
 		},
-		createSession: () => api.dispatch("session.create", { mode: "visual" }),
+		createSession: () => api.send("CreateSession", { mode: "visual" }),
 		switchSession: (id: string) => {
-			api.dispatch("session.activate", { id });
-			api.dispatch("ws.activate-panel", { panelId: id });
+			api.send("ActivateSession", { instanceId: id });
 		},
-		closeSession: (id: string) => api.dispatch("session.close", { id }),
+		closeSession: (id: string) => api.send("CloseSession", { instanceId: id }),
 		reportNavigation: (sessionId: string, url: string) =>
-			api.dispatch("nav.report", { id: sessionId, url }),
+			api.send("UrlCommitted", { instanceId: sessionId, url, title: "", favicon: "" }),
 		updateTitle: (sessionId: string, title: string) =>
-			api.dispatch("nav.update-title", { id: sessionId, title }),
+			api.send("TitleChanged", { instanceId: sessionId, title }),
 	});
 
 	const activeUrl = () => {

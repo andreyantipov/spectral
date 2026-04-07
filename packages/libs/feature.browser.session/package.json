@@ -1,0 +1,20 @@
+{
+	"name": "@ctrl/feature.browser.session",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"dependencies": {
+		"@ctrl/base.error": "workspace:*",
+		"@ctrl/base.model.session": "workspace:*",
+		"@ctrl/base.schema": "workspace:*",
+		"@ctrl/base.tracing": "workspace:*",
+		"@ctrl/base.type": "workspace:*"
+	},
+	"scripts": {
+		"check": "tsc --noEmit",
+		"test": "bun test"
+	}
+}

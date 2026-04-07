@@ -1,0 +1,18 @@
+{
+	"name": "@ctrl/feature.workspace.layout",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check": "tsgo --noEmit",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@ctrl/base.model.layout": "workspace:*",
+		"@ctrl/base.schema": "workspace:*",
+		"@ctrl/base.tracing": "workspace:*"
+	}
+}

@@ -5,7 +5,7 @@ language: TypeScript
 severity: error
 message: "No re-exports from @ctrl/* in barrel files — only relative exports"
 files:
-  - "packages/libs/core.*/src/index.ts"
+  - "packages/libs/arch.*/src/index.ts"
   - "packages/libs/ui.*/src/index.ts"
 rule:
   pattern: export { $$$NAMES } from "$PATH"
@@ -20,7 +20,7 @@ language: TypeScript
 severity: error
 message: "No type re-exports from @ctrl/* in barrel files"
 files:
-  - "packages/libs/core.*/src/index.ts"
+  - "packages/libs/arch.*/src/index.ts"
   - "packages/libs/ui.*/src/index.ts"
 rule:
   pattern: export type { $$$NAMES } from "$PATH"
@@ -35,7 +35,7 @@ language: TypeScript
 severity: error
 message: "No wildcard re-exports from @ctrl/* in barrel files"
 files:
-  - "packages/libs/core.*/src/index.ts"
+  - "packages/libs/arch.*/src/index.ts"
   - "packages/libs/ui.*/src/index.ts"
 rule:
   pattern: export * from "$PATH"

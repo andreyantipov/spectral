@@ -2,100 +2,102 @@
 
 # Architecture Snapshot
 
-Generated: 2026-03-29T19:24:11.339Z
+Generated: 2026-04-06T22:08:28.799Z
 
-## Packages (29)
+## Packages (45)
 
 | Package | Tier | Dependencies |
 |---------|------|-------------|
-| @ctrl/base.type | base | — |
-| @ctrl/base.error | base | — |
-| @ctrl/base.schema | base | — |
+| @ctrl/base.model.history | base | base.error, base.schema, base.tracing |
+| @ctrl/base.model.session | base | base.error, base.schema, base.tracing, base.type |
 | @ctrl/base.tracing | base | — |
-| @ctrl/core.contract.event-bus | core.contract | base.error, base.schema |
-| @ctrl/core.contract.storage | core.contract | base.error, base.schema, base.tracing |
-| @ctrl/core.contract.native | core.contract | — |
-| @ctrl/core.impl.db | core.impl | base.error, base.schema, base.tracing, base.type, core.contract.storage |
-| @ctrl/core.impl.native | core.impl | base.tracing, core.contract.native |
-| @ctrl/core.impl.event-bus | core.impl | core.contract.event-bus, base.tracing |
-| @ctrl/core.middleware.otel | core.middleware | — |
-| @ctrl/domain.feature.layout | domain.feature | base.schema, base.tracing, core.contract.storage |
-| @ctrl/domain.feature.omnibox | domain.feature | base.tracing |
-| @ctrl/domain.feature.history | domain.feature | base.error, base.schema, base.tracing, core.contract.storage |
-| @ctrl/domain.feature.session | domain.feature | base.error, base.schema, base.tracing, base.type, core.contract.storage |
-| @ctrl/domain.feature.bookmark | domain.feature | base.error, base.schema, base.tracing, core.contract.storage |
-| @ctrl/domain.feature.settings | domain.feature | base.tracing, core.contract.event-bus |
-| @ctrl/domain.service.browsing | domain.service | base.error, base.schema, base.tracing, base.type, core.contract.event-bus, core.contract.storage, domain.feature.bookmark, domain.feature.history, domain.feature.layout, domain.feature.omnibox, domain.feature.session, domain.feature.settings |
-| @ctrl/domain.service.workspace | domain.service | base.error, base.tracing, core.contract.event-bus, core.contract.storage, domain.feature.layout |
-| @ctrl/wire.desktop.ui | wire.desktop | core.impl.event-bus |
-| @ctrl/wire.desktop.main | wire.desktop | core.contract.event-bus, core.contract.storage, core.impl.db, core.impl.event-bus, domain.feature.bookmark, domain.feature.history, domain.feature.layout, domain.feature.omnibox, domain.feature.session, domain.feature.settings, domain.service.browsing, domain.service.workspace |
-| @ctrl/ui.api | ui | core.contract.event-bus |
-| @ctrl/ui.design | ui | — |
-| @ctrl/ui.components | ui | ui.design |
-| @ctrl/ui.feature.workspace | ui.feature | base.schema, core.contract.event-bus, ui.api |
-| @ctrl/ui.feature.sidebar | ui.feature | base.schema, base.tracing, base.type, core.contract.event-bus, ui.components, ui.api, domain.feature.session |
-| @ctrl/ui.feature.keyboard-provider | ui.feature | core.contract.event-bus, ui.api |
-| @ctrl/ui.scene.main | ui.scene | base.type, ui.components, ui.feature.keyboard-provider, ui.feature.sidebar, ui.feature.workspace |
+| @ctrl/base.type | base | — |
+| @ctrl/base.spec.web-session | base | arch.util.spec-builder |
+| @ctrl/base.schema | base | — |
+| @ctrl/base.model.bookmark | base | base.error, base.schema, base.tracing |
+| @ctrl/base.error | base | — |
+| @ctrl/base.event | base | base.error, base.schema |
+| @ctrl/base.model.layout | base | base.error, base.schema, base.tracing |
+| @ctrl/ui.base.components | ui | — |
+| @ctrl/ui.base.api | ui | arch.contract.event-bus, base.event |
+| @ctrl/ui.feature.workspace | ui.feature | base.schema, ui.base.api |
+| @ctrl/ui.feature.sidebar | ui.feature | base.event, base.schema, base.tracing, base.type, feature.system.settings, ui.base.api, ui.base.components |
+| @ctrl/ui.feature.webview | ui.feature | — |
+| @ctrl/ui.feature.keyboard-provider | ui.feature | base.schema, ui.base.api |
+| @ctrl/ui.feature.terminal | ui.feature | — |
+| @ctrl/ui.scene.main | ui.scene | base.schema, base.type, ui.base.api, ui.base.components, ui.feature.keyboard-provider, ui.feature.sidebar, ui.feature.webview, ui.feature.workspace |
+| @ctrl/arch.util.spec-builder | unknown | arch.contract.spec |
+| @ctrl/arch.impl.terminal | unknown | arch.contract.terminal |
+| @ctrl/arch.util.mcp | unknown | arch.contract.event-bus |
+| @ctrl/feature.system.settings | unknown | base.event, base.schema, base.tracing |
+| @ctrl/arch.impl.spec-registry | unknown | arch.contract.event-bus, arch.contract.spec, arch.contract.spec-registry, arch.contract.spec-runner |
+| @ctrl/arch.impl.db | unknown | — |
+| @ctrl/arch.contract.spec | unknown | — |
+| @ctrl/arch.impl.state-sync | unknown | arch.contract.state-sync |
+| @ctrl/feature.terminal.pty | unknown | arch.contract.terminal, base.error, base.tracing |
+| @ctrl/feature.workspace.layout | unknown | base.model.layout, base.schema, base.tracing |
+| @ctrl/feature.browser.navigation | unknown | — |
+| @ctrl/arch.impl.spec-runner | unknown | arch.contract.event-bus, arch.contract.feature-registry, arch.contract.spec, arch.contract.spec-runner |
+| @ctrl/arch.contract.state-sync | unknown | — |
+| @ctrl/feature.browser.session | unknown | base.error, base.model.session, base.schema, base.tracing, base.type |
+| @ctrl/arch.contract.terminal | unknown | — |
+| @ctrl/arch.contract.spec-registry | unknown | arch.contract.spec |
+| @ctrl/arch.util.otel | unknown | — |
+| @ctrl/arch.contract.event-bus | unknown | — |
+| @ctrl/arch.contract.spec-runner | unknown | arch.contract.spec |
+| @ctrl/feature.browser.history | unknown | base.model.history |
+| @ctrl/arch.impl.event-bus | unknown | arch.contract.event-bus |
+| @ctrl/arch.impl.ipc-bridge | unknown | arch.contract.event-bus |
+| @ctrl/arch.impl.feature-registry | unknown | arch.contract.feature-registry |
+| @ctrl/arch.contract.feature-registry | unknown | — |
+| @ctrl/wire.desktop.main | wire.desktop | arch.contract.event-bus, arch.contract.feature-registry, arch.contract.spec-registry, arch.contract.spec-runner, arch.contract.state-sync, arch.impl.db, arch.impl.event-bus, arch.impl.feature-registry, arch.impl.ipc-bridge, arch.impl.spec-registry, arch.impl.spec-runner, arch.impl.state-sync, arch.util.mcp, arch.util.otel, base.event, base.model.layout, base.model.session, base.spec.web-session, feature.browser.history, feature.browser.navigation, feature.browser.session, feature.system.settings, feature.workspace.layout |
+| @ctrl/wire.desktop.ui | wire.desktop | arch.impl.event-bus, arch.impl.ipc-bridge, arch.util.otel |
+| @ctrl/wire.desktop.test | wire.desktop | arch.contract.event-bus, arch.contract.feature-registry, arch.contract.spec-registry, arch.contract.spec-runner, arch.impl.event-bus, arch.impl.feature-registry, arch.impl.spec-registry, arch.impl.spec-runner, base.spec.web-session |
 
-## Services (14)
+## Services (15)
 
 | Service | Package | Requires | Methods |
 |---------|---------|----------|---------|
-| EventBus | @ctrl/core.contract.event-bus | — | send, publish, commands, events, on |
-| DatabaseService | @ctrl/core.contract.storage | — | query, transaction |
-| BookmarkRepository | @ctrl/core.contract.storage | — | getAll, create, remove, findByUrl |
-| HistoryRepository | @ctrl/core.contract.storage | — | getAll, record, clear |
-| LayoutRepository | @ctrl/core.contract.storage | — | getLayout, saveLayout |
-| SessionRepository | @ctrl/core.contract.storage | — | getAll, getById, create, remove, setActive, updateCurrentIndex, addPage, removePagesAfterIndex, updatePageTitle, updatePageUrl |
-| NativeApi | @ctrl/core.contract.native | — | clipboard, read, write, shell, openExternal, dialog, showOpen, window, setTitle, minimize, close |
-| Lifecycle | @ctrl/core.contract.lifecycle | — | manifest, activate, deactivate, status |
-| LayoutFeature | @ctrl/domain.feature.layout | LayoutRepository | getLayout, getPersistedLayout, updateLayout |
-| OmniboxFeature | @ctrl/domain.feature.omnibox | — | resolve |
-| HistoryFeature | @ctrl/domain.feature.history | HistoryRepository | getAll, record, clear |
-| SessionFeature | @ctrl/domain.feature.session | SessionRepository | getAll, create, remove, navigate, goBack, goForward, setActive, updateTitle, updateUrl |
-| BookmarkFeature | @ctrl/domain.feature.bookmark | BookmarkRepository | getAll, create, remove, isBookmarked |
-| SettingsFeature | @ctrl/domain.feature.settings | — | getShortcuts |
+| HistoryRepository | @ctrl/base.model.history | — | getAll, record, clear |
+| SessionRepository | @ctrl/base.model.session | — | getAll, getById, create, remove, setActive, updateCurrentIndex, addPage, removePagesAfterIndex, updatePageTitle, updatePageUrl |
+| BookmarkRepository | @ctrl/base.model.bookmark | — | getAll, create, remove, findByUrl |
+| LayoutRepository | @ctrl/base.model.layout | — | getLayout, saveLayout |
+| StateSync | @ctrl/arch.contract.state-sync | — | register, getSnapshot |
+| TerminalPort | @ctrl/arch.contract.terminal | — | spawn, write, resize, close, output |
+| SpecRegistry | @ctrl/arch.contract.spec-registry | — | register, describe |
+| EventBus | @ctrl/arch.contract.event-bus | — | send, publish, commands, events, on, journal |
+| SpecRunner | @ctrl/arch.contract.spec-runner | — | spawn, destroy, dispatch |
+| SpecRunnerInternal | @ctrl/arch.contract.spec-runner | — | registerSpec |
+| FeatureRegistry | @ctrl/arch.contract.feature-registry | — | register, registerAll, execute, has |
+| SettingsFeature | @ctrl/feature.system.settings | — | getShortcuts |
+| TerminalFeature | @ctrl/feature.terminal.pty | TerminalPort | create, resize, close, list |
+| LayoutFeature | @ctrl/feature.workspace.layout | LayoutRepository | getLayout, getPersistedLayout, updateLayout |
+| SessionFeature | @ctrl/feature.browser.session | SessionRepository | getAll, create, remove, navigate, goBack, goForward, setActive, updateTitle, updateUrl |
 
-## Event Catalog (21)
+## Event Catalog (0)
 
 | Event/Command | Payload | Response |
 |--------------|---------|----------|
-| bm.remove | id: String | void |
-| bm.add | url: String, title: NullOr | Bookmark |
-| nav.update-title | id: String, title: String | void |
-| nav.report | id: String, url: String | void |
-| nav.forward | id: String | Session |
-| nav.back | id: String | Session |
-| nav.navigate | id: String, input: String | Session |
-| session.activate | id: String | void |
-| session.close | id: String | void |
-| session.create | mode: Literal | Session |
-| settings.shortcuts | — | Schema.Array(ShortcutBindingSchema) |
-| diag.pong | message: String | void |
-| diag.ping | — | void |
-| state.snapshot | — | void |
-| state.request | — | void |
-| ui.toggle-sidebar | — | void |
-| ui.toggle-omnibox | — | void |
-| ws.close-panel | panelId: String | void |
-| ws.move-panel | panelId: String, targetGroupId: String | void |
-| ws.split-panel | panelId: String, direction: Literal, newPanel: PanelRefSchema | void |
-| ws.update-layout | layout: Struct, version: Number, dockviewState: Unknown | void |
 
-## Layer Graph (14)
+## Layer Graph (19)
 
+- **TerminalAdapterLive** provides TerminalAdapter, no dependencies
+- **WorkspaceServiceLive** provides WorkspaceService, requires [EventBus, StateSync, LayoutFeature, SessionFeature]
+- **SystemServiceLive** provides SystemService, requires [EventBus, StateSync, SettingsFeature]
 - **IdentityLive** provides Identity, no dependencies
-- **BrowsingServiceLive** provides BrowsingService, requires [EventBus]
-- **LayoutFeatureLive** provides LayoutFeature, requires [LayoutRepository]
-- **HistoryFeatureLive** provides HistoryFeature, requires [HistoryRepository]
-- **BookmarkRepositoryLive** provides BookmarkRepository, no dependencies
+- **BrowserDomainLive** provides BrowserDomain, requires [FeatureRegistry, SpecRegistry, StateSync, SessionFeature, SpecRunner, EventBus]
+- **AutoStateSyncLive** provides AutoStateSync, requires [StateSync, EventBus]
 - **HistoryRepositoryLive** provides HistoryRepository, no dependencies
-- **LayoutRepositoryLive** provides LayoutRepository, no dependencies
 - **SessionRepositoryLive** provides SessionRepository, no dependencies
-- **SessionFeatureLive** provides SessionFeature, requires [SessionRepository]
-- **BookmarkFeatureLive** provides BookmarkFeature, requires [BookmarkRepository]
-- **EventBusLive** provides EventBus, no dependencies
-- **IpcEventBridgeWebviewLive** provides IpcEventBridgeWebview, no dependencies
-- **IpcEventBridgeLive** provides IpcEventBridge, requires [EventBus]
+- **IpcBridgeLive** provides IpcBridge, requires [EventBus]
+- **BookmarkRepositoryLive** provides BookmarkRepository, no dependencies
+- **FeatureRegistryLive** provides FeatureRegistry, no dependencies
+- **LayoutRepositoryLive** provides LayoutRepository, no dependencies
+- **McpServerLive** provides McpServer, requires [EventBus]
 - **SettingsFeatureLive** provides SettingsFeature, no dependencies
+- **StateSyncLive** provides StateSync, no dependencies
+- **TerminalFeatureLive** provides TerminalFeature, requires [TerminalPort]
+- **LayoutFeatureLive** provides LayoutFeature, requires [LayoutRepository]
+- **SessionFeatureLive** provides SessionFeature, requires [SessionRepository]
+- **EventBusLive** provides EventBus, no dependencies
 

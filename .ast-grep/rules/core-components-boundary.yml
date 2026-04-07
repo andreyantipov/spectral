@@ -1,16 +1,16 @@
-# core.ui.components is pure presentational — no domain, api, or port imports
+# ui.base.components is pure presentational — no feature, api, or contract imports
 
 id: core-components-no-domain
 language: TypeScript
 severity: error
-message: "core.ui.components cannot import domain.*, core.ui.api, or core.port.*"
+message: "ui.base.components cannot import feature.*, ui.base.api, or arch.contract.*"
 files:
-  - "packages/libs/core.ui.components/src/**/*.ts"
-  - "packages/libs/core.ui.components/src/**/*.tsx"
+  - "packages/libs/ui.base.components/src/**/*.ts"
+  - "packages/libs/ui.base.components/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
   pattern: import $_ from "$PATH"
 constraints:
   PATH:
-    regex: "(domain\\.|core\\.ui\\.api|core\\.port\\.)"
+    regex: "(feature\\.|ui\\.base\\.api|arch\\.contract\\.)"

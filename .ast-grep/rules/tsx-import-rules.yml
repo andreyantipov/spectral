@@ -5,16 +5,17 @@
 id: ui-no-domain--tsx
 language: Tsx
 severity: error
-message: "ui.* cannot import domain.* — use core.ui.api (EventBus)"
+message: "ui.base.* and ui.scene.* cannot import feature.* (non-UI) directly — use ui.base.api (EventBus)"
 files:
-  - "packages/libs/ui.*/src/**/*.tsx"
+  - "packages/libs/ui.base.*/src/**/*.tsx"
+  - "packages/libs/ui.scene.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
   pattern: import $_ from "$PATH"
 constraints:
   PATH:
-    regex: "domain\\."
+    regex: "@ctrl/feature\\."
 
 ---
 
@@ -34,51 +35,51 @@ constraints:
 
 ---
 
-id: feature-no-service-or-adapter--tsx
+id: feature-no-service-or-impl--tsx
 language: Tsx
 severity: error
-message: "domain.feature.* cannot import domain.service.* or domain.adapter.*"
+message: "feature.* cannot import arch.impl.* directly"
 files:
-  - "packages/libs/domain.feature.*/src/**/*.tsx"
+  - "packages/libs/feature.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
   pattern: import $_ from "$PATH"
 constraints:
   PATH:
-    regex: "domain\\.(service|adapter)\\."
+    regex: "arch\\.impl\\."
 
 ---
 
 id: core-no-domain-or-ui--tsx
 language: Tsx
 severity: error
-message: "core.* cannot import domain.* or ui.*"
+message: "arch.* cannot import feature.* or ui.*"
 files:
-  - "packages/libs/core.*/src/**/*.tsx"
+  - "packages/libs/arch.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
   pattern: import $_ from "$PATH"
 constraints:
   PATH:
-    regex: "(domain\\.(feature|service|adapter)\\.|ui\\.(feature|scene)\\.)"
+    regex: "(feature\\.|ui\\.(feature|scene)\\.)"
 
 ---
 
 id: feature-no-peer-feature--tsx
 language: Tsx
 severity: error
-message: "domain.feature.* cannot import other domain.feature.*"
+message: "feature.* cannot import other feature.* packages"
 files:
-  - "packages/libs/domain.feature.*/src/**/*.tsx"
+  - "packages/libs/feature.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
   pattern: import $_ from "$PATH"
 constraints:
   PATH:
-    regex: "domain\\.feature\\."
+    regex: "feature\\."
 
 ---
 
@@ -103,7 +104,7 @@ language: Tsx
 severity: error
 message: "atoms cannot import from molecules, organisms, or templates"
 files:
-  - "packages/libs/core.ui/src/components/atoms/**/*.tsx"
+  - "packages/libs/ui.base.components/src/components/atoms/**/*.tsx"
 rule:
   pattern: import $_ from "$PATH"
 constraints:
@@ -117,7 +118,7 @@ language: Tsx
 severity: error
 message: "molecules cannot import from organisms or templates"
 files:
-  - "packages/libs/core.ui/src/components/molecules/**/*.tsx"
+  - "packages/libs/ui.base.components/src/components/molecules/**/*.tsx"
 rule:
   pattern: import $_ from "$PATH"
 constraints:
@@ -131,7 +132,7 @@ language: Tsx
 severity: error
 message: "organisms cannot import from templates"
 files:
-  - "packages/libs/core.ui/src/components/organisms/**/*.tsx"
+  - "packages/libs/ui.base.components/src/components/organisms/**/*.tsx"
 rule:
   pattern: import $_ from "$PATH"
 constraints:
@@ -168,12 +169,12 @@ constraints:
 
 ---
 
-id: no-cva-in-core-ui--tsx
+id: no-cva-in-ui-components--tsx
 language: Tsx
 severity: error
-message: "No cva in core.ui — use sva only"
+message: "No cva in ui.base.components — use sva only"
 files:
-  - "packages/libs/core.ui/**/*.tsx"
+  - "packages/libs/ui.base.components/**/*.tsx"
 rule:
   pattern: cva($$$ARGS)
 
@@ -229,13 +230,13 @@ rule:
 id: core-components-no-domain--tsx
 language: Tsx
 severity: error
-message: "core.ui.components cannot import domain.*, core.ui.api, or core.port.*"
+message: "ui.base.components cannot import feature.*, ui.base.api, or arch.contract.*"
 files:
-  - "packages/libs/core.ui.components/src/**/*.tsx"
+  - "packages/libs/ui.base.components/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
   pattern: import $_ from "$PATH"
 constraints:
   PATH:
-    regex: "(domain\\.|core\\.ui\\.api|core\\.port\\.)"
+    regex: "(feature\\.|ui\\.base\\.api|arch\\.contract\\.)"

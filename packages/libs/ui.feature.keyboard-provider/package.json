@@ -12,7 +12,6 @@
 	},
 	"dependencies": {
 		"@ctrl/base.schema": "workspace:*",
-		"@ctrl/ui.base.api": "workspace:*",
-		"solid-js": "*"
+		"@ctrl/ui.base.api": "workspace:*"
 	}
 }

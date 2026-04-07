@@ -8,9 +8,8 @@ rule:
     - pattern: 'export * as $$_ from "electrobun$$$"'
     - pattern: import("electrobun$$$")
 files:
-  - "packages/libs/domain.feature.*/src/**/*.ts"
-  - "packages/libs/domain.service.*/src/**/*.ts"
-  - "packages/libs/core.*/src/**/*.ts"
+  - "packages/libs/feature.*/src/**/*.ts"
+  - "packages/libs/arch.*/src/**/*.ts"
   - "packages/libs/ui.*/src/**/*.ts"
-message: "Raw electrobun imports only allowed in core.impl.*. Use NativeApi tag via DI."
+message: "Raw electrobun imports only allowed in arch.impl.*. Use NativeApi tag via DI."
 severity: error

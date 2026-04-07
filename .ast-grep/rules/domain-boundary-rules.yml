@@ -3,17 +3,19 @@
 id: ui-no-domain
 language: TypeScript
 severity: error
-message: "ui.* cannot import domain.* — use core.ui.api (EventBus)"
+message: "ui.base.* and ui.scene.* cannot import feature.* (non-UI) directly — use ui.base.api (EventBus)"
 files:
-  - "packages/libs/ui.*/src/**/*.ts"
-  - "packages/libs/ui.*/src/**/*.tsx"
+  - "packages/libs/ui.base.*/src/**/*.ts"
+  - "packages/libs/ui.base.*/src/**/*.tsx"
+  - "packages/libs/ui.scene.*/src/**/*.ts"
+  - "packages/libs/ui.scene.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
   pattern: import $_ from "$PATH"
 constraints:
   PATH:
-    regex: "domain\\."
+    regex: "@ctrl/feature\\."
 
 ---
 
@@ -34,85 +36,34 @@ constraints:
 
 ---
 
-id: feature-no-service-or-adapter
+id: feature-no-service-or-impl
 language: TypeScript
 severity: error
-message: "domain.feature.* cannot import domain.service.* or domain.adapter.*"
+message: "feature.* cannot import arch.impl.* directly"
 files:
-  - "packages/libs/domain.feature.*/src/**/*.ts"
-  - "packages/libs/domain.feature.*/src/**/*.tsx"
+  - "packages/libs/feature.*/src/**/*.ts"
+  - "packages/libs/feature.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
   pattern: import $_ from "$PATH"
 constraints:
   PATH:
-    regex: "domain\\.(service|adapter)\\."
-
----
-
-id: service-no-adapter
-language: TypeScript
-severity: error
-message: "domain.service.* cannot import domain.adapter.*"
-files:
-  - "packages/libs/domain.service.*/src/**/*.ts"
-  - "packages/libs/domain.service.*/src/**/*.tsx"
-ignores:
-  - "**/*.test.*"
-rule:
-  pattern: import $_ from "$PATH"
-constraints:
-  PATH:
-    regex: "domain\\.adapter\\."
-
----
-
-id: service-no-peer-service
-language: TypeScript
-severity: error
-message: "domain.service.* cannot import other domain.service.*"
-files:
-  - "packages/libs/domain.service.*/src/**/*.ts"
-  - "packages/libs/domain.service.*/src/**/*.tsx"
-ignores:
-  - "**/*.test.*"
-rule:
-  pattern: import $_ from "$PATH"
-constraints:
-  PATH:
-    regex: "domain\\.service\\."
-
----
-
-id: adapter-no-feature-or-service
-language: TypeScript
-severity: error
-message: "domain.adapter.* cannot import domain.feature.* or domain.service.*"
-files:
-  - "packages/libs/domain.adapter.*/src/**/*.ts"
-  - "packages/libs/domain.adapter.*/src/**/*.tsx"
-ignores:
-  - "**/*.test.*"
-rule:
-  pattern: import $_ from "$PATH"
-constraints:
-  PATH:
-    regex: "domain\\.(feature|service)\\."
+    regex: "arch\\.impl\\."
 
 ---
 
 id: core-no-domain-or-ui
 language: TypeScript
 severity: error
-message: "core.* cannot import domain.* or ui.*"
+message: "arch.* cannot import feature.* or ui.*"
 files:
-  - "packages/libs/core.*/src/**/*.ts"
-  - "packages/libs/core.*/src/**/*.tsx"
+  - "packages/libs/arch.*/src/**/*.ts"
+  - "packages/libs/arch.*/src/**/*.tsx"
 ignores:
   - "**/*.test.*"
 rule:
   pattern: import $_ from "$PATH"
 constraints:
   PATH:
-    regex: "(domain\\.(feature|service|adapter)\\.|ui\\.(feature|scene)\\b)"
+    regex: "(feature\\.|ui\\.(feature|scene)\\.)"

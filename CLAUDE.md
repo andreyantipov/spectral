@@ -305,9 +305,9 @@ IPC Bridge (infrastructure — transparent cross-process delivery):
    `export const AppEvents = EventLog.schema(...existing, FooEvents);`
 
 3. Add handler via `EventLog.group()` in the appropriate service:
-   - `domain.service.browsing/src/api/browsing.handlers.ts` — for session/nav/bookmark commands
    - `domain.service.workspace/src/api/workspace.handlers.ts` — for workspace layout commands
    - `domain.service.system/src/api/system.service.ts` — for system/UI/settings commands
+   - For session/nav/bookmark — use FSM spec effects in `feature.browser.*`
    ```ts
    export const FooHandlers = EventLog.group(FooEvents, (h) =>
      h.handle("foo.action", ({ payload }) =>

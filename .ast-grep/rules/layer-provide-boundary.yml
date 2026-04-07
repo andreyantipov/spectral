@@ -3,8 +3,8 @@ language: typescript
 rule:
   pattern: Layer.provide($$$)
 files:
-  - "packages/libs/domain.feature.*/src/**/*.ts"
-  - "packages/libs/core.contract.*/src/**/*.ts"
+  - "packages/libs/feature.*/src/**/*.ts"
+  - "packages/libs/arch.contract.*/src/**/*.ts"
   - "packages/libs/base.*/src/**/*.ts"
 ignores:
   - "**/*.test.ts"

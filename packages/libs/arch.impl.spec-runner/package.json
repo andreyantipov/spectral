@@ -1,0 +1,23 @@
+{
+	"name": "@ctrl/arch.impl.spec-runner",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"dependencies": {
+		"@ctrl/arch.contract.event-bus": "workspace:*",
+		"@ctrl/arch.contract.feature-registry": "workspace:*",
+		"@ctrl/arch.contract.spec": "workspace:*",
+		"@ctrl/arch.contract.spec-runner": "workspace:*"
+	},
+	"devDependencies": {
+		"@ctrl/arch.impl.event-bus": "workspace:*",
+		"@ctrl/arch.impl.feature-registry": "workspace:*"
+	},
+	"scripts": {
+		"check": "tsc --noEmit",
+		"test": "bun test"
+	}
+}

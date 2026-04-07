@@ -1,0 +1,16 @@
+{
+	"name": "@ctrl/arch.util.spec-builder",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"dependencies": {
+		"@ctrl/arch.contract.spec": "workspace:*"
+	},
+	"scripts": {
+		"check": "tsc --noEmit",
+		"test": "bun test"
+	}
+}

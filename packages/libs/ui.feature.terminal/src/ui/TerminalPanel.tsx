@@ -92,7 +92,9 @@ export function TerminalPanel(props: TerminalPanelProps) {
 
 	return (
 		<canvas
-			ref={canvasRef!}
+			ref={(el) => {
+				canvasRef = el;
+			}}
 			class="terminal-canvas"
 			tabIndex={0}
 			style={{ width: "100%", height: "100%", display: "block", outline: "none" }}

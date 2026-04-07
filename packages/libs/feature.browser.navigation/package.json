@@ -1,0 +1,13 @@
+{
+	"name": "@ctrl/feature.browser.navigation",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check": "tsc --noEmit",
+		"test": "bun test"
+	}
+}

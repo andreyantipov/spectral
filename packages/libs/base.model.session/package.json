@@ -1,0 +1,22 @@
+{
+	"name": "@ctrl/base.model.session",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check": "tsgo --noEmit",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@ctrl/base.error": "workspace:*",
+		"@ctrl/base.schema": "workspace:*",
+		"@ctrl/base.tracing": "workspace:*",
+		"@ctrl/base.type": "workspace:*"
+	},
+	"devDependencies": {
+		"@ctrl/arch.impl.db": "workspace:*"
+	}
+}

@@ -1,0 +1,14 @@
+id: namespace-arch-isolation
+language: TypeScript
+severity: error
+message: "arch.* packages must not import from base/feature/ui/wire — arch is zero-deps infrastructure"
+note: "Dependency order: arch → base → feature → ui → wire"
+rule:
+  any:
+    - pattern: import $$$_ from "@ctrl/base.$$$"
+    - pattern: import $$$_ from "@ctrl/feature.$$$"
+    - pattern: import $$$_ from "@ctrl/ui.$$$"
+    - pattern: import $$$_ from "@ctrl/wire.$$$"
+files:
+  - "packages/libs/arch.*/src/**/*.ts"
+  - "packages/libs/arch.*/src/**/*.tsx"

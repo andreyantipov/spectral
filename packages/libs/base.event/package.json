@@ -1,0 +1,16 @@
+{
+	"name": "@ctrl/base.event",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"check": "tsgo --noEmit"
+	},
+	"dependencies": {
+		"@ctrl/base.error": "workspace:*",
+		"@ctrl/base.schema": "workspace:*"
+	}
+}

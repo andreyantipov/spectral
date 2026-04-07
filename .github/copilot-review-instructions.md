@@ -37,8 +37,8 @@ Automated review guidelines for GitHub Copilot (and human reviewers). Flag any v
 - `domain.feature.settings`
 
 ### domain.service.* (singleton orchestrators — subscribe to EventBus, have lifecycle)
-- `domain.service.browsing`
 - `domain.service.workspace`
+- `domain.service.system`
 
 ### wire.desktop.*
 - `wire.desktop.main` — Bun/Electron main process runtime

@@ -1,9 +1,5 @@
-import {
-	type AppCommand,
-	type AppEvent,
-	type AppEvents,
-	EventBus,
-} from "@ctrl/core.contract.event-bus";
+import { type AppCommand, type AppEvent, EventBus } from "@ctrl/arch.contract.event-bus";
+import { type AppEvents, STATE_SYNC_EVENT, UI_READY_ACTION } from "@ctrl/base.event";
 import type { Event } from "@effect/experimental/Event";
 import type { EventGroup } from "@effect/experimental/EventGroup";
 import { Effect, Fiber, type ManagedRuntime, PubSub, Stream } from "effect";
@@ -33,6 +29,16 @@ export function useApi() {
 		void runtime.runPromise(bus.send(cmd));
 	}
 
+	/** Dispatch a TaggedClass action — extracts _tag as action name, rest as payload */
+	function dispatchAction(action: { readonly _tag: string }): void {
+		const { _tag, ...payload } = action as {
+			readonly _tag: string;
+			readonly [key: string]: unknown;
+		};
+		const cmd: AppCommand = { type: "command", action: _tag, payload, meta: { source: "ui" } };
+		void runtime.runPromise(bus.send(cmd));
+	}
+
 	const owner = getOwner();
 	const subscriptions = new Map<string, Accessor<unknown>>();
 	const stateSignals = new Map<string, [Accessor<unknown>, (v: unknown) => void]>();
@@ -43,7 +49,7 @@ export function useApi() {
 		void runtime.runPromise(PubSub.publish(eventPubSub, evt));
 
 		// Direct state-sync handling (for api.state())
-		if (evt.name === "state-sync" && evt.payload) {
+		if (evt.name === STATE_SYNC_EVENT && evt.payload) {
 			const data = evt.payload as Record<string, unknown>;
 			for (const [path, value] of Object.entries(data)) {
 				const entry = stateSignals.get(path);
@@ -66,7 +72,7 @@ export function useApi() {
 
 		// Request initial state — sends noop command to trigger state-sync publish
 		requestAnimationFrame(() => {
-			send("ui.ready", {});
+			send(UI_READY_ACTION, {});
 		});
 	});
 
@@ -104,5 +110,5 @@ export function useApi() {
 		return value as Accessor<T | undefined>;
 	}
 
-	return { dispatch, send, on, state };
+	return { dispatch, dispatchAction, send, on, state };
 }

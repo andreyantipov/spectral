@@ -1,0 +1,1 @@
+export { SpecRegistry } from "./registry";

@@ -7,8 +7,8 @@ rule:
     - pattern: Layer.succeed($$$)
     - pattern: Layer.scopedDiscard($$$)
 files:
-  - "packages/libs/core.contract.*/src/**/*.ts"
-message: "Contract packages must not contain Layer implementations. Move to core.impl.*"
+  - "packages/libs/arch.contract.*/src/**/*.ts"
+message: "Contract packages must not contain Layer implementations. Move to arch.impl.*"
 severity: error
 ---
 id: port-no-implementation-layer-tsx
@@ -20,6 +20,6 @@ rule:
     - pattern: Layer.succeed($$$)
     - pattern: Layer.scopedDiscard($$$)
 files:
-  - "packages/libs/core.contract.*/src/**/*.tsx"
-message: "Contract packages must not contain Layer implementations. Move to core.impl.*"
+  - "packages/libs/arch.contract.*/src/**/*.tsx"
+message: "Contract packages must not contain Layer implementations. Move to arch.impl.*"
 severity: error

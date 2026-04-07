@@ -3,11 +3,11 @@
 	"version": "0.0.0",
 	"type": "module",
 	"private": true,
-	"dependencies": {
-		"effect": "^3.19.19"
-	},
 	"scripts": {
 		"develop": "dagger develop",
 		"validate": "dagger develop && dagger functions"
+	},
+	"dependencies": {
+		"effect": "^3.21.0"
 	}
 }
