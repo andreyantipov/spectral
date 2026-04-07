@@ -20,8 +20,7 @@ storybook-static
 test-results
 
 # Superpowers-generated specs/plans — ephemeral, live on branches only
-docs/superpowers/plans/
-docs/superpowers/specs/
+docs/superpowers/
 
 # Generated metadata — rebuilt by docs:build
 metadata.json
